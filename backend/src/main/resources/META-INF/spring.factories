@@ -1,0 +1,2 @@
+org.springframework.context.ApplicationContextInitializer=com.dynamicapi.config.H2ServerInitializer
+
