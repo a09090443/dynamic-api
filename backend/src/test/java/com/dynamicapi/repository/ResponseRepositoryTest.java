@@ -1,9 +1,9 @@
 package com.dynamicapi.repository;
 
+import com.dynamicapi.base.TestBase;
 import com.dynamicapi.dao.MockResponseDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import tw.com.webcomm.base.TestBase;
 
 class ResponseRepositoryTest extends TestBase {
 

@@ -2,6 +2,7 @@ package com.dynamicapi.controller;
 
 import com.dynamicapi.dto.ControllerDTO;
 import com.dynamicapi.dto.ControllerResponseDTO;
+import com.dynamicapi.enums.JarFileStatus;
 import com.dynamicapi.service.CommonService;
 import com.dynamicapi.service.DynamicControllerService;
 import com.zipe.annotation.ResponseResultBody;
@@ -77,17 +78,30 @@ public class DynamicLoadController {
     @PostMapping("/updateController")
     public Result<ControllerResponseDTO> updateController(@RequestBody ControllerDTO request) {
         log.info("Update controller: {}", request);
+        StringBuilder errorMessage = new StringBuilder();
+
+        if (StringUtils.isBlank(request.getPublishUri())) {
+            errorMessage.append("PublishUri is blank; ");
+        }
+        if (StringUtils.isBlank(request.getClassPath())) {
+            errorMessage.append("ClassPath is blank; ");
+        }
+
+        if (!errorMessage.isEmpty()) {
+            log.error(errorMessage.toString());
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+
         ControllerDTO newControllerDTO = new ControllerDTO();
         try {
-            ControllerDTO originalDTO = dynamicControllerService.getController(request.getId());
-            dynamicControllerService.disabledController(originalDTO.getPublishUri(), false);
-
+            ControllerDTO originalDTO = dynamicControllerService.disabledController(request.getPublishUri());
             BeanUtils.copyProperties(request, newControllerDTO);
             newControllerDTO.setIsActive(false);
             dynamicControllerService.updateController(newControllerDTO);
+            dynamicControllerService.updateJarFileStatus(originalDTO.getJarFileId(), JarFileStatus.INACTIVE);
 
             if (!originalDTO.getPublishUri().equals(newControllerDTO.getPublishUri())) {
-                dynamicControllerService.removeController(originalDTO.getPublishUri());
+                dynamicControllerService.removeController(originalDTO.getPublishUri(), originalDTO.getJarFileId());
                 commonService.updateMockResponse(originalDTO.getPublishUri(), newControllerDTO.getPublishUri());
             }
 
@@ -103,8 +117,10 @@ public class DynamicLoadController {
 
     @DeleteMapping("/removeController")
     public Result<String> removeWebService(@RequestBody String[] publishUris) {
+        ControllerDTO controllerDTO;
         for (String publishUri : publishUris) {
-            dynamicControllerService.removeController(publishUri);
+            controllerDTO = dynamicControllerService.disabledController(publishUri);
+            dynamicControllerService.removeController(publishUri, controllerDTO.getJarFileId());
         }
         return Result.success(StringUtils.EMPTY);
     }
@@ -112,10 +128,12 @@ public class DynamicLoadController {
     @GetMapping("/switchController")
     public Result<String> switchWebService(@RequestParam String publishUri, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(publishUri) && isActive != null) {
+            ControllerDTO controllerDTO;
             if (isActive) {
                 dynamicControllerService.enabledController(publishUri);
             } else {
-                dynamicControllerService.disabledController(publishUri, false);
+                controllerDTO = dynamicControllerService.disabledController(publishUri);
+                dynamicControllerService.updateJarFileStatus(controllerDTO.getJarFileId(), JarFileStatus.INACTIVE);
             }
         }
         return Result.success(StringUtils.EMPTY);

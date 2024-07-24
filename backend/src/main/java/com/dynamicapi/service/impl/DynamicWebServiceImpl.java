@@ -114,7 +114,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
 
         try {
             BeanUtils.copyProperties(endpointEntity, endpointDTO);
-            registerWebService.registerWebService(dynamicClassLoader, endpointDTO, context, jarFileEntity.getName());
+            registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
             endpointEntity.setIsActive(Boolean.TRUE);
             endpointRepository.save(endpointEntity);
         } catch (RuntimeException | IOException | ClassNotFoundException e) {
@@ -130,7 +130,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
         JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         try {
-            registerWebService.removeWebService(dynamicClassLoader, publicUri, bus, context, jarFileEntity.getName());
+            registerWebService.removeWebService(publicUri, bus, context, jarFileEntity.getName());
             endpointEntity.setIsActive(Boolean.FALSE);
             jarFileEntity.setStatus(JarFileStatus.INACTIVE);
             jarFileRepository.save(jarFileEntity);

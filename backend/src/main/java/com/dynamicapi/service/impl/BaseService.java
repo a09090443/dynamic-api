@@ -3,7 +3,6 @@ package com.dynamicapi.service.impl;
 import com.dynamicapi.entity.JarFileEntity;
 import com.dynamicapi.exception.WebserviceException;
 import com.dynamicapi.repository.JarFileRepository;
-import com.dynamicapi.util.DynamicClassLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -12,8 +11,6 @@ public abstract class BaseService {
     protected ApplicationContext context;
 
     protected JarFileRepository jarFileRepository;
-
-    protected DynamicClassLoader dynamicClassLoader;
 
     protected String jarFileDir;
 
@@ -33,11 +30,6 @@ public abstract class BaseService {
     @Autowired
     public void setContext(ApplicationContext context) {
         this.context = context;
-    }
-
-    @Autowired
-    public void setDynamicClassLoader(DynamicClassLoader dynamicClassLoader) {
-        this.dynamicClassLoader = dynamicClassLoader;
     }
 
     @Value("${jar.file.dir}")

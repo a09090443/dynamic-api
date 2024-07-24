@@ -1,6 +1,7 @@
 package com.dynamicapi.service;
 
 import com.dynamicapi.dto.ControllerDTO;
+import com.dynamicapi.enums.JarFileStatus;
 
 import java.util.List;
 
@@ -16,9 +17,11 @@ public interface DynamicControllerService {
 
     void enabledController(String publishUri);
 
-    void disabledController(String publishUri, Boolean isDeleted);
+    ControllerDTO disabledController(String publishUri);
 
-    void removeController(String publishUri);
+    void updateJarFileStatus(String fileId, JarFileStatus status);
+
+    void removeController(String publishUri, String jarFileId);
 
     void startUpControllerProcess(String publishUri, String classPath, String jarPath);
 }

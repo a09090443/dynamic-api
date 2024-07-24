@@ -1,7 +1,9 @@
 package com.dynamicapi.util;
 
 import com.dynamicapi.dto.EndpointDTO;
+import com.dynamicapi.enums.ClassLoaderSingletonEnum;
 import com.dynamicapi.exception.WebserviceException;
+import com.zipe.util.classloader.CustomClassLoader;
 import com.zipe.util.string.StringConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
@@ -11,15 +13,20 @@ import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 @Slf4j
 public class WebServiceHandler {
-    public void registerWebService(DynamicClassLoader classLoader, EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws IOException, ClassNotFoundException {
+    public void registerWebService(EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws IOException, ClassNotFoundException {
 
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + fileName;
         DynamicBeanUtil dynamicBeanUtil = new DynamicBeanUtil(context);
         try {
-            classLoader.addURL(new URL(jarPath));
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(endpointDTO.getPublishUri());
+            if (Objects.isNull(classLoader)) {
+                classLoader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
+                ClassLoaderSingletonEnum.INSTANCE.put(endpointDTO.getPublishUri(), classLoader);
+            }
             Class<?> loadedClass = classLoader.loadClass(endpointDTO.getClassPath());
             this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
             EndpointImpl endpoint;
@@ -32,7 +39,7 @@ public class WebServiceHandler {
         }
     }
 
-    public void removeWebService(DynamicClassLoader classLoader, String publicUrl, Bus bus, ApplicationContext context, String jarName) {
+    public void removeWebService(String publicUrl, Bus bus, ApplicationContext context, String jarName) {
         ServerRegistry serverRegistry = bus.getExtension(ServerRegistry.class);
 
         serverRegistry.getServers().stream()
@@ -45,7 +52,13 @@ public class WebServiceHandler {
                 });
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + jarName;
         try {
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publicUrl);
+            if (Objects.isNull(classLoader)) {
+                return;
+            }
             classLoader.unloadJarFile(new URL(jarPath));
+            classLoader.close();
+            ClassLoaderSingletonEnum.INSTANCE.remove(publicUrl);
         } catch (Exception e) {
             log.error("Web Service 移除服務:{}, 失敗", publicUrl, e);
             throw new WebserviceException("移除服務失敗");
