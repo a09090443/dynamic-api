@@ -25,7 +25,7 @@ dependencies {
     implementation("org.eclipse.persistence:eclipselink:3.0.4")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
-    implementation(files("src/main/lib/webservice-base-endpoint.jar"))
+    implementation(files("src/main/lib/base.jar"))
 
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")

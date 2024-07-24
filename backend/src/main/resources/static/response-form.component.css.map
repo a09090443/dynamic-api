@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/response-form/response-form.component.css"],
-  "sourcesContent": [".success-message {\r\n  color: blue;\r\n  margin-top: 10px;\r\n}\r\n\r\n.error-message {\r\n  color: red;\r\n  margin-top: 10px;\r\n}\r\n\r\n.countdown {\r\n  color: green;\r\n  margin-top: 10px;\r\n}\r\n\r\n.valid-json {\r\n  border-left: 5px solid green;\r\n}\r\n\r\n.invalid-json {\r\n  border-left: 5px solid red;\r\n}\r\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,cAAY;AACd;AAEA,CAAC;AACC,SAAO;AACP,cAAY;AACd;AAEA,CAAC;AACC,SAAO;AACP,cAAY;AACd;AAEA,CAAC;AACC,eAAa,IAAI,MAAM;AACzB;AAEA,CAAC;AACC,eAAa,IAAI,MAAM;AACzB;",
-  "names": []
-}

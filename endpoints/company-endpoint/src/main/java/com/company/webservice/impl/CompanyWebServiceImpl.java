@@ -5,7 +5,7 @@ import com.company.dto.CompanyResponse;
 import com.company.dto.Employee;
 import com.company.dto.GetCompanyResponse;
 import com.company.webservice.CompanyWebService;
-import com.dynamicwebservice.webservice.BaseWebservice;
+import com.dynamicapi.webservice.BaseWebservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipe.util.SoapUtil;
 import com.zipe.util.XmlUtil;

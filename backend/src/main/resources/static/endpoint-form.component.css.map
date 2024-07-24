@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/endpoint-form/endpoint-form.component.css"],
-  "sourcesContent": [".success-message {\r\n  color: blue;\r\n  margin-top: 10px;\r\n}\r\n\r\n.error-message {\r\n  color: red;\r\n  margin-top: 10px;\r\n}\r\n\r\n.countdown {\r\n  color: green;\r\n  margin-top: 10px;\r\n}\r\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,cAAY;AACd;AAEA,CAAC;AACC,SAAO;AACP,cAAY;AACd;AAEA,CAAC;AACC,SAAO;AACP,cAAY;AACd;",
-  "names": []
-}

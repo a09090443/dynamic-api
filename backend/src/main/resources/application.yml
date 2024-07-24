@@ -42,3 +42,9 @@ web:
       user:
         beanName: exampleUserServiceImpl # example 資源對應的 bean
         uri-mapping: /user # web service 資源對應 Uri，http://localhost:8080/mockwebservice/webservice/user?wsdl
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: mappings
