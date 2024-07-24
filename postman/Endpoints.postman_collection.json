@@ -1,0 +1,268 @@
+{
+	"info": {
+		"_postman_id": "02409e9b-f70a-482e-81ab-e7544ee6343c",
+		"name": "Endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3129584"
+	},
+	"item": [
+		{
+			"name": "Company",
+			"item": [
+				{
+					"name": "Company_getCompany",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/xml;charset=utf-8"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://service.other.com\" xmlns:emp=\"employee\" xmlns:com=\"company\">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <ser:getCompany>\r\n         <!--Optional:-->\r\n         <ser:CompanyRequest>\r\n            <!--Optional:-->\r\n            <com:name>Jen</com:name>\r\n            <!--Optional:-->\r\n            <com:taxId>123456789</com:taxId>\r\n         </ser:CompanyRequest>\r\n      </ser:getCompany>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>"
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/webservice/company?wsdl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"webservice",
+								"company"
+							],
+							"query": [
+								{
+									"key": "wsdl",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Company_add_response",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"publishUri\":\"company\",\r\n    \"method\":\"getCompany\",\r\n    \"condition\":\"{\\\"employees\\\":null,\\\"name\\\":\\\"Company\\\",\\\"taxId\\\":\\\"224567\\\"}\",\r\n    \"responseContent\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><soap:Envelope xmlns:soap=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\"><soap:Body><ns4:getCompanyResponse xmlns:ns4=\\\"http://service.other.com\\\" xmlns:ns2=\\\"employee\\\" xmlns:ns3=\\\"company\\\"><companyResponse><ns3:address>Test Address</ns3:address><employees><employee><ns2:grander>G</ns2:grander><ns2:name>Test Employee</ns2:name></employee></employees><ns3:name>Company</ns3:name><ns3:taxId>224567</ns3:taxId></companyResponse></ns4:getCompanyResponse></soap:Body></soap:Envelope>\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/saveMockResponse",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"saveMockResponse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Company_update_response",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"32703ad5-046d-44fe-ad9b-306df5618e8f\",\r\n    \"publishUri\":\"company\",\r\n    \"method\":\"getCompany\",\r\n    \"condition\":\"{\\\"employees\\\":null,\\\"name\\\":\\\"Company\\\",\\\"taxId\\\":\\\"224567\\\"}\",\r\n    \"responseContent\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><soap:Envelope xmlns:soap=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\"><soap:Body><ns4:getCompanyResponse xmlns:ns4=\\\"http://service.other.com\\\" xmlns:ns2=\\\"employee\\\" xmlns:ns3=\\\"company\\\"><companyResponse><ns3:address>Test Address</ns3:address><employees><employee><ns2:grander>G</ns2:grander><ns2:name>Test Employee</ns2:name></employee></employees><ns3:name>Company</ns3:name><ns3:taxId>224567</ns3:taxId></companyResponse></ns4:getCompanyResponse></soap:Body></soap:Envelope>\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/updateResponse",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"updateResponse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Company_get_responses",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"publishUri\":\"company\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/getResponseList",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"getResponseList"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Company_register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"beanName\":\"companyWebServiceImpl\",\r\n    \"jarFileId\":\"03ac1ee7-b90f-47f7-94b6-2e965140f646\",\r\n    \"publishUri\":\"company\",\r\n    \"classPath\":\"com.company.webservice.impl.CompanyWebServiceImpl\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/ws/saveWebService",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"ws",
+								"saveWebService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Copmany_remove",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"company\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/ws/removeWebService",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"ws",
+								"removeWebService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Company_switch",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/ws/switchWebService?publishUri=company&isActive=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"ws",
+								"switchWebService"
+							],
+							"query": [
+								{
+									"key": "publishUri",
+									"value": "company"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Upload_jar_file",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/zipe1/OneDrive/桌面/company-endpoint-0.0.1-plain.jar"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/dynamic-api/common/uploadJarFile",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"dynamic-api",
+						"common",
+						"uploadJarFile"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
