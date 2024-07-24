@@ -53,4 +53,23 @@ export class RestfulService {
     return await firstValueFrom(this.http.get(`${config.apiUrl}/dynamic-api/api/switchController`, { params }));
   }
 
+  async uploadFile(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response: any = await firstValueFrom(this.http.post(`${config.apiUrl}/dynamic-api/common/uploadJarFile`, formData).pipe(
+        catchError(this.handleError)
+      ));
+      if (response.code === 200) {
+        return response.data; // 返回 data
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error; // 可以根據需要進行進一步處理
+    }
+  }
+
 }

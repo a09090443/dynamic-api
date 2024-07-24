@@ -39920,18 +39920,24 @@ var MatIconModule = _MatIconModule;
 
 // src/app/header/header.component.ts
 var _HeaderComponent = class _HeaderComponent {
-  listAlert() {
-    alert("List");
+  constructor(router) {
+    this.router = router;
+  }
+  endpoints() {
+    this.router.navigate(["/endpoint"]);
+  }
+  restfuls() {
+    this.router.navigate(["/restful"]);
   }
 };
 _HeaderComponent.\u0275fac = function HeaderComponent_Factory(t) {
-  return new (t || _HeaderComponent)();
+  return new (t || _HeaderComponent)(\u0275\u0275directiveInject(Router));
 };
-_HeaderComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HeaderComponent, selectors: [["app-header"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 17, vars: 1, consts: [["appMenu", "matMenu"], ["color", "primary"], [1, "navRightButton"], ["mat-icon-button", "", "aria-label", "Example icon-button with a menu", 3, "matMenuTriggerFor"], ["mat-menu-item", "", 3, "click"], ["mat-menu-item", ""]], template: function HeaderComponent_Template(rf, ctx) {
+_HeaderComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HeaderComponent, selectors: [["app-header"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 19, vars: 1, consts: [["appMenu", "matMenu"], ["color", "primary"], [1, "navRightButton"], ["mat-icon-button", "", "aria-label", "Example icon-button with a menu", 3, "matMenuTriggerFor"], ["mat-menu-item", "", 3, "click"], ["aria-hidden", "false", "aria-label", "Example home icon", "fontIcon", "label"], ["mat-menu-item", ""]], template: function HeaderComponent_Template(rf, ctx) {
   if (rf & 1) {
     const _r1 = \u0275\u0275getCurrentView();
     \u0275\u0275elementStart(0, "mat-toolbar", 1)(1, "div");
-    \u0275\u0275text(2, "Todo List");
+    \u0275\u0275text(2, "Menu");
     \u0275\u0275elementEnd();
     \u0275\u0275elementStart(3, "div", 2)(4, "button", 3)(5, "mat-icon");
     \u0275\u0275text(6, "more_vert");
@@ -39939,17 +39945,23 @@ _HeaderComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type:
     \u0275\u0275elementStart(7, "mat-menu", null, 0)(9, "button", 4);
     \u0275\u0275listener("click", function HeaderComponent_Template_button_click_9_listener() {
       \u0275\u0275restoreView(_r1);
-      return \u0275\u0275resetView(ctx.listAlert());
+      return \u0275\u0275resetView(ctx.endpoints());
     });
-    \u0275\u0275elementStart(10, "mat-icon");
-    \u0275\u0275text(11, "list");
+    \u0275\u0275element(10, "mat-icon", 5);
+    \u0275\u0275text(11, "Endpoint \u6E05\u55AE");
     \u0275\u0275elementEnd();
-    \u0275\u0275text(12, "Todo List");
+    \u0275\u0275elementStart(12, "button", 4);
+    \u0275\u0275listener("click", function HeaderComponent_Template_button_click_12_listener() {
+      \u0275\u0275restoreView(_r1);
+      return \u0275\u0275resetView(ctx.restfuls());
+    });
+    \u0275\u0275element(13, "mat-icon", 5);
+    \u0275\u0275text(14, "Restful \u6E05\u55AE");
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "button", 5)(14, "mat-icon");
-    \u0275\u0275text(15, "info");
+    \u0275\u0275elementStart(15, "button", 6)(16, "mat-icon");
+    \u0275\u0275text(17, "info");
     \u0275\u0275elementEnd();
-    \u0275\u0275text(16, "About");
+    \u0275\u0275text(18, "About");
     \u0275\u0275elementEnd()()()();
   }
   if (rf & 2) {
@@ -39960,7 +39972,7 @@ _HeaderComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type:
 }, dependencies: [MatToolbarModule, MatToolbar, MatMenuModule, MatMenu, MatMenuItem, MatMenuTrigger, MatIconModule, MatIcon, MatButtonModule, MatIconButton] });
 var HeaderComponent = _HeaderComponent;
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(HeaderComponent, { className: "HeaderComponent", filePath: "src\\app\\header\\header.component.ts", lineNumber: 19 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(HeaderComponent, { className: "HeaderComponent", filePath: "src\\app\\header\\header.component.ts", lineNumber: 20 });
 })();
 
 // node_modules/@angular/cdk/fesm2022/table.mjs
@@ -49663,6 +49675,844 @@ var ResponseComponent = _ResponseComponent;
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(ResponseComponent, { className: "ResponseComponent", filePath: "src\\app\\response\\response.component.ts", lineNumber: 98 });
 })();
 
+// src/app/service/restful.service.ts
+var _RestfulService = class _RestfulService {
+  constructor(http) {
+    this.http = http;
+  }
+  fetchData() {
+    return firstValueFrom(this.http.get(`${config.apiUrl}/mockwebservice/api/getControllers`));
+  }
+  saveFormData(formData) {
+    return firstValueFrom(this.http.post(`${config.apiUrl}/mockwebservice/api/saveController`, formData));
+  }
+  updateFormData(formData) {
+    return firstValueFrom(this.http.post(`${config.apiUrl}/mockwebservice/api/updateController`, formData));
+  }
+  deleteRestful(publishUrls) {
+    return __async(this, null, function* () {
+      return yield firstValueFrom(this.http.request("delete", `${config.apiUrl}/mockwebservice/api/removeController`, {
+        body: publishUrls
+      }).pipe(catchError(this.handleError)));
+    });
+  }
+  handleError(error) {
+    if (error.error instanceof ErrorEvent) {
+      console.error("An error occurred:", error.error.message);
+    } else {
+      console.error(`Backend returned code ${error.status}, body was: ${error.error}`);
+    }
+    return throwError("Something bad happened; please try again later.");
+  }
+  switchRestful(publishUri, isActive) {
+    return __async(this, null, function* () {
+      const params = new HttpParams().set("publishUri", publishUri).set("isActive", isActive.toString());
+      return yield firstValueFrom(this.http.get(`${config.apiUrl}/mockwebservice/api/switchController`, { params }));
+    });
+  }
+  uploadFile(file) {
+    return __async(this, null, function* () {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const response = yield firstValueFrom(this.http.post(`${config.apiUrl}/mockwebservice/common/uploadJarFile`, formData).pipe(catchError(this.handleError)));
+        if (response.code === 200) {
+          return response.data;
+        } else {
+          throw new Error(response.message);
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        throw error;
+      }
+    });
+  }
+};
+_RestfulService.\u0275fac = function RestfulService_Factory(t) {
+  return new (t || _RestfulService)(\u0275\u0275inject(HttpClient));
+};
+_RestfulService.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _RestfulService, factory: _RestfulService.\u0275fac, providedIn: "root" });
+var RestfulService = _RestfulService;
+
+// src/app/restful-form/restful-form.component.ts
+function RestfulFormComponent_div_3_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 15);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" \u95DC\u9589\u8996\u7A97\u5012\u6578 ", ctx_r0.countdown, " \u79D2... ");
+  }
+}
+function RestfulFormComponent_button_9_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r2 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 16);
+    \u0275\u0275listener("click", function RestfulFormComponent_button_9_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.clearField("publishUri"));
+    });
+    \u0275\u0275elementStart(1, "mat-icon");
+    \u0275\u0275text(2, "close");
+    \u0275\u0275elementEnd()();
+  }
+}
+function RestfulFormComponent_button_14_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r3 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 16);
+    \u0275\u0275listener("click", function RestfulFormComponent_button_14_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r3);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.clearField("classPath"));
+    });
+    \u0275\u0275elementStart(1, "mat-icon");
+    \u0275\u0275text(2, "close");
+    \u0275\u0275elementEnd()();
+  }
+}
+function RestfulFormComponent_mat_form_field_15_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "mat-form-field", 4)(1, "mat-label");
+    \u0275\u0275text(2, "Jar File Name");
+    \u0275\u0275elementEnd();
+    \u0275\u0275element(3, "input", 17);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance(3);
+    \u0275\u0275property("value", ctx_r0.jarFileName);
+  }
+}
+function RestfulFormComponent_button_20_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r4 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 16);
+    \u0275\u0275listener("click", function RestfulFormComponent_button_20_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r4);
+      const ctx_r0 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r0.removeFile());
+    });
+    \u0275\u0275elementStart(1, "mat-icon");
+    \u0275\u0275text(2, "close");
+    \u0275\u0275elementEnd()();
+  }
+}
+function RestfulFormComponent_div_23_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 18);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275property("ngClass", ctx_r0.messageType === "success" ? "success-message" : "error-message");
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", ctx_r0.message, " ");
+  }
+}
+var _RestfulFormComponent = class _RestfulFormComponent {
+  constructor(data, fb, dialogRef, restfulService) {
+    this.data = data;
+    this.fb = fb;
+    this.dialogRef = dialogRef;
+    this.restfulService = restfulService;
+    this.jarFileName = null;
+    this.message = null;
+    this.messageType = null;
+    this.countdown = null;
+    this.restfulSaved = new EventEmitter();
+    this.isEditMode = !!data;
+    this.initializeForm(data || {});
+  }
+  initializeForm(data) {
+    const defaultData = {
+      id: "",
+      publishUri: "",
+      classPath: "",
+      jarFileId: "",
+      jarFileName: "",
+      file: null,
+      isActive: false
+    };
+    this.jarFileName = data?.jarFileName || defaultData.jarFileName;
+    this.form = this.fb.group({
+      id: [data?.id || defaultData.id],
+      publishUri: [data?.publishUri || defaultData.publishUri, Validators.required],
+      classPath: [data?.classPath || defaultData.classPath, Validators.required],
+      jarFileId: [data?.jarFileId || defaultData.jarFileId],
+      file: [defaultData.file],
+      isActive: [data?.isActive || defaultData.isActive]
+    });
+  }
+  onSave() {
+    if (this.form.valid) {
+      if (!this.jarFileName) {
+        this.messageType = "error";
+        this.message = "Please upload the JAR file!";
+        return;
+      }
+      console.log("Form data:", this.form.value);
+      const formData = this.form.value;
+      if (this.isEditMode) {
+        this.updateRestful(formData);
+      } else {
+        this.addRestful(formData);
+      }
+    } else {
+      console.error("Form is invalid");
+    }
+  }
+  onCancel() {
+    this.dialogRef.close();
+  }
+  clearField(fieldName) {
+    this.form.get(fieldName).setValue("");
+  }
+  onFileChange(event) {
+    const inputElement = event.target;
+    if (inputElement.files && inputElement.files.length > 0) {
+      const file = inputElement.files[0];
+      this.form.patchValue({ file });
+      this.form.get("file").updateValueAndValidity();
+    }
+  }
+  removeFile() {
+    this.form.get("file").setValue(null);
+  }
+  uploadFile() {
+    return __async(this, null, function* () {
+      const file = this.form.get("file")?.value;
+      if (file) {
+        try {
+          const responseData = yield this.restfulService.uploadFile(file);
+          this.jarFileName = responseData.jarFileName;
+          this.form.get("jarFileId").setValue(responseData.jarFileId);
+          console.log("File uploaded successfully:", responseData);
+        } catch (error) {
+          console.error("Error uploading file:", error);
+        }
+      } else {
+        console.error("No file selected");
+      }
+    });
+  }
+  addRestful(formData) {
+    this.restfulService.saveFormData(formData).then((response) => {
+      console.log("Fetched data:", response.data);
+      this.message = "Restful save successfully!";
+      this.messageType = "success";
+      this.restfulSaved.emit(response.data);
+      this.countdown = 2;
+      const countdownInterval = setInterval(() => {
+        if (this.countdown !== null && this.countdown > 0) {
+          this.countdown--;
+        } else {
+          clearInterval(countdownInterval);
+          this.dialogRef.close();
+        }
+      }, 1e3);
+    }, (error) => {
+      this.message = "Failed to save endpoint!";
+      this.messageType = "error";
+    });
+  }
+  updateRestful(formData) {
+    this.restfulService.updateFormData(formData).then((response) => {
+      console.log("Fetched data:", response.data);
+      this.message = "Restful updated successfully!";
+      this.messageType = "success";
+      this.restfulSaved.emit(response.data);
+      this.countdown = 2;
+      const countdownInterval = setInterval(() => {
+        if (this.countdown !== null && this.countdown > 0) {
+          this.countdown--;
+        } else {
+          clearInterval(countdownInterval);
+          this.dialogRef.close();
+        }
+      }, 1e3);
+    }, (error) => {
+      this.message = "Failed to update restful!";
+      this.messageType = "error";
+    });
+  }
+};
+_RestfulFormComponent.\u0275fac = function RestfulFormComponent_Factory(t) {
+  return new (t || _RestfulFormComponent)(\u0275\u0275directiveInject(MAT_DIALOG_DATA), \u0275\u0275directiveInject(FormBuilder), \u0275\u0275directiveInject(MatDialogRef), \u0275\u0275directiveInject(RestfulService));
+};
+_RestfulFormComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _RestfulFormComponent, selectors: [["app-restful-form"]], outputs: { restfulSaved: "restfulSaved" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 29, vars: 10, consts: [["mat-dialog-title", ""], ["mat-dialog-content", ""], ["class", "countdown", 4, "ngIf"], [2, "display", "flex", "flex-direction", "column", 3, "formGroup"], [1, "example-form-field", 2, "flex", "1"], ["matInput", "", "type", "text", "formControlName", "publishUri"], ["mat-icon-button", "", "matSuffix", "", "aria-label", "Clear", 3, "click", 4, "ngIf"], ["matInput", "", "type", "text", "formControlName", "classPath"], ["class", "example-form-field", "style", "flex: 1;", 4, "ngIf"], ["for", "file"], ["type", "file", "id", "file", "accept", ".jar", 3, "change"], ["mat-button", "", 3, "click"], [3, "ngClass", 4, "ngIf"], ["mat-dialog-actions", ""], ["mat-button", "", 3, "click", "disabled"], [1, "countdown"], ["mat-icon-button", "", "matSuffix", "", "aria-label", "Clear", 3, "click"], ["matInput", "", "type", "text", "disabled", "", 3, "value"], [3, "ngClass"]], template: function RestfulFormComponent_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "h1", 0);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(2, "div", 1);
+    \u0275\u0275template(3, RestfulFormComponent_div_3_Template, 2, 1, "div", 2);
+    \u0275\u0275elementStart(4, "form", 3)(5, "mat-form-field", 4)(6, "mat-label");
+    \u0275\u0275text(7, "Publish URI");
+    \u0275\u0275elementEnd();
+    \u0275\u0275element(8, "input", 5);
+    \u0275\u0275template(9, RestfulFormComponent_button_9_Template, 3, 0, "button", 6);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(10, "mat-form-field", 4)(11, "mat-label");
+    \u0275\u0275text(12, "Class Path");
+    \u0275\u0275elementEnd();
+    \u0275\u0275element(13, "input", 7);
+    \u0275\u0275template(14, RestfulFormComponent_button_14_Template, 3, 0, "button", 6);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(15, RestfulFormComponent_mat_form_field_15_Template, 4, 1, "mat-form-field", 8);
+    \u0275\u0275elementStart(16, "div", 4)(17, "label", 9);
+    \u0275\u0275text(18, "Upload Jar File");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(19, "input", 10);
+    \u0275\u0275listener("change", function RestfulFormComponent_Template_input_change_19_listener($event) {
+      return ctx.onFileChange($event);
+    });
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(20, RestfulFormComponent_button_20_Template, 3, 0, "button", 6);
+    \u0275\u0275elementStart(21, "button", 11);
+    \u0275\u0275listener("click", function RestfulFormComponent_Template_button_click_21_listener() {
+      return ctx.uploadFile();
+    });
+    \u0275\u0275text(22, "Upload");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275template(23, RestfulFormComponent_div_23_Template, 2, 2, "div", 12);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(24, "div", 13)(25, "button", 11);
+    \u0275\u0275listener("click", function RestfulFormComponent_Template_button_click_25_listener() {
+      return ctx.onCancel();
+    });
+    \u0275\u0275text(26, "\u53D6\u6D88");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(27, "button", 14);
+    \u0275\u0275listener("click", function RestfulFormComponent_Template_button_click_27_listener() {
+      return ctx.onSave();
+    });
+    \u0275\u0275text(28);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    let tmp_3_0;
+    let tmp_4_0;
+    let tmp_6_0;
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx.isEditMode ? "\u7DE8\u8F2F Restful" : "\u65B0\u589E Restful");
+    \u0275\u0275advance(2);
+    \u0275\u0275property("ngIf", ctx.countdown);
+    \u0275\u0275advance();
+    \u0275\u0275property("formGroup", ctx.form);
+    \u0275\u0275advance(5);
+    \u0275\u0275property("ngIf", (tmp_3_0 = ctx.form.get("publishUri")) == null ? null : tmp_3_0.value);
+    \u0275\u0275advance(5);
+    \u0275\u0275property("ngIf", (tmp_4_0 = ctx.form.get("classPath")) == null ? null : tmp_4_0.value);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx.jarFileName);
+    \u0275\u0275advance(5);
+    \u0275\u0275property("ngIf", (tmp_6_0 = ctx.form.get("file")) == null ? null : tmp_6_0.value);
+    \u0275\u0275advance(3);
+    \u0275\u0275property("ngIf", ctx.message);
+    \u0275\u0275advance(4);
+    \u0275\u0275property("disabled", ctx.form.invalid);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(ctx.isEditMode ? "\u66F4\u65B0 Restful" : "\u65B0\u589E Restful");
+  }
+}, dependencies: [
+  ReactiveFormsModule,
+  \u0275NgNoValidate,
+  DefaultValueAccessor,
+  NgControlStatus,
+  NgControlStatusGroup,
+  FormGroupDirective,
+  FormControlName,
+  MatIcon,
+  MatInputModule,
+  MatInput,
+  MatFormField,
+  MatLabel,
+  MatSuffix,
+  NgIf,
+  MatIconButton,
+  MatDialogActions,
+  MatButton,
+  MatDialogTitle,
+  MatDialogContent,
+  MatFormFieldModule,
+  NgClass
+], styles: ["\n\n.success-message[_ngcontent-%COMP%] {\n  color: blue;\n  margin-top: 10px;\n}\n.error-message[_ngcontent-%COMP%] {\n  color: red;\n  margin-top: 10px;\n}\n.countdown[_ngcontent-%COMP%] {\n  color: green;\n  margin-top: 10px;\n}\n/*# sourceMappingURL=restful-form.component.css.map */"] });
+var RestfulFormComponent = _RestfulFormComponent;
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(RestfulFormComponent, { className: "RestfulFormComponent", filePath: "src\\app\\restful-form\\restful-form.component.ts", lineNumber: 39 });
+})();
+
+// src/app/restful/restful.component.ts
+function RestfulComponent_ng_container_18_span_1_th_1_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r2 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "th", 17)(1, "mat-checkbox", 18);
+    \u0275\u0275listener("change", function RestfulComponent_ng_container_18_span_1_th_1_Template_mat_checkbox_change_1_listener($event) {
+      \u0275\u0275restoreView(_r2);
+      const ctx_r2 = \u0275\u0275nextContext(3);
+      return \u0275\u0275resetView($event ? ctx_r2.masterToggle() : null);
+    });
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r2 = \u0275\u0275nextContext(3);
+    \u0275\u0275advance();
+    \u0275\u0275property("checked", ctx_r2.selection.hasValue() && ctx_r2.isAllSelected())("indeterminate", ctx_r2.selection.hasValue() && !ctx_r2.isAllSelected())("aria-label", ctx_r2.checkboxLabel());
+  }
+}
+function RestfulComponent_ng_container_18_span_1_td_2_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r4 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "td", 19)(1, "mat-checkbox", 20);
+    \u0275\u0275listener("click", function RestfulComponent_ng_container_18_span_1_td_2_Template_mat_checkbox_click_1_listener($event) {
+      \u0275\u0275restoreView(_r4);
+      return \u0275\u0275resetView($event.stopPropagation());
+    })("change", function RestfulComponent_ng_container_18_span_1_td_2_Template_mat_checkbox_change_1_listener($event) {
+      const row_r5 = \u0275\u0275restoreView(_r4).$implicit;
+      const ctx_r2 = \u0275\u0275nextContext(3);
+      return \u0275\u0275resetView($event ? ctx_r2.selection.toggle(row_r5) : null);
+    });
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const row_r5 = ctx.$implicit;
+    const ctx_r2 = \u0275\u0275nextContext(3);
+    \u0275\u0275advance();
+    \u0275\u0275property("checked", ctx_r2.selection.isSelected(row_r5))("aria-label", ctx_r2.checkboxLabel(row_r5));
+  }
+}
+function RestfulComponent_ng_container_18_span_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span");
+    \u0275\u0275template(1, RestfulComponent_ng_container_18_span_1_th_1_Template, 2, 3, "th", 16)(2, RestfulComponent_ng_container_18_span_1_td_2_Template, 2, 2, "td", 15);
+    \u0275\u0275elementEnd();
+  }
+}
+function RestfulComponent_ng_container_18_th_2_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "th", 21);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const column_r6 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(column_r6.label);
+  }
+}
+function RestfulComponent_ng_container_18_td_3_div_1_div_1_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r7 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 27)(1, "button", 28);
+    \u0275\u0275listener("click", function RestfulComponent_ng_container_18_td_3_div_1_div_1_Template_button_click_1_listener() {
+      \u0275\u0275restoreView(_r7);
+      const element_r8 = \u0275\u0275nextContext(2).$implicit;
+      const ctx_r2 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r2.openRestfulForm(element_r8));
+    });
+    \u0275\u0275text(2, "\u7DE8\u8F2F");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(3, "\xA0\xA0 ");
+    \u0275\u0275elementStart(4, "button", 28);
+    \u0275\u0275listener("click", function RestfulComponent_ng_container_18_td_3_div_1_div_1_Template_button_click_4_listener() {
+      \u0275\u0275restoreView(_r7);
+      const n_r9 = \u0275\u0275nextContext(2).index;
+      const ctx_r2 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r2.removeRow(n_r9));
+    });
+    \u0275\u0275text(5, "\u522A\u9664");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(6, "\xA0\xA0 ");
+    \u0275\u0275elementStart(7, "button", 28);
+    \u0275\u0275listener("click", function RestfulComponent_ng_container_18_td_3_div_1_div_1_Template_button_click_7_listener() {
+      \u0275\u0275restoreView(_r7);
+      const element_r8 = \u0275\u0275nextContext(2).$implicit;
+      const ctx_r2 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r2.responseList(element_r8));
+    });
+    \u0275\u0275text(8, "\u56DE\u61C9\u6E05\u55AE");
+    \u0275\u0275elementEnd()();
+  }
+}
+function RestfulComponent_ng_container_18_td_3_div_1_span_2_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span");
+    \u0275\u0275text(1);
+    \u0275\u0275pipe(2, "date");
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const element_r8 = \u0275\u0275nextContext(2).$implicit;
+    const column_r6 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", \u0275\u0275pipeBind2(2, 1, element_r8[column_r6.key], "mediumDate"), " ");
+  }
+}
+function RestfulComponent_ng_container_18_td_3_div_1_span_3_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span")(1, "a", 29);
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const element_r8 = \u0275\u0275nextContext(2).$implicit;
+    const column_r6 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275property("href", element_r8[column_r6.key], \u0275\u0275sanitizeUrl);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate(element_r8[column_r6.key]);
+  }
+}
+function RestfulComponent_ng_container_18_td_3_div_1_span_4_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r10 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "span")(1, "mat-slide-toggle", 30);
+    \u0275\u0275listener("change", function RestfulComponent_ng_container_18_td_3_div_1_span_4_Template_mat_slide_toggle_change_1_listener($event) {
+      \u0275\u0275restoreView(_r10);
+      const element_r8 = \u0275\u0275nextContext(2).$implicit;
+      const ctx_r2 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r2.onSwitchChange($event, element_r8));
+    });
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const element_r8 = \u0275\u0275nextContext(2).$implicit;
+    const column_r6 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275property("checked", element_r8[column_r6.key]);
+  }
+}
+function RestfulComponent_ng_container_18_td_3_div_1_span_5_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span");
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const element_r8 = \u0275\u0275nextContext(2).$implicit;
+    const column_r6 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", element_r8[column_r6.key], " ");
+  }
+}
+function RestfulComponent_ng_container_18_td_3_div_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 23);
+    \u0275\u0275template(1, RestfulComponent_ng_container_18_td_3_div_1_div_1_Template, 9, 0, "div", 24)(2, RestfulComponent_ng_container_18_td_3_div_1_span_2_Template, 3, 4, "span", 25)(3, RestfulComponent_ng_container_18_td_3_div_1_span_3_Template, 3, 2, "span", 25)(4, RestfulComponent_ng_container_18_td_3_div_1_span_4_Template, 2, 1, "span", 25)(5, RestfulComponent_ng_container_18_td_3_div_1_span_5_Template, 2, 1, "span", 26);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const column_r6 = \u0275\u0275nextContext(2).$implicit;
+    \u0275\u0275property("ngSwitch", column_r6.type);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngSwitchCase", "isEdit");
+    \u0275\u0275advance();
+    \u0275\u0275property("ngSwitchCase", "date");
+    \u0275\u0275advance();
+    \u0275\u0275property("ngSwitchCase", "file");
+    \u0275\u0275advance();
+    \u0275\u0275property("ngSwitchCase", "boolean");
+  }
+}
+function RestfulComponent_ng_container_18_td_3_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "td", 19);
+    \u0275\u0275template(1, RestfulComponent_ng_container_18_td_3_div_1_Template, 6, 5, "div", 22);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const element_r8 = ctx.$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", !element_r8.isEdit);
+  }
+}
+function RestfulComponent_ng_container_18_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementContainerStart(0, 12);
+    \u0275\u0275template(1, RestfulComponent_ng_container_18_span_1_Template, 3, 0, "span", 13)(2, RestfulComponent_ng_container_18_th_2_Template, 2, 1, "th", 14)(3, RestfulComponent_ng_container_18_td_3_Template, 2, 1, "td", 15);
+    \u0275\u0275elementContainerEnd();
+  }
+  if (rf & 2) {
+    const column_r6 = ctx.$implicit;
+    const i_r11 = ctx.index;
+    \u0275\u0275property("matColumnDef", column_r6.key);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", i_r11 === 0);
+  }
+}
+function RestfulComponent_tr_19_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275element(0, "tr", 31);
+  }
+}
+function RestfulComponent_tr_20_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275element(0, "tr", 32);
+  }
+}
+var COLUMNS_SCHEMA3 = [
+  {
+    key: "id",
+    type: "text",
+    label: "\u7DE8\u865F"
+  },
+  {
+    key: "publishUri",
+    type: "text",
+    label: "\u767C\u5E03\u540D\u7A31"
+  },
+  {
+    key: "classPath",
+    type: "text",
+    label: "Class\u8DEF\u5F91"
+  },
+  {
+    key: "jarFileId",
+    type: "file",
+    label: "Jar\u6A94\u6848\u7DE8\u865F"
+  },
+  {
+    key: "isActive",
+    type: "boolean",
+    label: "\u72C0\u614B"
+  },
+  {
+    key: "isEdit",
+    type: "isEdit",
+    label: ""
+  }
+];
+var _RestfulComponent = class _RestfulComponent {
+  constructor(dialog, restfulService, router) {
+    this.dialog = dialog;
+    this.restfulService = restfulService;
+    this.router = router;
+    this.pageSize = 10;
+    this.pageSizeOptions = [10, 50, 100];
+    this.displayedColumns = COLUMNS_SCHEMA3.map((col) => col.key);
+    this.columnsSchema = COLUMNS_SCHEMA3;
+    this.dataSource = new MatTableDataSource();
+    this.dataSort = new MatSort();
+    this.paginator = {};
+    this.selection = new SelectionModel(true, []);
+  }
+  ngOnInit() {
+    this.fetchDataFromService();
+  }
+  fetchDataFromService() {
+    this.restfulService.fetchData().then((response) => {
+      console.log("Fetched data:", response.data);
+      this.dataSource = new MatTableDataSource(response.data);
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.dataSort;
+    }, (error) => {
+      console.error("Error fetching data:", error);
+    });
+  }
+  applyFilter(event) {
+    const filterValue = event.target.value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+  ngAfterViewInit() {
+    this.dataSort.disableClear = true;
+    this.dataSource.sort = this.dataSort;
+  }
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+  masterToggle() {
+    this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach((data) => this.selection.select(data));
+  }
+  checkboxLabel(row) {
+    return !row ? `${this.isAllSelected() ? "select" : "deselect"} all` : `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.position + 1}`;
+  }
+  removeSelectedRows() {
+    const deleteItem = confirm("\u78BA\u5B9A\u522A\u9664?");
+    if (deleteItem) {
+      const selectedRows = this.dataSource.data.filter((item) => this.selection.isSelected(item));
+      const selectedUrls = selectedRows.map((item) => item.publishUri);
+      this.dataSource.data = this.dataSource.data.filter((item) => !this.selection.isSelected(item));
+      this.restfulService.deleteRestful(selectedUrls).then((response) => {
+        console.log("\u522A\u9664\u6210\u529F", response);
+      }, (error) => {
+        console.error("\u522A\u9664\u5931\u6557", error);
+      });
+      this.selection.clear();
+    }
+    console.log(this.dataSource.data);
+  }
+  removeRow(id) {
+    const deleteItem = confirm("\u78BA\u5B9A\u522A\u9664?");
+    if (deleteItem) {
+      const data = this.dataSource.data;
+      const rowIndex = this.paginator.pageIndex * this.paginator.pageSize + id;
+      const rowData = data[id];
+      data.splice(rowIndex, 1);
+      this.dataSource.data = [...data];
+      this.restfulService.deleteRestful([rowData.publishUri]).then((response) => {
+        console.log("\u522A\u9664\u6210\u529F", response);
+      }, (error) => {
+        console.error("\u522A\u9664\u5931\u6557", error);
+        this.dataSource.data.splice(rowIndex, 0, rowData);
+        this.dataSource.data = [...this.dataSource.data];
+      });
+    }
+    console.log(id);
+  }
+  openRestfulForm(row) {
+    const dialogRef = this.dialog.open(RestfulFormComponent, {
+      width: "600px",
+      disableClose: true,
+      data: row
+    });
+    dialogRef.componentInstance.restfulSaved.subscribe((newRestful) => {
+      if (!row) {
+        this.addRow(newRestful);
+      } else {
+        Object.assign(row, newRestful);
+      }
+    });
+  }
+  responseList(row) {
+    console.log(row);
+    this.router.navigate(["/response", { publishUri: row.publishUri }]).then((r) => console.log(r));
+  }
+  addRow(newRestful) {
+    this.dataSource.data = [newRestful, ...this.dataSource.data];
+  }
+  onSwitchChange(event, row) {
+    const confirmation = confirm("\u4F60\u78BA\u5B9A\u8981\u8B8A\u66F4\u6B64\u8A2D\u5B9A\u55CE\uFF1F");
+    if (confirmation) {
+      console.log("User confirmed");
+      this.restfulService.switchRestful(row.publishUri, event.checked).then((response) => {
+        console.log("Switched web service:", response.data);
+        row.isActive = event.checked;
+      }, (error) => {
+        this.dialog.open(ErrorDialogComponent, {
+          width: "600px",
+          data: error.error.message
+        });
+      });
+    } else {
+      event.source.checked = !event.checked;
+    }
+  }
+};
+_RestfulComponent.\u0275fac = function RestfulComponent_Factory(t) {
+  return new (t || _RestfulComponent)(\u0275\u0275directiveInject(MatDialog), \u0275\u0275directiveInject(RestfulService), \u0275\u0275directiveInject(Router));
+};
+_RestfulComponent.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _RestfulComponent, selectors: [["app-restful"]], viewQuery: function RestfulComponent_Query(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275viewQuery(MatSort, 5);
+    \u0275\u0275viewQuery(MatPaginator, 5);
+  }
+  if (rf & 2) {
+    let _t;
+    \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx.dataSort = _t.first);
+    \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx.paginator = _t.first);
+  }
+}, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 22, vars: 7, consts: [["input", ""], ["dataSort", "matSort"], [1, "table-header"], ["mat-button", "", 1, "del-btn", 3, "click"], ["mat-button", "", 1, "add-btn", 3, "click"], [1, "mat-elevation-z8"], ["matInput", "", "placeholder", "Ex. ccms", 3, "keyup"], ["mat-table", "", "matSort", "", 1, "mat-elevation-z8", 3, "dataSource"], [3, "matColumnDef", 4, "ngFor", "ngForOf"], ["mat-header-row", "", 4, "matHeaderRowDef"], ["mat-row", "", 4, "matRowDef", "matRowDefColumns"], [3, "pageSizeOptions", "showFirstLastButtons", "pageSize"], [3, "matColumnDef"], [4, "ngIf"], ["mat-header-cell", "", "mat-sort-header", "", 4, "matHeaderCellDef"], ["mat-cell", "", 4, "matCellDef"], ["mat-header-cell", "", 4, "matHeaderCellDef"], ["mat-header-cell", ""], [3, "change", "checked", "indeterminate", "aria-label"], ["mat-cell", ""], [3, "click", "change", "checked", "aria-label"], ["mat-header-cell", "", "mat-sort-header", ""], [3, "ngSwitch", 4, "ngIf"], [3, "ngSwitch"], ["class", "btn-edit", 4, "ngSwitchCase"], [4, "ngSwitchCase"], [4, "ngSwitchDefault"], [1, "btn-edit"], ["mat-button", "", 1, "row-btn", 3, "click"], ["target", "_blank", 3, "href"], [3, "change", "checked"], ["mat-header-row", ""], ["mat-row", ""]], template: function RestfulComponent_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = \u0275\u0275getCurrentView();
+    \u0275\u0275element(0, "app-header");
+    \u0275\u0275elementStart(1, "h2");
+    \u0275\u0275text(2, "Restful \u6E05\u55AE");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(3, "article", 2)(4, "button", 3);
+    \u0275\u0275listener("click", function RestfulComponent_Template_button_click_4_listener() {
+      \u0275\u0275restoreView(_r1);
+      return \u0275\u0275resetView(ctx.removeSelectedRows());
+    });
+    \u0275\u0275text(5, "\u79FB\u9664Restful");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(6, "\xA0\xA0 ");
+    \u0275\u0275elementStart(7, "button", 4);
+    \u0275\u0275listener("click", function RestfulComponent_Template_button_click_7_listener() {
+      \u0275\u0275restoreView(_r1);
+      return \u0275\u0275resetView(ctx.openRestfulForm());
+    });
+    \u0275\u0275text(8, "\u65B0\u589ERestful");
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(9, "div", 5)(10, "mat-form-field")(11, "mat-label");
+    \u0275\u0275text(12, "\u641C\u5C0B");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(13, "input", 6, 0);
+    \u0275\u0275listener("keyup", function RestfulComponent_Template_input_keyup_13_listener($event) {
+      \u0275\u0275restoreView(_r1);
+      return \u0275\u0275resetView(ctx.applyFilter($event));
+    });
+    \u0275\u0275elementEnd()()();
+    \u0275\u0275elementStart(15, "div", 5)(16, "table", 7, 1);
+    \u0275\u0275template(18, RestfulComponent_ng_container_18_Template, 4, 2, "ng-container", 8)(19, RestfulComponent_tr_19_Template, 1, 0, "tr", 9)(20, RestfulComponent_tr_20_Template, 1, 0, "tr", 10);
+    \u0275\u0275elementEnd();
+    \u0275\u0275element(21, "mat-paginator", 11);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    \u0275\u0275advance(16);
+    \u0275\u0275property("dataSource", ctx.dataSource);
+    \u0275\u0275advance(2);
+    \u0275\u0275property("ngForOf", ctx.columnsSchema);
+    \u0275\u0275advance();
+    \u0275\u0275property("matHeaderRowDef", ctx.displayedColumns);
+    \u0275\u0275advance();
+    \u0275\u0275property("matRowDefColumns", ctx.displayedColumns);
+    \u0275\u0275advance();
+    \u0275\u0275property("pageSizeOptions", ctx.pageSizeOptions)("showFirstLastButtons", true)("pageSize", ctx.pageSize);
+  }
+}, dependencies: [
+  MatTableModule,
+  MatTable,
+  MatHeaderCellDef,
+  MatHeaderRowDef,
+  MatColumnDef,
+  MatCellDef,
+  MatRowDef,
+  MatHeaderCell,
+  MatCell,
+  MatHeaderRow,
+  MatRow,
+  MatCardModule,
+  MatSortModule,
+  MatSort,
+  MatSortHeader,
+  MatButtonModule,
+  MatButton,
+  MatPaginatorModule,
+  MatPaginator,
+  MatInputModule,
+  MatInput,
+  MatFormField,
+  MatLabel,
+  MatCheckbox,
+  FormsModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
+  MatDialogModule,
+  NgSwitch,
+  NgIf,
+  NgSwitchCase,
+  DatePipe,
+  NgSwitchDefault,
+  NgForOf,
+  HeaderComponent,
+  HttpClientModule,
+  MatSlideToggle
+], styles: ['\n\n.mat-table[_ngcontent-%COMP%] {\n  width: 100%;\n}\n.mat-table[_ngcontent-%COMP%]   .mat-header-cell[_ngcontent-%COMP%] {\n  color: rgb(33, 43, 53);\n  font-weight: 700;\n  font-size: 1em;\n  padding: 8px;\n  background-color: #EEEEEE;\n}\n.mat-table[_ngcontent-%COMP%]   .mat-header-cell[_ngcontent-%COMP%]:first-of-type {\n  padding: 8px 24px;\n}\n.mat-table[_ngcontent-%COMP%]   .mat-column-flex-2[_ngcontent-%COMP%] {\n  flex: 2;\n}\n.mat-table[_ngcontent-%COMP%]   .mat-cell[_ngcontent-%COMP%] {\n  padding: 8px;\n  line-height: 1.5em;\n}\n.mat-table[_ngcontent-%COMP%]   .mat-cell[_ngcontent-%COMP%]:first-of-type {\n  padding: 8px 24px;\n}\ntable[_ngcontent-%COMP%] {\n  width: 100%;\n}\n.table-header[_ngcontent-%COMP%] {\n  width: 90%;\n  margin: auto;\n  text-align: right;\n  margin-bottom: 10px;\n}\n  .mat-form-field-infix {\n  width: 100% !important;\n}\n.form-input[_ngcontent-%COMP%] {\n  padding-right: 5px;\n}\nth.mat-sort-header-sorted[_ngcontent-%COMP%] {\n  color: black;\n}\np[_ngcontent-%COMP%] {\n  display: block;\n  margin-top: 1em;\n  margin-bottom: 1em;\n  margin-left: 0;\n  margin-right: 0;\n}\n.add-btn[_ngcontent-%COMP%], .add-btn[_ngcontent-%COMP%]:focus {\n  position: relative;\n  z-index: 1;\n  min-width: 180px;\n  border: 2px solid #006000;\n  border-radius: 0;\n  color: #FFFFFF;\n  font-size: 1rem;\n  font-weight: bold;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  overflow: hidden;\n  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(0, 0, 0, 0.2);\n  -webkit-transition: all 1s ease;\n  -moz-transition: all 1s ease;\n  -o-transition: all 1s ease;\n  transition: all 1s ease;\n  padding: 10px 20px;\n}\n.add-btn[_ngcontent-%COMP%]:after {\n  content: "";\n  position: absolute;\n  height: 0%;\n  left: 50%;\n  top: 50%;\n  width: 150%;\n  z-index: -1;\n  background: #006000;\n  -moz-transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  -ms-transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  -webkit-transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  -webkit-transition: all 0.75s ease 0s;\n  -moz-transition: all 0.75s ease 0s;\n  -o-transition: all 0.75s ease 0s;\n  transition: all 0.75s ease 0s;\n}\n.add-btn[_ngcontent-%COMP%]:hover {\n  color: #FFFFFF;\n  text-shadow: none;\n}\n.add-btn[_ngcontent-%COMP%]:hover:after {\n  height: 450%;\n}\n.del-btn[_ngcontent-%COMP%], .del-btn[_ngcontent-%COMP%]:focus {\n  position: relative;\n  z-index: 1;\n  min-width: 180px;\n  border: 2px solid #FF0000;\n  border-radius: 0;\n  color: #FFFFFF;\n  font-size: 1rem;\n  font-weight: bold;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  overflow: hidden;\n  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(0, 0, 0, 0.2);\n  -webkit-transition: all 1s ease;\n  -moz-transition: all 1s ease;\n  -o-transition: all 1s ease;\n  transition: all 1s ease;\n  padding: 10px 20px;\n}\n.del-btn[_ngcontent-%COMP%]:after {\n  content: "";\n  position: absolute;\n  height: 0%;\n  left: 50%;\n  top: 50%;\n  width: 150%;\n  z-index: -1;\n  background: #FF0000;\n  -moz-transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  -ms-transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  -webkit-transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  transform: translateX(-50%) translateY(-50%) rotate(-25deg);\n  -webkit-transition: all 0.75s ease 0s;\n  -moz-transition: all 0.75s ease 0s;\n  -o-transition: all 0.75s ease 0s;\n  transition: all 0.75s ease 0s;\n}\n.del-btn[_ngcontent-%COMP%]:hover {\n  color: #FFFFFF;\n  text-shadow: none;\n}\n.del-btn[_ngcontent-%COMP%]:hover:after {\n  height: 450%;\n}\n.row-btn[_ngcontent-%COMP%], .row-btn[_ngcontent-%COMP%]:focus {\n  position: relative;\n  min-width: 100px;\n  background: none;\n  border: none;\n  color: #58afd1;\n  font-size: 1rem;\n  font-weight: bold;\n  text-align: center;\n  text-decoration: none;\n  box-shadow: inset 0 0 0 4px #58afd1;\n  transition: color 0.25s 0.0833333333s;\n  padding: 10px 20px;\n}\n.row-btn[_ngcontent-%COMP%]:before, .row-btn[_ngcontent-%COMP%]:after {\n  content: "";\n  position: absolute;\n  width: 0;\n  height: 0;\n  bottom: 0;\n  right: 0;\n  border: 0 solid transparent;\n  box-sizing: border-box;\n}\n.row-btn[_ngcontent-%COMP%]:before {\n  border-bottom-width: 4px;\n  border-left-width: 4px;\n}\n.row-btn[_ngcontent-%COMP%]:after {\n  border-top-width: 4px;\n  border-right-width: 4px;\n}\n.row-btn[_ngcontent-%COMP%]:hover {\n  color: #642100;\n}\n.row-btn[_ngcontent-%COMP%]:hover:before, .row-btn[_ngcontent-%COMP%]:hover:after {\n  border-color: #642100;\n  transition:\n    border-color 0s,\n    width 0.25s,\n    height 0.25s;\n  width: 100%;\n  height: 100%;\n}\n.row-btn[_ngcontent-%COMP%]:hover:before {\n  transition-delay:\n    0s,\n    0s,\n    0.25s;\n}\n.row-btn[_ngcontent-%COMP%]:hover:after {\n  transition-delay:\n    0s,\n    0.25s,\n    0s;\n}\n.more-link[_ngcontent-%COMP%] {\n  color: blue;\n  cursor: pointer;\n  text-decoration: underline;\n}\n.response-condition[_ngcontent-%COMP%] {\n  word-break: break-word;\n}\n/*# sourceMappingURL=restful.component.css.map */'] });
+var RestfulComponent = _RestfulComponent;
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(RestfulComponent, { className: "RestfulComponent", filePath: "src\\app\\restful\\restful.component.ts", lineNumber: 85 });
+})();
+
 // src/app/app.routes.ts
 var routes = [
   {
@@ -49677,6 +50527,10 @@ var routes = [
   {
     path: "response",
     component: ResponseComponent
+  },
+  {
+    path: "restful",
+    component: RestfulComponent
   },
   { path: "**", redirectTo: "/endpoint" }
 ];
