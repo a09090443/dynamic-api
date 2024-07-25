@@ -243,6 +243,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
             width: '600px',
             data: error.error,
           });
+          event.source.checked = !event.checked;
         }
       );
     } else {

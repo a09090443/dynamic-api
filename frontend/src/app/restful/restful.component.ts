@@ -239,6 +239,7 @@ export class RestfulComponent  implements OnInit, AfterViewInit {
             width: '600px',
             data: error.error.message,
           });
+          event.source.checked = !event.checked;
         }
       );
     } else {
