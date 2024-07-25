@@ -2,7 +2,7 @@ package com.company.controller;
 
 import com.company.dto.CompanyDTO;
 import com.company.dto.CompanyResponseDTO;
-import com.dynamicapi.webservice.BaseWebservice;
+import com.dynamicapi.jarbase.RestfulBase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipe.annotation.ResponseResultBody;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @ResponseResultBody
 @RequestMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CompanyController extends BaseWebservice {
+public class CompanyController extends RestfulBase {
     public CompanyController() {
     }
 

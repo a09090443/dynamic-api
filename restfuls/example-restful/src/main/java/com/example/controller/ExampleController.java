@@ -1,6 +1,6 @@
 package com.example.controller;
 
-import com.dynamicapi.webservice.BaseWebservice;
+import com.dynamicapi.jarbase.RestfulBase;
 import com.example.dto.ExampleDTO;
 import com.example.dto.ExampleResponseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @ResponseResultBody
 @RequestMapping(value = "/example", produces = MediaType.APPLICATION_JSON_VALUE)
-public class ExampleController extends BaseWebservice {
+public class ExampleController extends RestfulBase {
 
     public ExampleController() {
     }

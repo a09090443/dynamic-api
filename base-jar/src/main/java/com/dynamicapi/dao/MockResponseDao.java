@@ -3,7 +3,6 @@ package com.dynamicapi.dao;
 import com.dynamicapi.jdbc.MockResponseJDBC;
 import com.zipe.enums.ResourceEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -14,6 +13,8 @@ import java.util.Map;
 public class MockResponseDao {
 
     private final MockResponseJDBC mockResponseJDBC;
+
+    private String serviceType;
 
     public MockResponseDao(MockResponseJDBC mockResponseJDBC) {
         this.mockResponseJDBC = mockResponseJDBC;
@@ -26,13 +27,10 @@ public class MockResponseDao {
         paramMap.put("publishUri", publishUri);
         paramMap.put("method", method);
         paramMap.put("condition", condition);
+        paramMap.put("serviceType", serviceType);
 
         try {
             return mockResponseJDBC.queryForObject(resource, paramMap, clazz);
-        } catch (IncorrectResultSizeDataAccessException e) {
-            log.error("Error querying for object with publishUri: {}, method: {}, condition: {}. Exception: {}",
-                    publishUri, method, condition, e.getMessage(), e);
-            return null;
         } catch (Exception e) {
             log.error("Unexpected exception querying for object with publishUri: {}, method: {}, condition: {}. Exception: {}",
                     publishUri, method, condition, e.getMessage(), e);
@@ -40,4 +38,7 @@ public class MockResponseDao {
         }
     }
 
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
+    }
 }

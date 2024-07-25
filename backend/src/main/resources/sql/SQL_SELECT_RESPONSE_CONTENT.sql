@@ -4,4 +4,5 @@ WHERE 1 = 1
   AND mr.PUBLISH_URI = :publishUri
   AND mr.METHOD = :method
   AND mr.CONDITION = :condition
+  AND mr.SERVICE_TYPE = :serviceType
   AND mr.IS_ACTIVE = TRUE

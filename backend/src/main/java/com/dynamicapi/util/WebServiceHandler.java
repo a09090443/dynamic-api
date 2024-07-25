@@ -11,6 +11,7 @@ import org.apache.cxf.endpoint.ServerRegistry;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.context.ApplicationContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
@@ -58,7 +59,9 @@ public class WebServiceHandler {
             if (Objects.isNull(classLoader)) {
                 return;
             }
-            classLoader.unloadJarFile(new URL(jarPath));
+            if (new File(context.getEnvironment().getProperty("jar.file.dir") + jarName).exists()) {
+                classLoader.unloadJarFile(new URL(jarPath));
+            }
             classLoader.close();
             ClassLoaderSingletonEnum.INSTANCE.remove(publicUrl + "_" + WEB_SERVICE_PREFIX);
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-package com.dynamicapi.base;
+package com.dynamicapi.jarbase;
 
 import org.springframework.boot.test.context.SpringBootTest;
 

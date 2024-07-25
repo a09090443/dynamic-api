@@ -44,7 +44,7 @@ class ConvertTest {
                          <!--Optional:-->
                          <ser:CompanyRequest>
                             <!--Optional:-->
-                            <com:name>Jen</com:name>
+                            <com:name>Gary</com:name>
                             <!--Optional:-->
                             <com:taxId>123456789</com:taxId>
                          </ser:CompanyRequest>

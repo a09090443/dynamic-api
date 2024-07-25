@@ -5,7 +5,7 @@ import com.company.dto.CompanyResponse;
 import com.company.dto.Employee;
 import com.company.dto.GetCompanyResponse;
 import com.company.webservice.CompanyWebService;
-import com.dynamicapi.webservice.BaseWebservice;
+import com.dynamicapi.jarbase.WebserviceBase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipe.util.SoapUtil;
 import com.zipe.util.XmlUtil;
@@ -23,7 +23,7 @@ import java.io.IOException;
         endpointInterface = "com.company.webservice.CompanyWebService")
 //服務接口全路徑, 指定做SEI（Service EndPoint Interface）服務端點接口
 @Component
-public class CompanyWebServiceImpl extends BaseWebservice implements CompanyWebService {
+public class CompanyWebServiceImpl extends WebserviceBase implements CompanyWebService {
 
     @Override
     public CompanyResponse getCompany(CompanyRequest request) throws IOException, SOAPException, TransformerException {
