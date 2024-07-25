@@ -1,11 +1,14 @@
 package com.dynamicapi.service.impl;
 
 import com.dynamicapi.entity.JarFileEntity;
+import com.dynamicapi.enums.JarFileStatus;
 import com.dynamicapi.exception.WebserviceException;
 import com.dynamicapi.repository.JarFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+
+import java.io.File;
 
 public abstract class BaseService {
     protected ApplicationContext context;
@@ -20,6 +23,18 @@ public abstract class BaseService {
 
     protected String getJarFilePath(String fileName) {
         return "file:" + jarFileDir + fileName;
+    }
+
+    public void updateJarFileStatus(String fileId, JarFileStatus status) {
+        JarFileEntity jarFileEntity = getJarFile(fileId);
+        jarFileEntity.setStatus(status);
+        jarFileRepository.save(jarFileEntity);
+        if (status.equals(JarFileStatus.DELETED)) {
+            File file = new File(jarFileDir + jarFileEntity.getName());
+            if (file.exists()) {
+                file.delete();
+            }
+        }
     }
 
     @Autowired

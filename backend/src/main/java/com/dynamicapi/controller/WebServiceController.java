@@ -3,7 +3,7 @@ package com.dynamicapi.controller;
 import com.dynamicapi.dto.EndpointDTO;
 import com.dynamicapi.dto.EndpointResponseDTO;
 import com.dynamicapi.dto.WebServiceRequestDTO;
-import com.dynamicapi.exception.WebserviceException;
+import com.dynamicapi.enums.JarFileStatus;
 import com.dynamicapi.service.CommonService;
 import com.dynamicapi.service.DynamicWebService;
 import com.zipe.annotation.ResponseResultBody;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -90,19 +89,37 @@ public class WebServiceController {
     @PostMapping("/updateWebService")
     public Result<EndpointResponseDTO> updateWebService(@RequestBody WebServiceRequestDTO request) {
         log.info("Update web service: {}", request);
-        EndpointDTO endpointDTO;
-        EndpointDTO newEndpointDTO = new EndpointDTO();
+        StringBuilder errorMessage = new StringBuilder();
 
-        endpointDTO = Optional.ofNullable(
-                dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new WebserviceException("Endpoint not found"));
-        dynamicWebService.disabledWebService(endpointDTO.getPublishUri(), false);
+        if (StringUtils.isBlank(request.getPublishUri())) {
+            errorMessage.append("PublishUri is blank; ");
+        }
+        if (StringUtils.isBlank(request.getBeanName())) {
+            errorMessage.append("BeanName is blank; ");
+        }
+        if (StringUtils.isBlank(request.getJarFileId())) {
+            errorMessage.append("JarFileId is blank; ");
+        }
+        if (StringUtils.isBlank(request.getClassPath())) {
+            errorMessage.append("ClassPath is blank; ");
+        }
+
+        if (!errorMessage.isEmpty()) {
+            log.error(errorMessage.toString());
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+
+        EndpointDTO newEndpointDTO = new EndpointDTO();
+        EndpointDTO endpointDTO = dynamicWebService.getEndpoint(request.getId(), null);
+        dynamicWebService.disabledWebService(endpointDTO);
 
         BeanUtils.copyProperties(request, newEndpointDTO);
         newEndpointDTO.setIsActive(false);
         dynamicWebService.updateWebService(newEndpointDTO);
+        dynamicWebService.updateJarFileStatus(endpointDTO.getJarFileId(), JarFileStatus.INACTIVE);
 
         if (!endpointDTO.getPublishUri().equals(newEndpointDTO.getPublishUri())) {
-            dynamicWebService.removeWebService(endpointDTO.getPublishUri());
+            dynamicWebService.removeWebService(endpointDTO.getPublishUri(), endpointDTO.getJarFileId());
             commonService.updateMockResponse(endpointDTO.getPublishUri(), newEndpointDTO.getPublishUri());
         }
 
@@ -113,8 +130,11 @@ public class WebServiceController {
 
     @DeleteMapping("/removeWebService")
     public Result<String> removeWebService(@RequestBody String[] publishUris) {
+        EndpointDTO endpointDTO;
         for (String publishUri : publishUris) {
-            dynamicWebService.removeWebService(publishUri);
+            endpointDTO = dynamicWebService.getEndpoint(null, publishUri);
+            dynamicWebService.disabledWebService(endpointDTO);
+            dynamicWebService.removeWebService(publishUri, endpointDTO.getJarFileId());
         }
         return Result.success(StringUtils.EMPTY);
     }
@@ -125,7 +145,8 @@ public class WebServiceController {
             if (isActive) {
                 dynamicWebService.enabledWebService(publishUri);
             } else {
-                dynamicWebService.disabledWebService(publishUri, false);
+                EndpointDTO endpointDTO = dynamicWebService.getEndpoint(null, publishUri);
+                dynamicWebService.disabledWebService(endpointDTO);
             }
         }
         return Result.success(StringUtils.EMPTY);

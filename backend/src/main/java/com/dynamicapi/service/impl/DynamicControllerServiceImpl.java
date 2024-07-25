@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.List;
@@ -90,10 +89,15 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
     }
 
     @Override
-    public ControllerDTO getController(String publishUri) {
+    public ControllerDTO getController(String id, String publishUri) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(ControllerJDBC.SQL_SELECT_CONTROLLER_RELATED_JAR_FILE);
         Conditions conditions = new Conditions();
-        conditions.and().equal("PUBLISH_URI", publishUri);
+        if (StringUtils.isNotBlank(id)) {
+            conditions.and().equal("e.ID", id);
+        }
+        if (StringUtils.isNotBlank(publishUri)) {
+            conditions.and().equal("e.PUBLISH_URI", publishUri);
+        }
         ControllerModel controllerModel = controllerJDBC.queryForBean(resource, conditions, ControllerModel.class);
         ControllerDTO dto = new ControllerDTO();
         BeanUtils.copyProperties(controllerModel, dto);
@@ -124,9 +128,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
 
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public ControllerDTO disabledController(String publishUri) {
-        ControllerDTO controllerDTO = getController(publishUri);
-
+    public ControllerDTO disabledController(ControllerDTO controllerDTO) {
         try {
             ControllerEntity controllerEntity = new ControllerEntity();
             BeanUtils.copyProperties(controllerDTO, controllerEntity);
@@ -134,7 +136,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
             controllerEntity.setIsActive(Boolean.FALSE);
             controllerRepository.save(controllerEntity);
 
-            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publishUri);
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(controllerDTO.getPublishUri());
             if (Objects.isNull(classLoader)) {
                 return controllerDTO;
             }
@@ -147,7 +149,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
                         .ifPresent(requestMappingHandlerMapping::unregisterMapping);
             }
             try {
-                ClassLoaderSingletonEnum.INSTANCE.remove(publishUri);
+                ClassLoaderSingletonEnum.INSTANCE.remove(controllerDTO.getPublishUri());
                 classLoader.unloadJarFile(new URL(getJarFilePath(controllerDTO.getJarFileName())));
                 classLoader.close();
             } catch (Exception e) {
@@ -160,18 +162,6 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
         return controllerDTO;
     }
 
-    @Override
-    public void updateJarFileStatus(String fileId, JarFileStatus status) {
-        JarFileEntity jarFileEntity = getJarFile(fileId);
-        jarFileEntity.setStatus(status);
-        jarFileRepository.save(jarFileEntity);
-        if (status.equals(JarFileStatus.DELETED)) {
-            File file = new File(jarFileDir + jarFileEntity.getName());
-            if (file.exists()) {
-                file.delete();
-            }
-        }
-    }
 
     @Override
     @Transactional(rollbackOn = Exception.class)

@@ -11,13 +11,13 @@ public interface DynamicControllerService {
 
     List<ControllerDTO> getControllers();
 
-    ControllerDTO getController(String id);
+    ControllerDTO getController(String id, String publishUri);
 
     void updateController(ControllerDTO controllerDTO);
 
     void enabledController(String publishUri);
 
-    ControllerDTO disabledController(String publishUri);
+    ControllerDTO disabledController(ControllerDTO controllerDTO);
 
     void updateJarFileStatus(String fileId, JarFileStatus status);
 

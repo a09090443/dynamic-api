@@ -16,6 +16,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
+import org.apache.poi.util.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -61,14 +62,19 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
     }
 
     @Override
-    public EndpointDTO getEndpoint(String id) {
-        EndpointEntity endpointEntity = endpointRepository.findByUuId(id);
-        if (endpointEntity != null) {
-            EndpointDTO dto = new EndpointDTO();
-            BeanUtils.copyProperties(endpointEntity, dto);
-            return dto;
+    public EndpointDTO getEndpoint(String id, String publishUri) {
+        ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
+        Conditions conditions = new Conditions();
+        if (StringUtil.isNotBlank(id)) {
+            conditions.and().equal("e.ID", id);
         }
-        return null;
+        if (StringUtil.isNotBlank(publishUri)) {
+            conditions.and().equal("e.PUBLISH_URI", publishUri);
+        }
+        WebServiceModel webServiceModel = endPointJDBC.queryForBean(resource, conditions, WebServiceModel.class);
+        EndpointDTO dto = new EndpointDTO();
+        BeanUtils.copyProperties(webServiceModel, dto);
+        return dto;
     }
 
     @Override
@@ -125,48 +131,28 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
     }
 
     @Override
-    public void disabledWebService(String publicUri, Boolean isDeleted) {
-        EndpointEntity endpointEntity = endpointRepository.findById(publicUri).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
-        JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
+    public EndpointDTO disabledWebService(EndpointDTO endpointDTO) {
         WebServiceHandler registerWebService = new WebServiceHandler();
         try {
-            registerWebService.removeWebService(publicUri, bus, context, jarFileEntity.getName());
+            registerWebService.removeWebService(endpointDTO.getPublishUri(), bus, context, endpointDTO.getJarFileName());
+            endpointDTO.setIsActive(Boolean.FALSE);
+            EndpointEntity endpointEntity = new EndpointEntity();
+            BeanUtils.copyProperties(endpointDTO, endpointEntity);
+            endpointEntity.setUuId(endpointDTO.getId());
             endpointEntity.setIsActive(Boolean.FALSE);
-            jarFileEntity.setStatus(JarFileStatus.INACTIVE);
-            jarFileRepository.save(jarFileEntity);
-            if (Boolean.TRUE.equals(isDeleted)) {
-                endpointRepository.delete(endpointEntity);
-            } else {
-                endpointRepository.save(endpointEntity);
-            }
+            endpointRepository.save(endpointEntity);
         } catch (Exception e) {
-            log.error("Web Service 關閉服務:{}, 失敗", endpointEntity.getBeanName(), e);
+            log.error("Web Service 關閉服務:{}, 失敗", endpointDTO.getBeanName(), e);
             throw new WebserviceException("關閉 Webservice 失敗");
         }
+        return endpointDTO;
     }
 
     @Override
-    public void disabledJarFile(String publishUrl) {
-        ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        Conditions conditions = new Conditions();
-        conditions.equal("e.PUBLISH_URL", publishUrl);
-        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
-        webServiceModelList.forEach(endpoint -> {
-            try {
-                JarFileEntity jarFileEntity = getJarFile(endpoint.getJarFileId());
-                jarFileEntity.setStatus(JarFileStatus.INACTIVE);
-                jarFileRepository.save(jarFileEntity);
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                throw new WebserviceException("關閉 Jar 檔案失敗");
-            }
-        });
-    }
-
-    @Override
-    public void removeWebService(String publishUri) {
+    public void removeWebService(String publishUri, String jarFileId) {
         try {
-            this.disabledWebService(publishUri, true);
+            endpointRepository.deleteById(publishUri);
+            updateJarFileStatus(jarFileId, JarFileStatus.DELETED);
         } catch (Exception e) {
             log.error("移除 Web Service 失敗:{}", e.getMessage(), e);
             throw new WebserviceException("移除 Web Service 失敗");

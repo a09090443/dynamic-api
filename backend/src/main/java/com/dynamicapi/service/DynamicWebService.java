@@ -1,13 +1,14 @@
 package com.dynamicapi.service;
 
 import com.dynamicapi.dto.EndpointDTO;
+import com.dynamicapi.enums.JarFileStatus;
 
 import java.util.List;
 
 public interface DynamicWebService {
     List<EndpointDTO> getEndpoints();
 
-    EndpointDTO getEndpoint(String id);
+    EndpointDTO getEndpoint(String id, String publishUri);
 
     void saveWebService(EndpointDTO endpointDTO);
 
@@ -15,9 +16,9 @@ public interface DynamicWebService {
 
     void enabledWebService(String publishUri);
 
-    void disabledWebService(String publicUri, Boolean isDeleted);
+    EndpointDTO disabledWebService(EndpointDTO endpointDTO);
 
-    void disabledJarFile(String publishUri);
+    void updateJarFileStatus(String fileId, JarFileStatus status);
 
-    void removeWebService(String publishUri);
+    void removeWebService(String publishUri, String jarFileId);
 }
