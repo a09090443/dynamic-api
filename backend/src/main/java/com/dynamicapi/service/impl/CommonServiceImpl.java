@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +54,7 @@ public class CommonServiceImpl implements CommonService {
         this.mockResponseJDBC = mockResponseJDBC;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public JarFileResponseDTO uploadJarFile(InputStream inputStream) throws IOException {
         // 確保上傳目錄存在
@@ -87,7 +89,7 @@ public class CommonServiceImpl implements CommonService {
         } else if (StringUtils.isBlank(request.getCondition())) {
             throw new WebserviceException("Condition is required");
         }
-        MockResponseEntity mockResponseEntity = mockResponseRepository.findByIdPublishUriAndIdMethodAndIdConditionAndIsActive(request.getPublishUri(), request.getMethod(), request.getCondition(), Boolean.TRUE);
+        MockResponseEntity mockResponseEntity = mockResponseRepository.findByIdPublishUriAndIdMethodAndIdConditionAndIsActiveAndIdServiceType(request.getPublishUri(), request.getMethod(), request.getCondition(), Boolean.TRUE, request.getServiceType());
         return Optional.ofNullable(mockResponseEntity).map(MockResponseEntity::getResponseContent).orElse("");
     }
 
@@ -96,7 +98,7 @@ public class CommonServiceImpl implements CommonService {
         if (StringUtils.isBlank(request.getPublishUri())) {
             throw new WebserviceException("Publish URL is required");
         }
-        List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByIdPublishUri(request.getPublishUri());
+        List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByIdPublishUriAndIdServiceType(request.getPublishUri(), request.getServiceType());
         return mockResponseEntity.stream().map(mockResponse -> {
             MockResponseResponseDTO response = new MockResponseResponseDTO();
             response.setId(mockResponse.getUuId());
@@ -109,6 +111,7 @@ public class CommonServiceImpl implements CommonService {
         }).toList();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveMockResponse(MockResponseRequestDTO request) {
         MockResponseEntity mockResponseEntity = new MockResponseEntity();
@@ -116,12 +119,14 @@ public class CommonServiceImpl implements CommonService {
         mockResponseEntity.getId().setPublishUri(request.getPublishUri());
         mockResponseEntity.getId().setMethod(request.getMethod());
         mockResponseEntity.getId().setCondition(request.getCondition());
+        mockResponseEntity.getId().setServiceType(request.getServiceType());
         mockResponseEntity.setResponseContent(request.getResponseContent());
         mockResponseEntity.setIsActive(Boolean.FALSE);
         mockResponseRepository.save(mockResponseEntity);
         request.setId(mockResponseEntity.getUuId());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMockResponse(MockResponseRequestDTO request) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_RESPONSE);
@@ -144,6 +149,7 @@ public class CommonServiceImpl implements CommonService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMockResponse(String oriPublishUri, String newPublishUri) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_PUBLISH_URI_FOR_RESPONSE);
@@ -161,6 +167,7 @@ public class CommonServiceImpl implements CommonService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteMockResponse(String id) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_DEL_RESPONSE);
@@ -175,6 +182,7 @@ public class CommonServiceImpl implements CommonService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void switchMockResponse(String id, Boolean status) {
         MockResponseEntity mockResponseEntity = mockResponseRepository.findByUuId(id);

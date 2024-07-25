@@ -21,5 +21,11 @@ export interface Response {
   method: string,
   condition: string,
   responseContent: string,
+  serviceType: ServiceType,
   isActive: boolean
+}
+
+export enum ServiceType {
+  RESTFUL = 'RESTFUL',
+  ENDPOINT = 'ENDPOINT'
 }

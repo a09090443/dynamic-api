@@ -17,15 +17,17 @@ import java.util.Objects;
 
 @Slf4j
 public class WebServiceHandler {
+    private static final String WEB_SERVICE_PREFIX = "webservice";
+
     public void registerWebService(EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws IOException, ClassNotFoundException {
 
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + fileName;
         DynamicBeanUtil dynamicBeanUtil = new DynamicBeanUtil(context);
         try {
-            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(endpointDTO.getPublishUri());
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(endpointDTO.getPublishUri() + "_" + WEB_SERVICE_PREFIX);
             if (Objects.isNull(classLoader)) {
                 classLoader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
-                ClassLoaderSingletonEnum.INSTANCE.put(endpointDTO.getPublishUri(), classLoader);
+                ClassLoaderSingletonEnum.INSTANCE.put(endpointDTO.getPublishUri() + "_" + WEB_SERVICE_PREFIX, classLoader);
             }
             Class<?> loadedClass = classLoader.loadClass(endpointDTO.getClassPath());
             this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
@@ -52,13 +54,13 @@ public class WebServiceHandler {
                 });
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + jarName;
         try {
-            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publicUrl);
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publicUrl + "_" + WEB_SERVICE_PREFIX);
             if (Objects.isNull(classLoader)) {
                 return;
             }
             classLoader.unloadJarFile(new URL(jarPath));
             classLoader.close();
-            ClassLoaderSingletonEnum.INSTANCE.remove(publicUrl);
+            ClassLoaderSingletonEnum.INSTANCE.remove(publicUrl + "_" + WEB_SERVICE_PREFIX);
         } catch (Exception e) {
             log.error("Web Service 移除服務:{}, 失敗", publicUrl, e);
             throw new WebserviceException("移除服務失敗");

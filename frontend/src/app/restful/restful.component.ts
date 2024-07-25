@@ -14,7 +14,7 @@ import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "
 import {HeaderComponent} from "../header/header.component";
 import {HttpClientModule} from "@angular/common/http";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
-import {Restful} from "../model/models";
+import {Restful, ServiceType} from "../model/models";
 import {SelectionModel} from "@angular/cdk/collections";
 import {Router} from "@angular/router";
 import {RestfulService} from "../service/restful.service";
@@ -218,7 +218,7 @@ export class RestfulComponent  implements OnInit, AfterViewInit {
 
   responseList(row: Restful) {
     console.log(row);
-    this.router.navigate(['/response', {publishUri: row.publishUri}]).then(r => console.log(r));
+    this.router.navigate(['/response', {publishUri: row.publishUri, serviceType: ServiceType.RESTFUL}]).then(r => console.log(r));
   }
 
   addRow(newRestful: Restful) {

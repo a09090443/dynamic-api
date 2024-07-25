@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from "@angular/common/http";
 import {catchError, firstValueFrom, Observable, throwError} from "rxjs";
-import {Response} from "../model/models";
+import {Response, ServiceType} from "../model/models";
 import { config } from '../config';
 
 @Injectable({
@@ -12,8 +12,8 @@ export class ResponseService {
   constructor(private http: HttpClient) {
   }
 
-  fetchData(publishUri: string): Promise<any> {
-    const body = {publishUri: publishUri};
+  fetchData(publishUri: string, serviceType: ServiceType): Promise<any> {
+    const body = {publishUri: publishUri, serviceType:serviceType};
     return firstValueFrom(this.http.post(`${config.apiUrl}/dynamic-api/common/getResponseList`, body));
   }
 

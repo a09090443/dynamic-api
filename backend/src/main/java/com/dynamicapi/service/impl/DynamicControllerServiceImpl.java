@@ -38,6 +38,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class DynamicControllerServiceImpl extends BaseService implements DynamicControllerService {
+    private static final String CONTROLLER_PREFIX = "controller";
 
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
 
@@ -136,7 +137,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
             controllerEntity.setIsActive(Boolean.FALSE);
             controllerRepository.save(controllerEntity);
 
-            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(controllerDTO.getPublishUri());
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(controllerDTO.getPublishUri() + "_" + CONTROLLER_PREFIX);
             if (Objects.isNull(classLoader)) {
                 return controllerDTO;
             }
@@ -149,7 +150,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
                         .ifPresent(requestMappingHandlerMapping::unregisterMapping);
             }
             try {
-                ClassLoaderSingletonEnum.INSTANCE.remove(controllerDTO.getPublishUri());
+                ClassLoaderSingletonEnum.INSTANCE.remove(controllerDTO.getPublishUri() + "_" + CONTROLLER_PREFIX);
                 classLoader.unloadJarFile(new URL(getJarFilePath(controllerDTO.getJarFileName())));
                 classLoader.close();
             } catch (Exception e) {
@@ -178,10 +179,10 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
     @Override
     public void startUpControllerProcess(String publishUri, String classPath, String jarPath) {
         try {
-            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publishUri);
+            CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publishUri + "_" + CONTROLLER_PREFIX);
             if (Objects.isNull(classLoader)) {
                 classLoader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
-                ClassLoaderSingletonEnum.INSTANCE.put(publishUri, classLoader);
+                ClassLoaderSingletonEnum.INSTANCE.put(publishUri + "_" + CONTROLLER_PREFIX, classLoader);
             }
             Class<?> loadedClass = classLoader.loadClass(classPath);
             if (loadedClass.isAnnotationPresent(RestController.class)) {

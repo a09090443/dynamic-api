@@ -1,5 +1,6 @@
 package com.dynamicapi.dto;
 
+import com.dynamicapi.enums.ServiceType;
 import lombok.Data;
 
 @Data
@@ -14,6 +15,8 @@ public class MockResponseRequestDTO {
     private String condition;
 
     private String responseContent;
+
+    private ServiceType serviceType;
 
     private Boolean status;
 }

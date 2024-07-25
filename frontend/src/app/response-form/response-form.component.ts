@@ -12,7 +12,7 @@ import {
   MatDialogRef,
   MatDialogTitle
 } from "@angular/material/dialog";
-import {Response} from "../model/models";
+import {Response, ServiceType} from "../model/models";
 import {ResponseService} from "../service/response.service";
 import {MatCheckbox} from "@angular/material/checkbox";
 
@@ -43,7 +43,6 @@ export class ResponseFormComponent {
   message: string | null = null;
   messageType: 'success' | 'error' | null = null;
   countdown: number | null = null;
-  isResponseContentValidJson = true;
 
   @Output() responseSaved = new EventEmitter<Response>();
 
@@ -66,6 +65,7 @@ export class ResponseFormComponent {
       condition: '',
       responseContent: '',
       isActive: false,
+      serviceType: ServiceType.ENDPOINT
     };
 
     this.form = this.fb.group({
@@ -75,6 +75,7 @@ export class ResponseFormComponent {
       condition: [data?.condition || defaultData.condition, Validators.required],
       responseContent: [data?.responseContent || defaultData.responseContent],
       isActive: [data?.isActive || defaultData.isActive],
+      serviceType: [data?.serviceType],
     });
   }
 

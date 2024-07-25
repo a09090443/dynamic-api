@@ -1,7 +1,10 @@
 package com.dynamicapi.entity;
 
+import com.dynamicapi.enums.ServiceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +24,8 @@ public class MockResponseId implements Serializable {
 
     @Column(name = "CONDITION", nullable = false)
     private String condition;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "SERVICE_TYPE", nullable = false)
+    private ServiceType serviceType;
 }

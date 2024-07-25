@@ -11,7 +11,7 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {SelectionModel} from "@angular/cdk/collections";
 import {MatDialog, MatDialogModule} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
-import {Response} from "../model/models";
+import {Response, ServiceType} from "../model/models";
 import {ResponseService} from "../service/response.service";
 import {ResponseFormComponent} from "../response-form/response-form.component";
 import {FormsModule} from "@angular/forms";
@@ -102,6 +102,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
   publishUri: string = '';
+  serviceType: ServiceType | undefined;
 
   dataSource: MatTableDataSource<Response> = new MatTableDataSource<Response>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
@@ -117,13 +118,15 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       const publishUri = params['publishUri'];
-      this.fetchDataFromService(publishUri);
+      const serviceType = params['serviceType'];
+      this.fetchDataFromService(publishUri, serviceType);
     });
   }
 
-  fetchDataFromService(publishUri: string): void {
+  fetchDataFromService(publishUri: string, serviceType: ServiceType): void {
     this.publishUri = publishUri;
-    this.responseService.fetchData(publishUri).then(
+    this.serviceType = serviceType;
+    this.responseService.fetchData(publishUri, serviceType).then(
       (response: any) => {
         console.log('Fetched data:', response.data);
         this.dataSource = new MatTableDataSource<Response>(response.data);
@@ -217,13 +220,14 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   }
 
   openResponseForm(input?: Response | string) {
-    let dialogData: { publishUri?: string } = {};
+    let dialogData: { publishUri?: string, serviceType?: ServiceType } = {};
 
     if (typeof input === 'string') {
       dialogData.publishUri = input;
     } else if (input && typeof input === 'object') {
       dialogData = input;
     }
+    dialogData.serviceType = this.serviceType;
 
     const dialogRef = this.dialog.open(ResponseFormComponent, {
       width: '1000px',

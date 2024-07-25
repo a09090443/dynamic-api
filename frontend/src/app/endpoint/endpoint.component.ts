@@ -14,7 +14,7 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatButtonModule} from "@angular/material/button";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {HttpClientModule} from "@angular/common/http";
-import {Endpoint} from "../model/models";
+import {Endpoint, ServiceType} from "../model/models";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {EndpointService} from "../service/endpoint.service";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
@@ -222,7 +222,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
 
   responseList(row: Endpoint) {
     console.log(row);
-    this.router.navigate(['/response', {publishUri: row.publishUri}]).then(r => console.log(r));
+    this.router.navigate(['/response', {publishUri: row.publishUri, serviceType: ServiceType.ENDPOINT}]).then(r => console.log(r));
   }
 
   addRow(newEndpoint: Endpoint) {
