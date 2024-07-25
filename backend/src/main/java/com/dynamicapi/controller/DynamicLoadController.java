@@ -109,6 +109,10 @@ public class DynamicLoadController {
             commonService.updateMockResponse(originalDTO.getPublishUri(), newControllerDTO.getPublishUri());
         }
 
+        if (!originalDTO.getJarFileId().equals(newControllerDTO.getJarFileId())) {
+            dynamicControllerService.updateJarFileStatus(originalDTO.getJarFileId(), JarFileStatus.DELETED);
+        }
+
         ControllerResponseDTO response = new ControllerResponseDTO();
         BeanUtils.copyProperties(newControllerDTO, response);
         return Result.success(response);

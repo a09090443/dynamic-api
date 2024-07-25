@@ -123,6 +123,9 @@ public class WebServiceController {
             commonService.updateMockResponse(endpointDTO.getPublishUri(), newEndpointDTO.getPublishUri());
         }
 
+        if (!endpointDTO.getJarFileId().equals(newEndpointDTO.getJarFileId())) {
+            dynamicWebService.updateJarFileStatus(endpointDTO.getJarFileId(), JarFileStatus.DELETED);
+        }
         EndpointResponseDTO response = new EndpointResponseDTO();
         BeanUtils.copyProperties(newEndpointDTO, response);
         return Result.success(response);
