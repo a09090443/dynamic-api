@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @ResponseResultBody
-@RequestMapping(value = "/test", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/example", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ExampleController extends BaseWebservice {
 
     public ExampleController() {
