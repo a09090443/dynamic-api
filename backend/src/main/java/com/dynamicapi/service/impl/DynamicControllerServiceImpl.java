@@ -149,13 +149,9 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
                 Optional.ofNullable(mappingInfo)
                         .ifPresent(requestMappingHandlerMapping::unregisterMapping);
             }
-            try {
-                ClassLoaderSingletonEnum.INSTANCE.remove(controllerDTO.getPublishUri() + "_" + CONTROLLER_PREFIX);
-                classLoader.unloadJarFile(new URL(getJarFilePath(controllerDTO.getJarFileName())));
-                classLoader.close();
-            } catch (Exception e) {
-                log.error("Controller 卸載Jar:{}, 失敗", getJarFilePath(controllerDTO.getJarFileName()), e);
-            }
+            ClassLoaderSingletonEnum.INSTANCE.remove(controllerDTO.getPublishUri() + "_" + CONTROLLER_PREFIX);
+            classLoader.unloadJarFile(new URL(getJarFilePath(controllerDTO.getJarFileName())));
+            classLoader.close();
         } catch (Exception e) {
             log.error("Controller 卸載服務:{}, 失敗", controllerDTO.getClassPath(), e);
             throw new ControllerException("Controller 卸載服務失敗", e);
@@ -182,9 +178,14 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
             CustomClassLoader classLoader = ClassLoaderSingletonEnum.INSTANCE.get(publishUri + "_" + CONTROLLER_PREFIX);
             if (Objects.isNull(classLoader)) {
                 classLoader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
-                ClassLoaderSingletonEnum.INSTANCE.put(publishUri + "_" + CONTROLLER_PREFIX, classLoader);
             }
-            Class<?> loadedClass = classLoader.loadClass(classPath);
+            Class<?> loadedClass = null;
+            try {
+                loadedClass = classLoader.loadClass(classPath);
+            } catch (ClassNotFoundException e) {
+                throw new ControllerException("無法讀取 ClassPath:" + classPath);
+            }
+
             if (loadedClass.isAnnotationPresent(RestController.class)) {
                 Object controllerInstance = context.getAutowireCapableBeanFactory().createBean(loadedClass);
                 RequestMapping classRequestMapping = loadedClass.getAnnotation(RequestMapping.class);
@@ -198,6 +199,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
                     RequestMappingInfo mappingInfo = getMappingForMethod(method, routePath);
                     Optional.ofNullable(mappingInfo).ifPresent(info -> requestMappingHandlerMapping.registerMapping(info, controllerInstance, method));
                 }
+                ClassLoaderSingletonEnum.INSTANCE.put(publishUri + "_" + CONTROLLER_PREFIX, classLoader);
             }
         } catch (Exception e) {
             log.error("Controller 註冊服務:{}, 失敗", publishUri, e);
