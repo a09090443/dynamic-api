@@ -117,14 +117,9 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
         ControllerEntity controllerEntity = controllerRepository.findById(publishUri).orElseThrow(() -> new ControllerException("找不到對應的 Controller"));
         JarFileEntity jarFileEntity = getJarFile(controllerEntity.getJarFileId());
 
-        try {
-            this.startUpControllerProcess(controllerEntity.getPublishUri(), controllerEntity.getClassPath(), getJarFilePath(jarFileEntity.getName()));
-            controllerEntity.setIsActive(Boolean.TRUE);
-            controllerRepository.save(controllerEntity);
-        } catch (Exception e) {
-            log.error("Controller 註冊服務:{}, 失敗", publishUri, e);
-            throw new ControllerException(e.getMessage(), e);
-        }
+        this.startUpControllerProcess(controllerEntity.getPublishUri(), controllerEntity.getClassPath(), getJarFilePath(jarFileEntity.getName()));
+        controllerEntity.setIsActive(Boolean.TRUE);
+        controllerRepository.save(controllerEntity);
     }
 
     @Override
@@ -203,7 +198,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
             }
         } catch (Exception e) {
             log.error("Controller 註冊服務:{}, 失敗", publishUri, e);
-            throw new ControllerException(e.getMessage());
+            throw new ControllerException(e.getMessage(), e);
         }
     }
 

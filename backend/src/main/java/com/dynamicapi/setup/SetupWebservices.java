@@ -49,6 +49,8 @@ public class SetupWebservices implements SmartLifecycle {
                 jarFileEntity.set(jarFileRepository.findById(entity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案")));
                 registerWebService.registerWebService(endpointDTO, context, jarFileEntity.get().getName());
             } catch (Exception e) {
+                entity.setIsActive(Boolean.FALSE);
+                endpointRepository.save(entity);
                 log.error("Web Service 註冊服務:{}, 失敗", entity.getBeanName(), e);
             }
         }));

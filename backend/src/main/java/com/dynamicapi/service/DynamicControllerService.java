@@ -3,6 +3,7 @@ package com.dynamicapi.service;
 import com.dynamicapi.dto.ControllerDTO;
 import com.dynamicapi.enums.JarFileStatus;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface DynamicControllerService {
@@ -23,5 +24,5 @@ public interface DynamicControllerService {
 
     void removeController(String publishUri, String jarFileId);
 
-    void startUpControllerProcess(String publishUri, String classPath, String jarPath);
+    void startUpControllerProcess(String publishUri, String classPath, String jarPath) throws IOException;
 }

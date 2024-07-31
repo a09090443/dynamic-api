@@ -38,6 +38,7 @@ public class WebServiceHandler {
             log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointDTO.getBeanName(), endpointDTO.getPublishUri());
         } catch (Exception e) {
             log.error("Web Service 註冊服務:{}, 失敗", endpointDTO.getBeanName(), e);
+            ClassLoaderSingletonEnum.INSTANCE.remove(endpointDTO.getPublishUri() + "_" + WEB_SERVICE_PREFIX);
             throw new WebserviceException("Web Service 註冊服務失敗");
         }
     }
