@@ -47,4 +47,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: mappings
+        include: custom-api-mappings
