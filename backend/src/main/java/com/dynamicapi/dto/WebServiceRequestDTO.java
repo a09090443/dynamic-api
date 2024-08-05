@@ -17,4 +17,10 @@ public class WebServiceRequestDTO {
     private String jarFileName;
 
     private Boolean isActive;
+
+    private String wsdlPath;
+
+    private String outputDir;
+
+    private String zipFilePath;
 }

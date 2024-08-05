@@ -29,6 +29,8 @@ dependencies {
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     implementation 'com.h2database:h2:2.2.220'
     implementation 'org.flywaydb:flyway-core:10.14.0'
+    implementation 'org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws:4.0.0'
+    implementation 'org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:4.0.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'

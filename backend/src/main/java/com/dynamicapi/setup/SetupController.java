@@ -5,11 +5,9 @@ import com.dynamicapi.entity.JarFileEntity;
 import com.dynamicapi.repository.ControllerRepository;
 import com.dynamicapi.repository.JarFileRepository;
 import com.dynamicapi.service.DynamicControllerService;
-import com.dynamicapi.util.BeanRegistrationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -55,20 +53,6 @@ public class SetupController implements SmartLifecycle {
                 log.error("Controller 註冊服務:{}, 失敗", controller.getPublishUri(), e);
             }
         }));
-        AnnotationConfigApplicationContext annoScan = new AnnotationConfigApplicationContext();
-        String[] basePackages = {"com.company"};
-        try {
-            // 使用工具类扫描并注册 Bean
-            BeanRegistrationUtil.scanAndRegisterBeans(basePackages, annoScan);
-
-            // 刷新上下文
-            annoScan.refresh();
-
-            // 使用 context 获取 Beans
-            // MyBean myBean = context.getBean(MyBean.class);
-        } catch (IllegalStateException e) {
-            System.err.println("Failed to register beans: " + e.getMessage());
-        }
     }
 
     @Override

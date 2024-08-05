@@ -6,13 +6,17 @@ import com.dynamicapi.dto.WebServiceRequestDTO;
 import com.dynamicapi.enums.JarFileStatus;
 import com.dynamicapi.service.CommonService;
 import com.dynamicapi.service.DynamicWebService;
+import com.dynamicapi.util.Wsdl2JavaUtil;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
 import com.zipe.enums.ResultStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -155,4 +159,20 @@ public class WebServiceController {
         return Result.success(StringUtils.EMPTY);
     }
 
+    @PostMapping("/genWsdlObj")
+    public ResponseEntity<byte[]> genWsdlObj(@RequestBody WebServiceRequestDTO request) {
+
+        byte[] zipContent = Wsdl2JavaUtil.generateJavaFromWsdl(request.getWsdlPath(), null, request.getOutputDir());
+
+        if (zipContent == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generated_classes.zip");
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        headers.setContentLength(zipContent.length);
+
+        return new ResponseEntity<>(zipContent, headers, HttpStatus.OK);
+
+    }
 }
