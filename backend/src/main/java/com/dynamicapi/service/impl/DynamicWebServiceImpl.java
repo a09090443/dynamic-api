@@ -175,25 +175,29 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
     }
 
     @Override
-    public byte[] generateWsdlToObjects(String wsdlUrl, MultipartFile wsdlFile, String packageName) throws IOException {
+    public byte[] generateWsdlToObjects(String wsdlUrl, MultipartFile wsdlFile, String packageName) {
         String wsdlContent;
-        if (wsdlUrl != null && !wsdlUrl.isEmpty()) {
-            // 從 URL 讀取 WSDL 內容
-            wsdlContent = fetchWsdlFromUrl(wsdlUrl);
-        } else if (wsdlFile != null && !wsdlFile.isEmpty()) {
-            // 從上傳的文件讀取 WSDL 內容
-            wsdlContent = new String(wsdlFile.getBytes(), StandardCharsets.UTF_8);
-        } else {
-            throw new WebserviceException("請提供 WSDL URL 或上傳 WSDL 文件");
+        try {
+            if (wsdlUrl != null && !wsdlUrl.isEmpty()) {
+                // 從 URL 讀取 WSDL 內容
+                wsdlContent = fetchWsdlFromUrl(wsdlUrl);
+            } else if (wsdlFile != null && !wsdlFile.isEmpty()) {
+                // 從上傳的文件讀取 WSDL 內容
+                wsdlContent = new String(wsdlFile.getBytes(), StandardCharsets.UTF_8);
+            } else {
+                throw new WebserviceException("請提供 WSDL URL 或上傳 WSDL 文件");
+            }
+
+            byte[] zipContent = Wsdl2JavaUtil.generateJavaFromWsdl(wsdlContent, packageName, wsdlObjDir);
+
+            if (zipContent.length == 0) {
+                return new byte[0];
+            }
+
+            return zipContent;
+        } catch (Exception e) {
+            throw new WebserviceException(e.getMessage());
         }
-
-        byte[] zipContent = Wsdl2JavaUtil.generateJavaFromWsdl(wsdlContent, packageName, wsdlObjDir);
-
-        if (zipContent.length == 0) {
-            return new byte[0];
-        }
-
-        return zipContent;
     }
 
     private String fetchWsdlFromUrl(String wsdlUrl) throws IOException {

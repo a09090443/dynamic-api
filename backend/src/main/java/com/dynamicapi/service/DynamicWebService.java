@@ -25,5 +25,5 @@ public interface DynamicWebService {
 
     void removeWebService(String publishUri, String jarFileId);
 
-    byte[] generateWsdlToObjects(String wsdlUrl, MultipartFile wsdlFile, String packageName) throws IOException;
+    byte[] generateWsdlToObjects(String wsdlUrl, MultipartFile wsdlFile, String packageName);
 }

@@ -164,24 +164,16 @@ public class WebServiceController {
     public ResponseEntity<byte[]> genWsdlObj(@RequestParam(value = "wsdlUrl", required = false) String wsdlUrl,
                                              @RequestParam(value = "file", required = false) MultipartFile wsdlFile,
                                              @RequestParam(required = false) String packageName) {
-        try {
-            byte[] zipContent = dynamicWebService.generateWsdlToObjects(wsdlUrl, wsdlFile, packageName);
+        byte[] zipContent = dynamicWebService.generateWsdlToObjects(wsdlUrl, wsdlFile, packageName);
 
-            if (zipContent.length == 0) {
-                return ResponseEntity.noContent().build();
-            }
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generated_wsdl_object.zip")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(zipContent);
-        } catch (WebserviceException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(("生成 WSDL 對象失敗：" + e.getMessage()).getBytes());
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(("讀取 WSDL 內容失敗：" + e.getMessage()).getBytes());
+        if (zipContent.length == 0) {
+            return ResponseEntity.noContent().build();
         }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generated_wsdl_object.zip")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(zipContent);
     }
 
 }
