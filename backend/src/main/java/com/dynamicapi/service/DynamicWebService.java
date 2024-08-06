@@ -2,7 +2,10 @@ package com.dynamicapi.service;
 
 import com.dynamicapi.dto.EndpointDTO;
 import com.dynamicapi.enums.JarFileStatus;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 
 public interface DynamicWebService {
@@ -21,4 +24,6 @@ public interface DynamicWebService {
     void updateJarFileStatus(String fileId, JarFileStatus status);
 
     void removeWebService(String publishUri, String jarFileId);
+
+    byte[] generateWsdlToObjects(String wsdlUrl, MultipartFile wsdlFile, String packageName) throws IOException;
 }

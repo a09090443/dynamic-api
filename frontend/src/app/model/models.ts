@@ -29,3 +29,7 @@ export enum ServiceType {
   RESTFUL = 'RESTFUL',
   ENDPOINT = 'ENDPOINT'
 }
+
+export interface Wsdl {
+  wsdlPath: string
+}

@@ -1,0 +1,34 @@
+<h1 mat-dialog-title>產出 WSDL 物件</h1>
+
+<div mat-dialog-content>
+  <div *ngIf="countdown" class="countdown">
+    關閉視窗倒數 {{ countdown }} 秒...
+  </div>
+  <form [formGroup]="form" style="display: flex; flex-direction: column;">
+    <mat-radio-group formControlName="inputType" (change)="onInputTypeChange()">
+      <mat-radio-button value="url">WSDL URL</mat-radio-button>
+      <mat-radio-button value="file">上傳檔案</mat-radio-button>
+    </mat-radio-group>
+
+    <mat-form-field *ngIf="form.get('inputType')?.value === 'url'" class="example-form-field" style="flex: 1;">
+      <mat-label>WSDL URL</mat-label>
+      <input matInput type="text" formControlName="wsdlPath">
+      <button *ngIf="form.get('wsdlPath')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('wsdlPath')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <div *ngIf="form.get('inputType')?.value === 'file'" style="margin-top: 10px;">
+      <input type="file" (change)="onFileSelected($event)" accept=".wsdl,.xml">
+    </div>
+
+    <div *ngIf="message" [ngClass]="messageType === 'success' ? 'success-message' : 'error-message'">
+      {{ message }}
+    </div>
+  </form>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancel()">取消</button>
+  <button mat-button [disabled]="!isFormValid()" (click)="execute()">執行並下載</button>
+</div>

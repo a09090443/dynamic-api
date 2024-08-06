@@ -10,6 +10,7 @@ import com.dynamicapi.model.WebServiceModel;
 import com.dynamicapi.repository.EndpointRepository;
 import com.dynamicapi.service.DynamicWebService;
 import com.dynamicapi.util.WebServiceHandler;
+import com.dynamicapi.util.Wsdl2JavaUtil;
 import com.zipe.enums.ResourceEnum;
 import com.zipe.jdbc.criteria.Conditions;
 import jakarta.persistence.EntityExistsException;
@@ -18,11 +19,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.http.WebSocketHandshakeException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,12 +45,16 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
 
     private final EndPointJDBC endPointJDBC;
 
+    private final String wsdlObjDir;
+
     DynamicWebServiceImpl(Bus bus,
                           EndpointRepository endpointRepository,
-                          EndPointJDBC endPointJDBC) {
+                          EndPointJDBC endPointJDBC,
+                          @Value("${wsdl.objects.tmp.dir}") String wsdlObjDir) {
         this.bus = bus;
         this.endpointRepository = endpointRepository;
         this.endPointJDBC = endPointJDBC;
+        this.wsdlObjDir = wsdlObjDir;
     }
 
     @Override
@@ -156,6 +171,35 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
         } catch (Exception e) {
             log.error("移除 Web Service 失敗:{}", e.getMessage(), e);
             throw new WebserviceException("移除 Web Service 失敗");
+        }
+    }
+
+    @Override
+    public byte[] generateWsdlToObjects(String wsdlUrl, MultipartFile wsdlFile, String packageName) throws IOException {
+        String wsdlContent;
+        if (wsdlUrl != null && !wsdlUrl.isEmpty()) {
+            // 從 URL 讀取 WSDL 內容
+            wsdlContent = fetchWsdlFromUrl(wsdlUrl);
+        } else if (wsdlFile != null && !wsdlFile.isEmpty()) {
+            // 從上傳的文件讀取 WSDL 內容
+            wsdlContent = new String(wsdlFile.getBytes(), StandardCharsets.UTF_8);
+        } else {
+            throw new WebserviceException("請提供 WSDL URL 或上傳 WSDL 文件");
+        }
+
+        byte[] zipContent = Wsdl2JavaUtil.generateJavaFromWsdl(wsdlContent, packageName, wsdlObjDir);
+
+        if (zipContent.length == 0) {
+            return new byte[0];
+        }
+
+        return zipContent;
+    }
+
+    private String fetchWsdlFromUrl(String wsdlUrl) throws IOException {
+        URL url = new URL(wsdlUrl);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+            return reader.lines().collect(Collectors.joining("\n"));
         }
     }
 }

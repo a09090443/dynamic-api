@@ -1,5 +1,6 @@
 package com.dynamicapi.util;
 
+import com.dynamicapi.exception.WebserviceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.tools.wsdlto.WSDLToJava;
 
@@ -19,22 +20,25 @@ import java.util.zip.ZipOutputStream;
 
 @Slf4j
 public class Wsdl2JavaUtil {
-
     private static final Object lock = new Object();
-    // 私有構造函數，防止實例化
+
     private Wsdl2JavaUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
-    public static byte[] generateJavaFromWsdl(String wsdlUrl, String packageName, String outputDir) {
+    public static byte[] generateJavaFromWsdl(String wsdlContent, String packageName, String outputDir) {
         synchronized (lock) {
             Path outputPath = null;
+            Path tempWsdlFile = null;
             byte[] zipContent;
 
             try {
-                // 創建實體輸出目錄
                 outputPath = Paths.get(outputDir);
                 Files.createDirectories(outputPath);
+
+                // 創建臨時 WSDL 文件
+                tempWsdlFile = Files.createTempFile(outputPath, "temp", ".wsdl");
+                Files.write(tempWsdlFile, wsdlContent.getBytes());
 
                 List<String> args = new ArrayList<>();
                 args.add("-d");
@@ -44,15 +48,15 @@ public class Wsdl2JavaUtil {
                     args.add(packageName);
                 }
                 args.add("-client");
-                args.add(wsdlUrl);
+                args.add(tempWsdlFile.toAbsolutePath().toString());
 
-                // 執行 WSDL 到 Java 的轉換
                 WSDLToJava.main(args.toArray(new String[0]));
 
                 // 檢查是否有文件生成
                 boolean hasFiles;
                 try (Stream<Path> pathStream = Files.list(outputPath)) {
-                    hasFiles = pathStream.findAny().isPresent();
+                    Path finalTempWsdlFile = tempWsdlFile;
+                    hasFiles = pathStream.anyMatch(p -> !p.equals(finalTempWsdlFile));
                 }
 
                 if (!hasFiles) {
@@ -60,24 +64,28 @@ public class Wsdl2JavaUtil {
                     return new byte[0];
                 }
 
-                // 創建 ZIP 文件
                 String zipFileName = "generated_classes.zip";
                 Path zipFilePath = outputPath.resolve(zipFileName);
 
-                createZipFile(outputPath, zipFilePath);
+                createZipFile(outputPath, zipFilePath, tempWsdlFile);
 
                 log.info("ZIP file created: {}", zipFilePath);
 
-                // 讀取 ZIP 文件內容到記憶體
                 zipContent = Files.readAllBytes(zipFilePath);
 
                 return zipContent;
 
             } catch (Exception e) {
                 log.error("處理失敗：", e);
-                return new byte[0];
+                throw new WebserviceException("處理失敗：" + e.getMessage());
             } finally {
-                // 清理所有生成的檔案和目錄
+                if (tempWsdlFile != null) {
+                    try {
+                        Files.deleteIfExists(tempWsdlFile);
+                    } catch (IOException e) {
+                        log.error("刪除臨時 WSDL 文件失敗", e);
+                    }
+                }
                 if (outputPath != null) {
                     cleanupFiles(outputPath);
                 }
@@ -85,12 +93,12 @@ public class Wsdl2JavaUtil {
         }
     }
 
-    private static void createZipFile(Path outputPath, Path zipFilePath) throws IOException {
+    private static void createZipFile(Path outputPath, Path zipFilePath, Path tempWsdlFile) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath.toFile()))) {
             Files.walkFileTree(outputPath, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (!file.equals(zipFilePath)) {
+                    if (!file.equals(zipFilePath) && !file.equals(tempWsdlFile)) {
                         String relativePath = outputPath.relativize(file).toString();
                         log.info("Adding file to ZIP: {}", relativePath);
                         ZipEntry zipEntry = new ZipEntry(relativePath);

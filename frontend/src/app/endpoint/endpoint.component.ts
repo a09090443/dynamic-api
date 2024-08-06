@@ -20,6 +20,7 @@ import {EndpointService} from "../service/endpoint.service";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {Router} from "@angular/router";
 import {ErrorDialogComponent} from "../error-dialog/error-dialog.component";
+import {WsdlGenObjComponent} from "../wsdl-gen-obj/wsdl-gen-obj.component";
 
 const COLUMNS_SCHEMA = [
   {
@@ -217,6 +218,13 @@ export class EndpointComponent implements OnInit, AfterViewInit {
       } else {
         Object.assign(row, newEndpoint);
       }
+    });
+  }
+
+  openWsdlGenObj() {
+    const dialogRef = this.dialog.open(WsdlGenObjComponent, {
+      width: '600px',
+      disableClose: true
     });
   }
 

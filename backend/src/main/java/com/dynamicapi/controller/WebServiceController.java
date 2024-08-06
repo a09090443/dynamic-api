@@ -4,9 +4,9 @@ import com.dynamicapi.dto.EndpointDTO;
 import com.dynamicapi.dto.EndpointResponseDTO;
 import com.dynamicapi.dto.WebServiceRequestDTO;
 import com.dynamicapi.enums.JarFileStatus;
+import com.dynamicapi.exception.WebserviceException;
 import com.dynamicapi.service.CommonService;
 import com.dynamicapi.service.DynamicWebService;
-import com.dynamicapi.util.Wsdl2JavaUtil;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
 import com.zipe.enums.ResultStatus;
@@ -24,8 +24,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -69,9 +72,7 @@ public class WebServiceController {
             log.error("ClassPath is blank");
         }
 
-        if (StringUtils.isBlank(request.getPublishUri()) ||
-                StringUtils.isBlank(request.getBeanName()) ||
-                StringUtils.isBlank(request.getClassPath())) {
+        if (StringUtils.isBlank(request.getPublishUri()) || StringUtils.isBlank(request.getBeanName()) || StringUtils.isBlank(request.getClassPath())) {
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
@@ -160,19 +161,27 @@ public class WebServiceController {
     }
 
     @PostMapping("/genWsdlObj")
-    public ResponseEntity<byte[]> genWsdlObj(@RequestBody WebServiceRequestDTO request) {
+    public ResponseEntity<byte[]> genWsdlObj(@RequestParam(value = "wsdlUrl", required = false) String wsdlUrl,
+                                             @RequestParam(value = "file", required = false) MultipartFile wsdlFile,
+                                             @RequestParam(required = false) String packageName) {
+        try {
+            byte[] zipContent = dynamicWebService.generateWsdlToObjects(wsdlUrl, wsdlFile, packageName);
 
-        byte[] zipContent = Wsdl2JavaUtil.generateJavaFromWsdl(request.getWsdlPath(), null, request.getOutputDir());
+            if (zipContent.length == 0) {
+                return ResponseEntity.noContent().build();
+            }
 
-        if (zipContent == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generated_wsdl_object.zip")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(zipContent);
+        } catch (WebserviceException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("生成 WSDL 對象失敗：" + e.getMessage()).getBytes());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("讀取 WSDL 內容失敗：" + e.getMessage()).getBytes());
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generated_classes.zip");
-        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        headers.setContentLength(zipContent.length);
-
-        return new ResponseEntity<>(zipContent, headers, HttpStatus.OK);
-
     }
+
 }
