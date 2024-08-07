@@ -14,7 +14,7 @@ import {
 } from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {Wsdl} from "../model/models";
-import {RestfulService} from "../service/restful.service";
+import {EndpointService} from "../service/endpoint.service";
 import {MatRadioButton, MatRadioGroup} from "@angular/material/radio";
 
 @Component({
@@ -50,7 +50,7 @@ export class WsdlGenObjComponent {
     @Inject(MAT_DIALOG_DATA) public data: Wsdl,
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<WsdlGenObjComponent>,
-    private restfulService: RestfulService
+    private endpointService: EndpointService
   ) {
     this.initializeForm(data || {} as Wsdl); // 初始化表单
   }
@@ -97,7 +97,7 @@ export class WsdlGenObjComponent {
     }
 
     try {
-      const response = await this.restfulService.generateWsdlObject(wsdlData);
+      const response = await this.endpointService.generateWsdlObject(wsdlData);
       this.showMessage('WSDL 對象生成成功', 'success');
       this.startCountdown();
       this.downloadFile(response);

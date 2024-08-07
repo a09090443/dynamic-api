@@ -72,30 +72,4 @@ export class RestfulService {
     }
   }
 
-  async generateWsdlObject(wsdlData: string | File): Promise<any> {
-    let url = `${config.apiUrl}/dynamic-api/ws/genWsdlObj`;
-    const formData = new FormData();
-
-    if (typeof wsdlData === 'string') {
-      // 如果是 URL，直接加入 FormData
-      formData.append('wsdlUrl', wsdlData);
-    } else {
-      // 如果是文件，加入 FormData
-      formData.append('file', wsdlData);
-    }
-
-    try {
-      const response: any = await firstValueFrom(this.http.post(url, formData, {
-        responseType: 'blob'
-      }).pipe(
-        catchError(this.handleError)
-      ));
-
-      // 假設成功響應是一個 Blob 對象
-      return response;
-    } catch (error) {
-      console.error('Error generating WSDL object:', error);
-      throw error;
-    }
-  }
 }

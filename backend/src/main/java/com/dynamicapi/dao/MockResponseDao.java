@@ -35,7 +35,13 @@ public class MockResponseDao {
         } catch (Exception e) {
             log.error("Unexpected exception querying for object with publishUri: {}, method: {}, condition: {}. Exception: {}",
                     publishUri, method, condition, e.getMessage(), e);
-            return null;
+            // 在這裡創建並返回一個 R 類型的對象
+            try {
+                return clazz.getDeclaredConstructor().newInstance();
+            } catch (Exception ex) {
+                log.error("Failed to create instance of {}: {}", clazz.getName(), ex.getMessage(), ex);
+                return null;
+            }
         }
     }
 
