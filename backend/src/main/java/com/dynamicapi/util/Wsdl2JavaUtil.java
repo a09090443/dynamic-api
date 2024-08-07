@@ -41,6 +41,7 @@ public class Wsdl2JavaUtil {
                 Files.write(tempWsdlFile, wsdlContent.getBytes());
 
                 List<String> args = new ArrayList<>();
+                args.add("-autoNameResolution");
                 args.add("-d");
                 args.add(outputPath.toString());
                 if (packageName != null && !packageName.isEmpty()) {
