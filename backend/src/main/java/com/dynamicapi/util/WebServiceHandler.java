@@ -8,12 +8,15 @@ import com.zipe.util.string.StringConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.ServerRegistry;
+import org.apache.cxf.jaxb.JAXBDataBinding;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -34,6 +37,24 @@ public class WebServiceHandler {
             this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
             EndpointImpl endpoint;
             endpoint = new EndpointImpl(context.getBean(Bus.class), dynamicBeanUtil.getBean(endpointDTO.getBeanName(), loadedClass));
+
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("set-jaxb-validation-event-handler", "false");
+
+            endpoint.setProperties(properties);
+
+            // Set custom JAXBDataBinding
+            JAXBDataBinding jaxbDataBinding = new JAXBDataBinding();
+            jaxbDataBinding.setUnwrapJAXBElement(true);
+            jaxbDataBinding.setMtomEnabled(true);
+
+            // Configure namespace mapping to ignore empty namespaces
+            Map<String, String> nsMap = new HashMap<>();
+            nsMap.put("", "http://www.w3.org/2001/XMLSchema");
+            jaxbDataBinding.setNamespaceMap(nsMap);
+
+            endpoint.setDataBinding(jaxbDataBinding);
+
             endpoint.publish(StringConstant.SLASH + endpointDTO.getPublishUri());
             log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointDTO.getBeanName(), endpointDTO.getPublishUri());
         } catch (Exception e) {
