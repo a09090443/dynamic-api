@@ -23,7 +23,7 @@
 2. mockwebservice-backend 打包完成後會一併將 mockwebservice-frontend 打包至 backend 的 resources 目錄
 3. 切換至 mockwebservice-backend/build/libs 目錄,執行 java -jar mockwebservice-backend-0.0.1-SNAPSHOT.jar
 
-運行畫面
+運行畫面:(http://localhost:8080/dynamic-api/#/endpoint)
 <img src="./images/endpoint_dashboard.png" style="zoom:70%" />
 <img src="./images/restful_dashboard.png" style="zoom:70%" />
 <img src="./images/create_new_endpoint.png" style="zoom:70%" />
