@@ -184,7 +184,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     if (deleteItem) {
       const data = this.dataSource.data;
       const rowIndex = this.paginator.pageIndex * this.paginator.pageSize + id;
-      const rowData = data[id];
+      const rowData = data[rowIndex];
 
       data.splice(rowIndex, 1);
       this.dataSource.data = [...data]; // 使用新的數組引用來觸發 Angular 變更檢測
