@@ -3,6 +3,7 @@ package com.dynamicapi.service;
 import com.dynamicapi.dto.JarFileResponseDTO;
 import com.dynamicapi.dto.MockResponseRequestDTO;
 import com.dynamicapi.dto.MockResponseResponseDTO;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,4 +25,7 @@ public interface CommonService {
     void deleteMockResponse(String id);
 
     void switchMockResponse(String id, Boolean status);
+
+    SseEmitter streamLogFile(String logFileName, int tailLines);
+
 }

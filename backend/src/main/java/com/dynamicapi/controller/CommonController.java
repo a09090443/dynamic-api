@@ -7,6 +7,7 @@ import com.dynamicapi.service.CommonService;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
 import com.zipe.enums.ResultStatus;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.List;
@@ -124,5 +126,17 @@ public class CommonController {
             }
         }
         return Result.success(StringUtils.EMPTY);
+    }
+
+    @GetMapping(value = "/logs/stream", produces = "text/event-stream;charset=UTF-8")
+    public SseEmitter streamLogFile(
+            @RequestParam(defaultValue = "MockWebservice.log") String logFileName,
+            @RequestParam(defaultValue = "100") int tailLines,
+            HttpServletResponse response) {
+        // 明確設置響應的字符編碼
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/event-stream;charset=UTF-8");
+
+        return commonService.streamLogFile(logFileName, tailLines);
     }
 }
