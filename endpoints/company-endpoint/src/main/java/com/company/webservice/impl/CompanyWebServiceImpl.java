@@ -5,6 +5,7 @@ import com.company.dto.CompanyResponse;
 import com.company.dto.Employee;
 import com.company.dto.GetCompanyResponse;
 import com.company.webservice.CompanyWebService;
+import com.dynamicapi.enums.ServiceType;
 import com.dynamicapi.jarbase.WebserviceBase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipe.util.SoapUtil;
@@ -29,7 +30,7 @@ public class CompanyWebServiceImpl extends WebserviceBase implements CompanyWebS
     public CompanyResponse getCompany(CompanyRequest request) throws IOException, SOAPException, TransformerException {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(request);
-        String responseContent = mockResponseDao.findByPrimaryKey("company", "getCompany", jsonString, String.class);
+        String responseContent = mockResponseDao.findByPrimaryKey("company", "getCompany", jsonString, ServiceType.ENDPOINT, String.class);
 
         String soapResXml = SoapUtil.getFromSoapXml(responseContent, "ns4:getCompanyResponse");
         GetCompanyResponse response = XmlUtil.xmlToBean(soapResXml, GetCompanyResponse.class);

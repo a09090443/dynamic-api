@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -129,6 +130,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
     }
 
     @Override
+    @Transactional
     public void enabledWebService(String publishUri) {
         EndpointEntity endpointEntity = endpointRepository.findById(publishUri).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
@@ -148,6 +150,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
     }
 
     @Override
+    @Transactional
     public EndpointDTO disabledWebService(EndpointDTO endpointDTO) {
         WebServiceHandler registerWebService = new WebServiceHandler();
         try {

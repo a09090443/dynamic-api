@@ -1,10 +1,9 @@
 package com.dynamicapi.jdbc;
 
-import com.zipe.jdbc.BaseJDBC;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class MockResponseJDBC extends BaseJDBC {
+public class MockResponseJDBC extends BaseJDBCAdapter {
 
     public static final String SQL_SELECT_RESPONSE_CONTENT = "SQL_SELECT_RESPONSE_CONTENT";
     public static final String SQL_UPDATE_RESPONSE = "SQL_UPDATE_RESPONSE";

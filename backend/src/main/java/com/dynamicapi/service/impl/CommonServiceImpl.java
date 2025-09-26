@@ -366,7 +366,7 @@ public class CommonServiceImpl implements CommonService {
                 char c = (char) file.read();
 
                 if (c == '\n') {
-                    if (sb.length() > 0) {
+                    if (!sb.isEmpty()) {
                         // 處理編碼問題
                         String line = new String(sb.reverse().toString().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
                         result.add(0, line);
@@ -380,7 +380,7 @@ public class CommonServiceImpl implements CommonService {
             }
 
             // 處理最後一行（檔案開頭的那一行）
-            if (sb.length() > 0 && lineCount < n) {
+            if (!sb.isEmpty() && lineCount < n) {
                 String line = new String(sb.reverse().toString().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
                 result.add(0, line);
             }
