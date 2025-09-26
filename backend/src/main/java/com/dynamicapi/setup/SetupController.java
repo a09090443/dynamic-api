@@ -45,8 +45,7 @@ public class SetupController implements SmartLifecycle {
         Optional.ofNullable(controllerEntities).ifPresent(controllers -> controllers.forEach(controller -> {
             try {
                 jarFileEntity.set(jarFileRepository.findById(controller.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案")));
-                jarPath.set(jarPath + jarFileEntity.get().getName());
-                dynamicControllerService.startUpControllerProcess(controller.getPublishUri(), controller.getClassPath(), jarPath.get());
+                dynamicControllerService.startUpControllerProcess(controller.getPublishUri(), controller.getClassPath(), jarPath + jarFileEntity.get().getName());
             } catch (Exception e) {
                 controller.setIsActive(Boolean.FALSE);
                 controllerRepository.save(controller);

@@ -65,6 +65,7 @@ export class EndpointFormComponent {
       jarFileName: '',
       file: null,
       isActive: false,
+      ignoreCdata: false,
     };
     this.jarFileName = data?.jarFileName || defaultData.jarFileName;
 
@@ -76,6 +77,7 @@ export class EndpointFormComponent {
       jarFileId: [data?.jarFileId || defaultData.jarFileId],
       file: [defaultData.file],
       isActive: [data?.isActive || defaultData.isActive],
+      ignoreCdata: [data?.ignoreCdata || defaultData.ignoreCdata],
     });
   }
 

@@ -9,7 +9,8 @@ interface BaseModel {
 }
 
 export interface Endpoint extends BaseModel {
-  beanName: string
+  beanName: string,
+  ignoreCdata: boolean
 }
 
 export interface Restful extends BaseModel {

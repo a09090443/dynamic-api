@@ -42,6 +42,7 @@
       </button>
       <button mat-button (click)="uploadFile()">Upload</button> <!-- 新增的上傳按鈕 -->
     </div>
+    <mat-checkbox formControlName="ignoreCdata">Ignore CDATA</mat-checkbox>
 
     <div *ngIf="message" [ngClass]="messageType === 'success' ? 'success-message' : 'error-message'">
       {{ message }}

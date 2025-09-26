@@ -12,4 +12,5 @@ public class EndpointResponseDTO {
     public String jarFileId;
     public String jarFileName;
     public String fileStatus;
+    public Boolean ignoreCdata;
 }

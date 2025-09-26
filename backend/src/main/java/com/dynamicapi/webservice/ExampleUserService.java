@@ -19,6 +19,10 @@ public interface ExampleUserService {
     String getUserId(@WebParam(name = "name", targetNamespace = "http://service.example.com/") String name);
 
     @WebMethod
+    @WebResult(name = "String", targetNamespace = "")
+    String getUserEmail(@WebParam(name = "name", targetNamespace = "http://service.example.com/") String name);
+
+    @WebMethod
     @WebResult(name = "Map")
     Map<String, User> getAllUserData();
 }

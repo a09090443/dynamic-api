@@ -70,6 +70,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
             dto.setClassPath(endpoint.getClassPath());
             dto.setBeanName(endpoint.getBeanName());
             dto.setIsActive(endpoint.getIsActive());
+            dto.setIgnoreCdata(endpoint.getIgnoreCdata());
             dto.setJarFileId(endpoint.getJarFileId());
             dto.setJarFileName(endpoint.getJarFileName());
             return dto;
@@ -102,6 +103,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
         endpointEntity.setBeanName(endpointDTO.getBeanName());
         endpointEntity.setIsActive(Boolean.FALSE);
         endpointEntity.setJarFileId(endpointDTO.getJarFileId());
+        endpointEntity.setIgnoreCdata(endpointDTO.getIgnoreCdata());
         endpointDTO.setId(endpointEntity.getUuId());
         JarFileEntity jarFileEntity = getJarFile(endpointDTO.getJarFileId());
 

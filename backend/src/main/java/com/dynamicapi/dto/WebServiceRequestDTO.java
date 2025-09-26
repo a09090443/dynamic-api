@@ -23,4 +23,6 @@ public class WebServiceRequestDTO {
     private String outputDir;
 
     private String zipFilePath;
+
+    private Boolean ignoreCdata;
 }

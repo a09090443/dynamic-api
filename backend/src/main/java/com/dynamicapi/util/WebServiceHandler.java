@@ -3,6 +3,8 @@ package com.dynamicapi.util;
 import com.dynamicapi.dto.EndpointDTO;
 import com.dynamicapi.enums.ClassLoaderSingletonEnum;
 import com.dynamicapi.exception.WebserviceException;
+import com.dynamicapi.interceptor.CdataContentInterceptor;
+import com.dynamicapi.interceptor.ResponseCdataInterceptor;
 import com.zipe.util.classloader.CustomClassLoader;
 import com.zipe.util.string.StringConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -42,7 +45,11 @@ public class WebServiceHandler {
             properties.put("set-jaxb-validation-event-handler", "false");
 
             endpoint.setProperties(properties);
-
+            endpoint.getProperties().put("disable.output.escaping", true);
+            if (Boolean.TRUE.equals(endpointDTO.getIgnoreCdata())) {
+                endpoint.setInInterceptors(List.of(new CdataContentInterceptor()));
+                endpoint.setOutInterceptors(List.of(new ResponseCdataInterceptor()));
+            }
             // Set custom JAXBDataBinding
             JAXBDataBinding jaxbDataBinding = new JAXBDataBinding();
             jaxbDataBinding.setUnwrapJAXBElement(true);

@@ -31,4 +31,7 @@ public class EndpointEntity extends BaseEntity {
 
     @Column(name = "IS_ACTIVE", nullable = false)
     private Boolean isActive;
+
+    @Column(name = "IGNORE_CDATA", nullable = false)
+    private Boolean ignoreCdata;
 }

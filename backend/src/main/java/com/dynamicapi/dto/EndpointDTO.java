@@ -18,4 +18,6 @@ public class EndpointDTO {
 
     private Boolean isActive;
 
+    private Boolean ignoreCdata;
+
 }

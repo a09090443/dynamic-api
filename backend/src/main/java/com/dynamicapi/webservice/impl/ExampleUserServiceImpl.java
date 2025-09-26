@@ -36,7 +36,7 @@ public class ExampleUserServiceImpl implements ExampleUserService {
         user = new User();
         user.setUserId(UUID.randomUUID().toString().replace("-", ""));
         user.setUserName("mracale03");
-        user.setEmail("mracale03@163.xom");
+        user.setEmail("<![CDATA[<email>mracale03@163.xom</email>]]");
         userMap.put(user.getUserName(), user);
     }
 
@@ -44,6 +44,12 @@ public class ExampleUserServiceImpl implements ExampleUserService {
     public String getUserId(String name) {
         log.info("userName:{}", name);
         return "userId為：" + userMap.get(name).getUserId();
+    }
+
+    @Override
+    public String getUserEmail(String name) {
+        log.info("userName:{}", name);
+        return "userEmail為：" + userMap.get(name).getEmail();
     }
 
     @Override
