@@ -40,6 +40,11 @@ public class DynamicLoadController {
         this.commonService = commonService;
     }
 
+    /**
+     * 取得所有已註冊的 Controller 列表
+     *
+     * @return List<ControllerResponseDTO>
+     */
     @GetMapping("/getControllers")
     public Result<List<ControllerResponseDTO>> getControllers() {
         List<ControllerDTO> controllerDTOS = dynamicControllerService.getControllers();
@@ -51,6 +56,12 @@ public class DynamicLoadController {
         return Result.success(controllerResponseDTOList);
     }
 
+    /**
+     * 儲存新的 Controller 設定
+     *
+     * @param request ControllerDTO
+     * @return ControllerResponseDTO
+     */
     @PostMapping("/saveController")
     public Result<ControllerResponseDTO> saveController(@RequestBody ControllerDTO request) {
         log.info("Save web service: {}", request);
@@ -75,6 +86,12 @@ public class DynamicLoadController {
         return Result.success(response);
     }
 
+    /**
+     * 更新現有的 Controller 設定
+     *
+     * @param request ControllerDTO
+     * @return ControllerResponseDTO
+     */
     @PostMapping("/updateController")
     public Result<ControllerResponseDTO> updateController(@RequestBody ControllerDTO request) {
         log.info("Update controller: {}", request);
@@ -118,6 +135,12 @@ public class DynamicLoadController {
         return Result.success(response);
     }
 
+    /**
+     * 移除指定的 Controller
+     *
+     * @param publishUris Controller 的發布 URI 列表
+     * @return String
+     */
     @DeleteMapping("/removeController")
     public Result<String> removeWebService(@RequestBody String[] publishUris) {
         ControllerDTO controllerDTO;
@@ -129,6 +152,13 @@ public class DynamicLoadController {
         return Result.success(StringUtils.EMPTY);
     }
 
+    /**
+     * 切換 Controller 的啟用狀態
+     *
+     * @param publishUri Controller 的發布 URI
+     * @param isActive   是否啟用
+     * @return String
+     */
     @GetMapping("/switchController")
     public Result<String> switchWebService(@RequestParam String publishUri, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(publishUri) && isActive != null) {

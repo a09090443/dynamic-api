@@ -40,6 +40,13 @@ public class CommonController {
         this.commonService = commonService;
     }
 
+    /**
+     * 上傳 Jar 檔案
+     *
+     * @param file Jar 檔案
+     * @return JarFileResponseDTO
+     * @throws IOException
+     */
     @PostMapping("/uploadJarFile")
     public Result<JarFileResponseDTO> uploadJarFile(@RequestParam("file") MultipartFile file) throws IOException {
         // 檢查檔案是否為空或不是以 .jar 結尾
@@ -55,18 +62,36 @@ public class CommonController {
         return Result.success(jarFileResponse);
     }
 
+    /**
+     * 根據條件取得 Mock Response 的內容
+     *
+     * @param request MockResponseRequestDTO
+     * @return String
+     */
     @PostMapping("/getResponseContent")
     public Result<String> getResponseContent(@RequestBody MockResponseRequestDTO request) {
         String content = commonService.getResponseContent(request);
         return Result.success(content);
     }
 
+    /**
+     * 根據條件取得 Mock Response 的列表
+     *
+     * @param request MockResponseRequestDTO
+     * @return List<MockResponseResponseDTO>
+     */
     @PostMapping("/getResponseList")
     public Result<List<MockResponseResponseDTO>> getResponseList(@RequestBody MockResponseRequestDTO request) {
         List<MockResponseResponseDTO> mockResponseResponseList = commonService.getResponseList(request);
         return Result.success(mockResponseResponseList);
     }
 
+    /**
+     * 儲存 Mock Response
+     *
+     * @param request MockResponseRequestDTO
+     * @return MockResponseResponseDTO
+     */
     @PostMapping("/saveMockResponse")
     public Result<MockResponseResponseDTO> saveMockResponse(@RequestBody MockResponseRequestDTO request) {
         log.info("Save mock response: {}", request);
@@ -93,6 +118,12 @@ public class CommonController {
         return Result.success(mockResponseResponse);
     }
 
+    /**
+     * 更新 Mock Response
+     *
+     * @param request MockResponseRequestDTO
+     * @return MockResponseResponseDTO
+     */
     @PostMapping("/updateResponse")
     public Result<MockResponseResponseDTO> updateResponse(@RequestBody MockResponseRequestDTO request) {
         log.info("Update response: {}", request);
@@ -108,6 +139,12 @@ public class CommonController {
         return Result.success(response);
     }
 
+    /**
+     * 刪除 Mock Response
+     *
+     * @param ids Mock Response 的 ID 列表
+     * @return String
+     */
     @DeleteMapping("/deleteResponse")
     public Result<String> deleteResponse(@RequestBody String[] ids) {
         for (String id : ids) {
@@ -116,6 +153,13 @@ public class CommonController {
         return Result.success(StringUtils.EMPTY);
     }
 
+    /**
+     * 切換 Mock Response 的啟用狀態
+     *
+     * @param id       Mock Response 的 ID
+     * @param isActive 是否啟用
+     * @return String
+     */
     @GetMapping("/switchResponse")
     public Result<String> switchResponse(@RequestParam String id, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(id) && isActive != null) {
@@ -128,6 +172,14 @@ public class CommonController {
         return Result.success(StringUtils.EMPTY);
     }
 
+    /**
+     * 即時串流日誌檔案內容
+     *
+     * @param logFileName 日誌檔案名稱
+     * @param tailLines   從末尾讀取的行數
+     * @param response    HttpServletResponse
+     * @return SseEmitter
+     */
     @GetMapping(value = "/logs/stream", produces = "text/event-stream;charset=UTF-8")
     public SseEmitter streamLogFile(
             @RequestParam(defaultValue = "MockWebservice.log") String logFileName,
