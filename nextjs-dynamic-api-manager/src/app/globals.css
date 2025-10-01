@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primary: #00e676;
+  --secondary: #00bcd4;
+  --accent: #ff6d00;
+  --surface: #1a1a1a;
+  --card: #1e1e1e;
+  --border: #333333;
+  --tech-glow: #00e676;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  color: var(--foreground);
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d1421 100%);
+  font-family: 'Roboto Mono', 'Monaco', 'Courier New', monospace;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* 科技風格格網背景 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 230, 118, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 230, 118, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 科技風螢光效果 */
+.tech-glow {
+  box-shadow: 
+    0 0 10px rgba(0, 230, 118, 0.3),
+    0 0 20px rgba(0, 230, 118, 0.2),
+    0 0 30px rgba(0, 230, 118, 0.1);
+}
+
+.tech-border {
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  background: rgba(0, 230, 118, 0.05);
+}
+
+/* 科技風按鈕 */
+.tech-button {
+  background: linear-gradient(45deg, #00e676, #00bcd4);
+  color: #000;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.tech-button:hover::before {
+  left: 100%;
+}
+
+/* 科技風動畫 */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 230, 118, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* 科技風表格 */
+.tech-table {
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 230, 118, 0.2);
+}
+
+.tech-table thead {
+  background: linear-gradient(90deg, rgba(0, 230, 118, 0.1), rgba(0, 188, 212, 0.1));
+  border-bottom: 2px solid rgba(0, 230, 118, 0.3);
+}
+
+.tech-table tbody tr:hover {
+  background: rgba(0, 230, 118, 0.05);
+  box-shadow: inset 0 0 10px rgba(0, 230, 118, 0.1);
+}
+
+/* 科技風輸入框 */
+.tech-input {
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  color: var(--foreground);
+}
+
+.tech-input:focus {
+  border-color: var(--tech-glow);
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+}
+
+/* 科技風開關 */
+.tech-switch .MuiSwitch-track {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.tech-switch .MuiSwitch-thumb {
+  background-color: #00e676 !important;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.5) !important;
+}
+
+.tech-switch.Mui-checked .MuiSwitch-track {
+  background-color: rgba(0, 230, 118, 0.3) !important;
+}
+
+/* 科技風滾動條 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 30, 30, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00e676, #00bcd4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00ff88, #00d4ff);
+}
