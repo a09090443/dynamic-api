@@ -39,7 +39,16 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.register('installAngular', Exec) {
+    workingDir file('../frontend').absolutePath
+    def nodeDir = file('../tools/node-v20.15.0-win-x64').absolutePath
+    def npmPath = "${nodeDir}/npm.cmd"
+    environment 'PATH', nodeDir + File.pathSeparator + System.env.PATH
+    commandLine npmPath, 'install'
+}
+
 tasks.register('buildAngular', Exec) {
+    dependsOn 'installAngular'
     workingDir file('../frontend').absolutePath
     // 使用 node.exe 和 npm.cmd 的完整路徑
     def nodeDir = file('../tools/node-v20.15.0-win-x64').absolutePath
