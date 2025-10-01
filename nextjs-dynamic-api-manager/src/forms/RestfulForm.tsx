@@ -7,8 +7,6 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Paper,
-  Typography,
   Chip
 } from '@mui/material';
 import { CloudUpload as UploadIcon, Clear as ClearIcon } from '@mui/icons-material';
@@ -131,75 +129,63 @@ const RestfulForm: React.FC<RestfulFormProps> = ({
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 3 }}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* 表單標題 */}
-          <Typography variant="h6" gutterBottom>
-            {restful ? '編輯 Restful Controller' : '新增 Restful Controller'}
-          </Typography>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* 錯誤/成功訊息 */}
+        {error && <Alert severity="error">{error}</Alert>}
 
-          {/* 錯誤/成功訊息 */}
-          {error && <Alert severity="error">{error}</Alert>}
+        {success && (
+          <Alert severity="success">
+            {success}
+            {countdown && ` 視窗將在 ${countdown} 秒後關閉`}
+          </Alert>
+        )}
 
-          {success && (
-            <Alert severity="success">
-              {success}
-              {countdown && ` 視窗將在 ${countdown} 秒後關閉`}
-            </Alert>
+        {/* 發布名稱 */}
+        <Controller
+          name="publishUri"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="發布名稱 (Publish URI)"
+              fullWidth
+              required
+              error={!!errors.publishUri}
+              helperText={errors.publishUri?.message}
+            />
           )}
+        />
 
-          {/* 發布名稱 */}
-          <Controller
-            name="publishUri"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="發布名稱 (Publish URI)"
-                fullWidth
-                required
-                error={!!errors.publishUri}
-                helperText={errors.publishUri?.message}
-              />
-            )}
-          />
-
-          {/* Class 路徑 */}
-          <Controller
-            name="classPath"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Class 路徑"
-                fullWidth
-                required
-                error={!!errors.classPath}
-                helperText={errors.classPath?.message}
-              />
-            )}
-          />
-
-          {/* 目前 Jar 檔案名稱 */}
-          {restful?.jarFileName && (
-            <Box>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                目前 Jar 檔案:
-              </Typography>
-              <Chip
-                label={restful.jarFileName}
-                color="primary"
-                size="small"
-              />
-            </Box>
+        {/* Class 路徑 */}
+        <Controller
+          name="classPath"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Class 路徑"
+              fullWidth
+              required
+              error={!!errors.classPath}
+              helperText={errors.classPath?.message}
+            />
           )}
+        />
 
-          {/* 檔案上傳 */}
+        {/* 目前 Jar 檔案名稱 */}
+        {restful?.jarFileName && (
           <Box>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              {restful ? '更新 Jar 檔案 (可選):' : '上傳 Jar 檔案:'}
-            </Typography>
+            <Chip
+              label={`目前 Jar 檔案: ${restful.jarFileName}`}
+              color="primary"
+              size="small"
+            />
+          </Box>
+        )}
+
+        {/* 檔案上傳 */}
+        <Box>
             <Button
               variant="outlined"
               component="label"
@@ -252,7 +238,6 @@ const RestfulForm: React.FC<RestfulFormProps> = ({
           </Box>
         </Box>
       </form>
-    </Paper>
   );
 };
 

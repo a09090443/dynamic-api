@@ -9,8 +9,6 @@ import {
   Checkbox,
   Alert,
   CircularProgress,
-  Paper,
-  Typography,
   Chip
 } from '@mui/material';
 import { CloudUpload as UploadIcon, Clear as ClearIcon } from '@mui/icons-material';
@@ -139,83 +137,74 @@ const EndpointForm: React.FC<EndpointFormProps> = ({
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 3 }}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* 表單標題 */}
-          <Typography variant="h6" gutterBottom>
-            {endpoint ? '編輯 Endpoint' : '新增 Endpoint'}
-          </Typography>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* 錯誤/成功訊息 */}
+        {error && <Alert severity="error">{error}</Alert>}
 
-          {/* 錯誤/成功訊息 */}
-          {error && <Alert severity="error">{error}</Alert>}
+        {success && (
+          <Alert severity="success">
+            {success}
+            {countdown && ` 視窗將在 ${countdown} 秒後關閉`}
+          </Alert>
+        )}
 
-          {success && (
-            <Alert severity="success">
-              {success}
-              {countdown && ` 視窗將在 ${countdown} 秒後關閉`}
-            </Alert>
-          )}
-
-          {/* 表單欄位 */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            {/* 發布名稱 */}
-            <Controller
-              name="publishUri"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="發布名稱 (Publish URI)"
-                  fullWidth
-                  required
-                  error={!!errors.publishUri}
-                  helperText={errors.publishUri?.message}
-                />
-              )}
-            />
-
-            {/* Bean 名稱 */}
-            <Controller
-              name="beanName"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Bean 名稱"
-                  fullWidth
-                  required
-                  error={!!errors.beanName}
-                  helperText={errors.beanName?.message}
-                />
-              )}
-            />
-          </Box>
-
-          {/* Class 路徑 */}
+        {/* 表單欄位 */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          {/* 發布名稱 */}
           <Controller
-            name="classPath"
+            name="publishUri"
             control={control}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Class 路徑"
+                label="發布名稱 (Publish URI)"
                 fullWidth
                 required
-                error={!!errors.classPath}
-                helperText={errors.classPath?.message}
+                error={!!errors.publishUri}
+                helperText={errors.publishUri?.message}
               />
             )}
           />
 
+          {/* Bean 名稱 */}
+          <Controller
+            name="beanName"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Bean 名稱"
+                fullWidth
+                required
+                error={!!errors.beanName}
+                helperText={errors.beanName?.message}
+              />
+            )}
+          />
+        </Box>
+
+        {/* Class 路徑 */}
+        <Controller
+          name="classPath"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Class 路徑"
+              fullWidth
+              required
+              error={!!errors.classPath}
+              helperText={errors.classPath?.message}
+            />
+          )}
+        />
+
           {/* 目前 Jar 檔案名稱 */}
           {endpoint?.jarFileName && (
             <Box>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                目前 Jar 檔案:
-              </Typography>
               <Chip
-                label={endpoint.jarFileName}
+                label={`目前 Jar 檔案: ${endpoint.jarFileName}`}
                 color="primary"
                 size="small"
               />
@@ -224,9 +213,6 @@ const EndpointForm: React.FC<EndpointFormProps> = ({
 
           {/* 檔案上傳 */}
           <Box>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              {endpoint ? '更新 Jar 檔案 (可選):' : '上傳 Jar 檔案:'}
-            </Typography>
             <Button
               variant="outlined"
               component="label"
@@ -296,8 +282,8 @@ const EndpointForm: React.FC<EndpointFormProps> = ({
           </Box>
         </Box>
       </form>
-    </Paper>
   );
 };
 
 export default EndpointForm;
+

@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     BACKEND_API_URL: process.env.BACKEND_API_URL,
   },
   
+  // 禁用自動添加尾隨斜線
+  trailingSlash: false,
+  
   // 編譯配置
   typescript: {
     ignoreBuildErrors: false,
@@ -21,28 +24,6 @@ const nextConfig: NextConfig = {
   
   // 輸出配置
   output: 'standalone',
-  
-  // 重新導向配置
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/endpoint',
-        permanent: false,
-      },
-    ];
-  },
-  
-  // API 路由配置
-  async rewrites() {
-    return [
-      // 確保 API 路由正確處理
-      {
-        source: '/api/dynamic-api/:path*',
-        destination: '/api/dynamic-api/:path*',
-      },
-    ];
-  },
   
   // Headers 配置
   async headers() {

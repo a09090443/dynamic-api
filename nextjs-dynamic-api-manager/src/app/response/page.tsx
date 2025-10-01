@@ -38,7 +38,6 @@ import {
 import { Response, ResponseListParams } from '@/types/response';
 import { ServiceType } from '@/types/models';
 import { responseService } from '@/services/response.service';
-import Header from '@/components/Header';
 
 export default function ResponsePage() {
   const router = useRouter();
@@ -66,7 +65,6 @@ export default function ResponsePage() {
     method: '',
     condition: '',
     responseContent: '',
-    isActive: true,
   });
 
   useEffect(() => {
@@ -145,7 +143,6 @@ export default function ResponsePage() {
       method: response.method,
       condition: response.condition,
       responseContent: response.responseContent,
-      isActive: response.isActive,
     });
     setResponseFormOpen(true);
   };
@@ -156,7 +153,6 @@ export default function ResponsePage() {
       method: '',
       condition: '',
       responseContent: '',
-      isActive: true,
     });
     setResponseFormOpen(true);
   };
@@ -167,6 +163,7 @@ export default function ResponsePage() {
         publishUri,
         serviceType,
         ...formData,
+        isActive: editingResponse ? editingResponse.isActive : true, // 新增時預設啟用，編輯時保持原狀態
       };
 
       if (editingResponse) {
@@ -254,22 +251,19 @@ export default function ResponsePage() {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <Header />
-      
-      <Box sx={{ flex: 1, p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <IconButton
-            onClick={handleGoBack}
-            sx={{ p: 1 }}
-            title="返回"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h4" sx={{ flex: 1 }}>
-            回應清單設定
-          </Typography>
-        </Box>
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <IconButton
+          onClick={handleGoBack}
+          sx={{ p: 1 }}
+          title="返回"
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h4" sx={{ flex: 1 }}>
+          回應清單設定
+        </Typography>
+      </Box>
         
         {publishUri && (
           <Chip 
@@ -308,7 +302,8 @@ export default function ResponsePage() {
           />
         </Box>
 
-        <TableContainer component={Paper}>
+      <Paper elevation={8}>
+        <TableContainer>
           <Table sx={{ minWidth: 1200 }}>
             <TableHead>
               <TableRow>
@@ -432,7 +427,7 @@ export default function ResponsePage() {
           labelRowsPerPage="每頁筆數:"
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} 共 ${count} 筆`}
         />
-      </Box>
+      </Paper>
 
       {/* 回應表單對話框 */}
       <Dialog open={responseFormOpen} onClose={() => setResponseFormOpen(false)} maxWidth="md" fullWidth>
@@ -466,13 +461,6 @@ export default function ResponsePage() {
               fullWidth
               helperText="回應的內容，可以是XML、JSON等格式"
             />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Switch
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              />
-              <Typography>啟用</Typography>
-            </Box>
           </Box>
         </DialogContent>
         <DialogActions>
