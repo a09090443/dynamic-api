@@ -104,7 +104,7 @@ NEXT_PUBLIC_DEBUG_MODE=true
 npm run dev
 ```
 
-開啟 [http://localhost:3001](http://localhost:3001) 查看應用程式。
+開啟 [http://localhost:3000](http://localhost:3000) 查看應用程式。
 
 ## 📁 專案結構
 
@@ -145,7 +145,7 @@ src/
 
 ### 開發模式
 ```bash
-npm run dev              # 啟動開發服務器：http://localhost:3001
+npm run dev              # 啟動開發服務器：http://localhost:3000
 npm run dev:debug        # 開發環境 (啟用除錯)
 ```
 
@@ -238,7 +238,7 @@ npm run lint             # ESLint 程式碼檢查
 ✅ **建置成功** - 所有組件和頁面都可以正常編譯  
 ✅ **型別檢查通過** - TypeScript 型別檢查無錯誤  
 ✅ **ESLint 檢查通過** - 程式碼風格符合標準  
-✅ **開發服務器可運行** - http://localhost:3001
+✅ **開發服務器可運行** - http://localhost:3000
 
 ## 🔮 未來擴展
 
