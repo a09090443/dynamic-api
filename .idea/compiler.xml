@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="example-restful" />
+      </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.32/17d46b3e205515e1e8efd3ee4d57ce8018914163/lombok-1.18.32.jar" />
+        </processorPath>
+        <module name="backend.main" />
+        <module name="backend.test" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="com.example.webservice-endpoint.main" target="17" />
+      <module name="com.example.webservice-endpoint.test" target="17" />
+      <module name="compant-restful" target="17" />
+      <module name="compant-restful.main" target="17" />
+      <module name="compant-restful.test" target="17" />
+      <module name="webservice-endpoint" target="17" />
+      <module name="webservice-endpoint.main" target="17" />
+      <module name="webservice-endpoint.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="backend" options="-parameters -parameters -Xlint:deprecation" />
+      <module name="backend.main" options="-parameters -parameters -Xlint:deprecation" />
+      <module name="backend.test" options="-parameters -parameters -Xlint:deprecation" />
+      <module name="base-jar" options="-parameters" />
+      <module name="base-jar.main" options="-parameters" />
+      <module name="base-jar.test" options="-parameters" />
+      <module name="company-endpoint" options="-parameters" />
+      <module name="company-endpoint.main" options="-parameters" />
+      <module name="company-endpoint.test" options="-parameters" />
+      <module name="company-restful" options="-parameters" />
+      <module name="company-restful.main" options="-parameters" />
+      <module name="company-restful.test" options="-parameters" />
+    </option>
+  </component>
+</project>

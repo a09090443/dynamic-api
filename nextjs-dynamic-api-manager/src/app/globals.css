@@ -1,4 +1,5 @@
-@import "tailwindcss";
+/* Tailwindcss 暫時移除以解決建置問題 */
+/* @import "tailwindcss"; */
 
 :root {
   --background: #0a0a0a;
@@ -12,12 +13,13 @@
   --tech-glow: #00e676;
 }
 
-@theme inline {
+/* Tailwind theme 配置也暫時移除 */
+/* @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+} */
 
 body {
   color: var(--foreground);

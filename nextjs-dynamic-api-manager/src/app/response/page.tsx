@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -26,6 +26,7 @@ import {
   DialogContent,
   DialogActions,
   Collapse,
+  CircularProgress,
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -39,7 +40,8 @@ import { Response, ResponseListParams } from '@/types/response';
 import { ServiceType } from '@/types/models';
 import { responseService } from '@/services/response.service';
 
-export default function ResponsePage() {
+// 將使用 searchParams 的邏輯抽離到單獨組件
+function ResponsePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const publishUri = searchParams.get('publishUri') || '';
@@ -504,5 +506,18 @@ export default function ResponsePage() {
         </Alert>
       </Snackbar>
     </Box>
+  );
+}
+
+// 使用 Suspense 包裹的主組件
+export default function ResponsePage() {
+  return (
+    <Suspense fallback={
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    }>
+      <ResponsePageContent />
+    </Suspense>
   );
 }

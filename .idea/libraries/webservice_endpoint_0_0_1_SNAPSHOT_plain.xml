@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="webservice-endpoint-0.0.1-SNAPSHOT-plain">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/endpoints/company-endpoint/build/libs/webservice-endpoint-0.0.1-SNAPSHOT-plain.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

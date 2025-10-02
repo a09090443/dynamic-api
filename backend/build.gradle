@@ -22,7 +22,7 @@ dependencies {
     implementation 'io.github.a09090443:web-service-spring-boot-starter:3.2.5.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator:3.2.5'
-    implementation 'org.springframework.boot:spring-boot-devtools:3.2.5'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:3.2.5'  // 只在開發時使用，不打包到 JAR
     implementation 'net.sf.jasperreports:jasperreports:6.20.6'
     implementation 'com.github.librepdf:openpdf:1.3.30'
     implementation 'org.eclipse.persistence:eclipselink:3.0.4'
@@ -39,35 +39,98 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.register('installAngular', Exec) {
-    workingDir file('../frontend').absolutePath
-    def nodeDir = file('../tools/node-v20.15.0-win-x64').absolutePath
+// ======================================================
+// 前端建置任務 - Next.js
+// ======================================================
+
+// Next.js 任務
+tasks.register('installNextjs', Exec) {
+    workingDir file('../nextjs-dynamic-api-manager').absolutePath
+    def nodeDir = file('../tools/node-v22.20.0-win-x64').absolutePath
     def npmPath = "${nodeDir}/npm.cmd"
     environment 'PATH', nodeDir + File.pathSeparator + System.env.PATH
     commandLine npmPath, 'install'
 }
 
-tasks.register('buildAngular', Exec) {
-    dependsOn 'installAngular'
-    workingDir file('../frontend').absolutePath
-    // 使用 node.exe 和 npm.cmd 的完整路徑
-    def nodeDir = file('../tools/node-v20.15.0-win-x64').absolutePath
+tasks.register('buildNextjs', Exec) {
+    dependsOn 'installNextjs'
+    workingDir file('../nextjs-dynamic-api-manager').absolutePath
+    def nodeDir = file('../tools/node-v22.20.0-win-x64').absolutePath
     def npmPath = "${nodeDir}/npm.cmd"
 
-    def angularEnv = project.hasProperty('env') && project.property('env') == 'pro' ? 'production' : 'development'
-
+    // 明確設定 NODE_ENV 為 production，確保 Gradle 建置使用生產模式
+    // 這樣不會影響到開發者手動執行 npm run dev
+    environment 'NODE_ENV', 'production'
     environment 'PATH', nodeDir + File.pathSeparator + System.env.PATH
-    commandLine npmPath, 'run', 'build', '--', '--configuration', angularEnv, '--base-href', '/dynamic-api/'
+
+    // 使用 npm run build（已在 package.json 中配置）
+    commandLine npmPath, 'run', 'build'
 }
 
-tasks.register('copyAngularBuild', Copy) {
-    dependsOn 'buildAngular'
-    from '../frontend/dist'
+// 清空 static 目錄任務
+tasks.register('cleanStatic', Delete) {
+    delete 'src/main/resources/static'
+    
+    doFirst {
+        println "清空 src/main/resources/static 目錄"
+    }
+}
+
+tasks.register('copyNextjsBuild', Copy) {
+    dependsOn 'buildNextjs', 'cleanStatic'
+    // 確保先清空再複製
+    mustRunAfter 'cleanStatic'
+    
+    from '../nextjs-dynamic-api-manager/out'
     into 'src/main/resources/static'
+
+    doFirst {
+        println "複製 Next.js 建置產物到 src/main/resources/static"
+    }
+    
+    doLast {
+        // 重命名子目錄中的 index.html 為對應的頁面名稱
+        def staticDir = file('src/main/resources/static')
+        def pages = ['endpoint', 'restful', 'response', 'test-api', 'about']
+        
+        pages.each { page ->
+            def pageDir = new File(staticDir, page)
+            def indexFile = new File(pageDir, 'index.html')
+            def targetFile = new File(staticDir, "${page}.html")
+            
+            if (indexFile.exists()) {
+                // 複製並重命名
+                copy {
+                    from indexFile
+                    into staticDir
+                    rename { "${page}.html" }
+                }
+                println "  ✓ 複製 ${page}/index.html -> ${page}.html"
+            }
+        }
+        
+        def fileCount = fileTree('src/main/resources/static').files.size()
+        println "✅ 複製完成，共 ${fileCount} 個檔案"
+    }
 }
 
+// 統一的前端建置任務
+tasks.register('buildFrontend') {
+    group = 'frontend'
+    description = "建置前端專案 (Next.js)"
+    dependsOn 'copyNextjsBuild'
+    
+    doFirst {
+        println "=========================================="
+        println "建置前端: Next.js"
+        println "環境: ${project.hasProperty('env') ? project.property('env') : 'dev'}"
+        println "=========================================="
+    }
+}
+
+// 整合到 processResources
 tasks.named('processResources') {
-    dependsOn 'copyAngularBuild'
+    dependsOn 'buildFrontend'
 }
 
 def env = project.hasProperty('env') ? project.property('env') : 'dev'

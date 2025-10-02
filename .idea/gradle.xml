@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/backend" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/backend" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/base-jar" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/base-jar" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/endpoints/company-endpoint" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/endpoints/company-endpoint" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/restfuls/company-restful" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/restfuls/company-restful" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-TW">
+    <html lang="zh-TW" suppressHydrationWarning>
       <head>
         <title>Dynamic API Tech Manager</title>
         <meta name="description" content="科技風格的動態API管理系統" />
@@ -22,7 +22,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider theme={techTheme}>
           <CssBaseline />
           <Header />

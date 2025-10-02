@@ -1,13 +1,19 @@
 import type { NextConfig } from "next";
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   // 環境變數配置
   env: {
     BACKEND_API_URL: process.env.BACKEND_API_URL,
   },
   
-  // 禁用自動添加尾隨斜線
-  trailingSlash: false,
+  // 只在生產模式啟用尾隨斜線（開發模式不需要）
+  trailingSlash: isProduction,
+  
+  // 只在生產建置時設置 basePath（開發模式不需要）
+  ...(isProduction && { basePath: '/dynamic-api' }),
   
   // 編譯配置
   typescript: {
@@ -17,26 +23,12 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
   
-  // 實驗性功能
-  experimental: {
-    // 啟用 Turbopack (已在 package.json scripts 中使用)
-  },
+  // 只在生產建置時使用靜態導出
+  ...(isProduction && { output: 'export' }),
   
-  // 輸出配置
-  output: 'standalone',
-  
-  // Headers 配置
-  async headers() {
-    return [
-      {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
-        ],
-      },
-    ];
+  // 圖片優化配置
+  images: {
+    unoptimized: true,
   },
 };
 

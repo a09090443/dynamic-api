@@ -5,9 +5,6 @@ const nextConfig = {
     BACKEND_API_URL: process.env.BACKEND_API_URL,
   },
 
-  // 禁用自動添加尾隨斜線
-  trailingSlash: false,
-
   // 編譯配置
   typescript: {
     ignoreBuildErrors: false,
@@ -21,29 +18,16 @@ const nextConfig = {
     // 啟用 Turbopack (已在 package.json scripts 中使用)
   },
 
-  // 開發模式不使用 export，生產構建時使用 export
-  // output: 'export', // 僅在構建生產版本時取消註釋
-  
-  // 靜態導出時的基礎路徑 (僅用於生產構建)
-  // basePath: '/dynamic-api', // 僅在構建生產版本時取消註釋
+  // 生產模式配置 - 用於 Gradle 建置
+  ...(process.env.NODE_ENV === 'production' && {
+    output: 'export', // 靜態導出
+    basePath: '/dynamic-api', // 與 Spring Boot 路徑匹配
+    trailingSlash: true, // 只在生產模式啟用尾隨斜線
+  }),
   
   // 圖片優化配置
   images: {
-    unoptimized: false, // 開發模式下使用優化
-  },
-  
-  // Headers 配置
-  async headers() {
-    return [
-      {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
-        ],
-      },
-    ];
+    unoptimized: true, // 靜態導出需要禁用圖片優化
   },
 };
 
