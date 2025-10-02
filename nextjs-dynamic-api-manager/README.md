@@ -233,6 +233,51 @@ npm run lint             # ESLint 程式碼檢查
 3. **敏感資訊** (如 API Keys) 不應使用 `NEXT_PUBLIC_` 前綴
 4. **.env.local** 檔案不應提交到版本控制
 
+## 🔧 故障排除
+
+### 問題：頁面顯示 404 錯誤或重定向循環
+
+**原因**: `next.config.js` 中設定了 `output: 'export'` 和 `basePath: '/dynamic-api'`
+
+**解決方案**: 
+1. 開啟 `next.config.js` 檔案
+2. 註釋掉或移除以下設定（僅開發環境）：
+   ```javascript
+   // output: 'export',        // ← 註釋此行
+   // basePath: '/dynamic-api', // ← 註釋此行
+   ```
+3. 重新啟動開發服務器：`npm run dev`
+
+**說明**: 
+- `output: 'export'` 用於靜態導出，開發環境不需要
+- `basePath` 用於生產部署時的路徑前綴，開發環境不需要
+- 建置生產版本時再取消註釋這些設定
+
+### 問題：API 請求失敗
+
+**檢查清單**:
+1. ✅ 後端服務是否在運行？(http://localhost:8080)
+2. ✅ 環境變數 `BACKEND_API_URL` 是否正確？
+3. ✅ 是否有防火牆或代理阻擋請求？
+4. ✅ 檢查瀏覽器控制台的錯誤訊息
+
+### 問題：無法啟動開發服務器
+
+**解決步驟**:
+```bash
+# 1. 刪除 node_modules 和 lock 檔案
+rm -rf node_modules package-lock.json
+
+# 2. 清除 Next.js 快取
+rm -rf .next
+
+# 3. 重新安裝依賴
+npm install
+
+# 4. 啟動開發服務器
+npm run dev
+```
+
 ## 📈 建置結果
 
 ✅ **建置成功** - 所有組件和頁面都可以正常編譯  
