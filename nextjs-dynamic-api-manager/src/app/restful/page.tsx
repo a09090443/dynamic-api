@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Paper,
   Table,
@@ -38,6 +38,7 @@ import RestfulForm from '@/forms/RestfulForm';
 
 const RestfulPage: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [restfuls, setRestfuls] = useState<Restful[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [page, setPage] = useState(0);
@@ -62,9 +63,10 @@ const RestfulPage: React.FC = () => {
     }
   };
 
+  // 載入數據 - 當組件掛載時和路徑變化時
   useEffect(() => {
     loadRestfuls();
-  }, []);
+  }, [pathname]);
 
   // 過濾資料
   const filteredRestfuls = restfuls.filter(restful =>

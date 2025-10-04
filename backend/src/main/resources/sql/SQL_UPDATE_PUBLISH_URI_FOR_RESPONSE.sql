@@ -1,5 +1,5 @@
-UPDATE MOCK_RESPONSE t
-SET t.PUBLISH_URI = :newPublishUri, t.UPDATED_AT = :updatedAt
+UPDATE MOCK_RESPONSE
+SET PUBLISH_URI = :newPublishUri, UPDATED_AT = :updatedAt
 WHERE
-    t.PUBLISH_URI = :oriPublishUri
+    PUBLISH_URI = :oriPublishUri
 

@@ -31,6 +31,17 @@ apiClient.interceptors.response.use(
     if (appConfig.debugMode) {
       console.log('✅ API Response:', response.status, response.config.url);
     }
+    
+    // Check backend business code
+    // Backend returns: {code: number, message: string, data: any}
+    if (response.data && typeof response.data.code === 'number' && response.data.code !== 200) {
+      if (appConfig.debugMode) {
+        console.error('❌ API Business Error:', response.data.code, response.data.message);
+      }
+      // Throw error if backend code is not 200
+      throw new Error(response.data.message || `Request failed with code ${response.data.code}`);
+    }
+    
     return response;
   },
   (error) => {

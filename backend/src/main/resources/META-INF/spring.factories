@@ -1,2 +1,1 @@
-org.springframework.context.ApplicationContextInitializer=com.dynamicapi.config.H2ServerInitializer
-
+# SQLite doesn't require a server initializer

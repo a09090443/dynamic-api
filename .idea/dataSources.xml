@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="H2" uuid="dc74b324-2287-4761-ab86-5c0ffa10cc79">
-      <driver-ref>h2.unified</driver-ref>
+    <data-source source="LOCAL" name="mockapi.db" uuid="266b15b4-cab8-4b7d-b18f-ff1b1685720c">
+      <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>org.h2.Driver</jdbc-driver>
-      <jdbc-url>jdbc:h2:tcp://localhost:9092/$PROJECT_DIR$/../../tmp/webservice;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL</jdbc-url>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/../../tmp/mockapi.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

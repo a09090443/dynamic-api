@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Paper,
   Table,
@@ -40,6 +40,7 @@ import WsdlGenObjDialog from '@/dialogs/WsdlGenObjDialog';
 
 const EndpointPage: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [page, setPage] = useState(0);
@@ -65,9 +66,10 @@ const EndpointPage: React.FC = () => {
     }
   };
 
+  // 載入數據 - 當組件掛載時和路徑變化時
   useEffect(() => {
     loadEndpoints();
-  }, []);
+  }, [pathname]);
 
   // 過濾資料
   const filteredEndpoints = endpoints.filter(endpoint =>

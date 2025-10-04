@@ -61,6 +61,7 @@ function ResponsePageContent() {
   const [responseFormOpen, setResponseFormOpen] = useState(false);
   const [editingResponse, setEditingResponse] = useState<Response | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   // 表單狀態
   const [formData, setFormData] = useState({
@@ -74,6 +75,21 @@ function ResponsePageContent() {
       loadResponses();
     }
   }, [publishUri, serviceType]);
+
+  // 成功後倒數關閉對話框
+  useEffect(() => {
+    if (countdown && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      setResponseFormOpen(false);
+      setEditingResponse(null);
+      setFormData({ method: '', condition: '', responseContent: '' });
+      setCountdown(null);
+    }
+  }, [countdown]);
 
   const loadResponses = async () => {
     try {
@@ -179,8 +195,11 @@ function ResponsePageContent() {
         showMessage('回應新增成功', 'success');
       }
 
-      setResponseFormOpen(false);
+      // 立即重新載入數據
       await loadResponses();
+      
+      // 啟動倒數關閉對話框
+      setCountdown(3);
     } catch (error) {
       console.error('Failed to save response:', error);
       showMessage('儲存失敗', 'error');
@@ -438,12 +457,21 @@ function ResponsePageContent() {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* 成功訊息 */}
+            {countdown !== null && (
+              <Alert severity="success">
+                {editingResponse ? '回應更新成功' : '回應新增成功'}
+                {countdown > 0 && ` - 視窗將在 ${countdown} 秒後關閉`}
+              </Alert>
+            )}
+            
             <TextField
               label="呼叫方法名稱"
               value={formData.method}
               onChange={(e) => setFormData({ ...formData, method: e.target.value })}
               required
               fullWidth
+              disabled={countdown !== null}
             />
             <TextField
               label="Response條件"
@@ -453,6 +481,7 @@ function ResponsePageContent() {
               rows={4}
               fullWidth
               helperText={'JSON格式的條件，例如: {"employees":null,"name":"Jen","taxId":"123456789"}'}
+              disabled={countdown !== null}
             />
             <TextField
               label="回應內容"
@@ -462,12 +491,13 @@ function ResponsePageContent() {
               rows={8}
               fullWidth
               helperText="回應的內容，可以是XML、JSON等格式"
+              disabled={countdown !== null}
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setResponseFormOpen(false)}>取消</Button>
-          <Button onClick={handleSave} variant="contained">
+          <Button onClick={() => setResponseFormOpen(false)} disabled={countdown !== null}>取消</Button>
+          <Button onClick={handleSave} variant="contained" disabled={countdown !== null}>
             {editingResponse ? '更新' : '新增'}
           </Button>
         </DialogActions>
