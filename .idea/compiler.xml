@@ -14,7 +14,7 @@
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.32/17d46b3e205515e1e8efd3ee4d57ce8018914163/lombok-1.18.32.jar" />
         </processorPath>
-        <module name="base-jar.main" />
+        <module name="company-endpoint.main" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -23,6 +23,7 @@
       <module name="compant-restful" target="17" />
       <module name="compant-restful.main" target="17" />
       <module name="compant-restful.test" target="17" />
+      <module name="company-restful" target="17" />
       <module name="webservice-endpoint" target="17" />
       <module name="webservice-endpoint.main" target="17" />
       <module name="webservice-endpoint.test" target="17" />

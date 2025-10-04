@@ -6,7 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/base-jar.main.iml" filepath="$PROJECT_DIR$/.idea/modules/base-jar.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/company-endpoint.main.iml" filepath="$PROJECT_DIR$/.idea/modules/company-endpoint.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/company-restful.main.iml" filepath="$PROJECT_DIR$/.idea/modules/company-restful.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/dynamic-api.iml" filepath="$PROJECT_DIR$/.idea/dynamic-api.iml" />
     </modules>
   </component>
 </project>

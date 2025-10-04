@@ -2,6 +2,7 @@ package com.company.controller;
 
 import com.company.dto.CompanyDTO;
 import com.company.dto.CompanyResponseDTO;
+import com.dynamicapi.enums.ServiceType;
 import com.dynamicapi.jarbase.RestfulBase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +27,7 @@ public class CompanyController extends RestfulBase {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(exampleDTO);
         log.info("request json:{}", jsonString);
-        String responseContent = mockResponseDao.findByPrimaryKey("company", "getResponseData", jsonString, String.class);
+        String responseContent = findByPrimaryKey("company", "getResponseData", jsonString, String.class);
         CompanyResponseDTO companyResponseDTO = objectMapper.readValue(responseContent, CompanyResponseDTO.class);
         return companyResponseDTO;
     }
