@@ -10,7 +10,7 @@ paths:
 ```bash
 cd docs-site
 npm install
-npm start                 # http://localhost:3000
+npm start                 # http://localhost:3000/dynamic-api/
 npm start -- --port 3001  # 與 Next.js 開發模式同時啟動時避開 3000
 npm run build             # 驗證連結，產生搜尋索引與 llms.txt
 npm run serve             # 預覽建置結果（站內搜尋只在這裡可用）
@@ -36,7 +36,8 @@ npm run clear             # 清除快取
 
 ## 格式
 
-- 每個檔案的 frontmatter 要有 `id`、`title`、`sidebar_label`。
+- 每個檔案的 frontmatter 要有 `id`、`title`、`description`、`sidebar_label`。`description` 是一句話的本頁涵蓋範圍，會成為 `llms.txt` 的摘要，寫成「主題：重點 A、重點 B…」，不要寫「見某頁」。
+- 頁面 H1 必須與 `title` 完全相同，且每頁只能有一個 H1（較短的側邊欄名稱放 `sidebar_label`）。`docusaurus-plugin-llms` 只會移除與 `title` 相同的 H1，再把其餘標題降一級；不一致時 `llms-full.txt` 的頁面分界會與章節混在一起。
 - 內部連結使用相對路徑並帶 `.md`（`[管理 Endpoint](../guide/endpoint.md)`），不要使用 `[[...]]` 或 `/docs/...` 絕對路徑。`onBrokenLinks` 與 `onBrokenMarkdownLinks` 皆為 `throw`。
 - 表格儲存格中的 `|`（包括 inline code 內）要寫成 `\|`。
 - 圖表使用 Mermaid，注意：
@@ -47,7 +48,7 @@ npm run clear             # 清除快取
 ## 新增或刪除頁面
 
 1. `sidebars.js` 加入對應 sidebar。
-2. `docusaurus.config.js` 中 `docusaurus-plugin-llms` 的 `includeOrder` 加入 `docs/<路徑>.md`（規則需含斜線，否則會以檔名比對到其他同名檔案）。
+2. `docusaurus.config.js` 的 `LLM_SECTIONS` 對應區塊的 `pages` 加入頁面路徑（不含 `.md`）；它同時決定 `llms.txt` 的順序與分區檔 `llms-{id}.txt`。
 3. 若是重要入口，更新 `docs/intro.md` 的導覽表。
 
 ## 驗證
@@ -57,4 +58,6 @@ cd docs-site
 npm run build   # 必須成功，且沒有 broken links／anchors 警告
 ```
 
-建置會一併產生搜尋索引與 `llms.txt`、`llms-full.txt`；搜尋要用 `npm run serve` 才能測試。
+建置會一併產生搜尋索引、`robots.txt`、`llms.txt`、`llms-full.txt`、分區 `llms-{id}*.txt` 與每頁的 `.md`；搜尋要用 `npm run serve` 才能測試。
+
+部署網址預設 `https://a09090443.github.io/dynamic-api/`（GitHub Pages，由 `.github/workflows/docs-site.yml` 於 push 後自動部署），可用環境變數 `DOCS_SITE_URL`、`DOCS_BASE_URL` 覆寫；不要把網址寫死在 `static/`。

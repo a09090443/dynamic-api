@@ -1,6 +1,7 @@
 ---
 id: overview
 title: 2. 系統概述
+description: '系統目標、目標使用者與利害關係人、主要使用情境摘要與高階系統架構。'
 sidebar_label: 2. 系統概述
 ---
 

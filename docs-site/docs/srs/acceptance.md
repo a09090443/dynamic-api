@@ -1,12 +1,15 @@
 ---
 id: acceptance
 title: 7–8. 驗收、測試與附錄
+description: '驗收準則（Go／No-Go）、測試範圍與優先級、KI-* 已知問題清單，以及需求追蹤表。'
 sidebar_label: 7–8. 驗收與附錄
 ---
 
-# 7. 驗收與測試範圍
+# 7–8. 驗收、測試與附錄
 
-## 7.1 驗收準則（Go / No-Go）
+## 7. 驗收與測試範圍
+
+### 7.1 驗收準則（Go / No-Go）
 
 | # | 準則 | 驗證方式 |
 |---|---|---|
@@ -17,7 +20,7 @@ sidebar_label: 7–8. 驗收與附錄
 | AC-05 | 回應停用後同一請求不再命中 | 手動 |
 | AC-06 | 生產模式單一 JAR 可提供管理介面 | `bootJar` 後 `java -jar` 開啟 `/dynamic-api/` |
 
-## 7.2 測試範圍與優先級
+### 7.2 測試範圍與優先級
 
 | 優先級 | 範圍 |
 |---|---|
@@ -25,7 +28,7 @@ sidebar_label: 7–8. 驗收與附錄
 | P1 | FR-EP-004～006、FR-RS-004～006、FR-MR-002、FR-MR-003、FR-MR-005、FR-JAR-002 |
 | P2 | FR-EP-008、FR-MR-007、FR-MR-008、FR-TOOL-001、FR-TOOL-002、FR-RS-008 |
 
-## 7.3 已知問題（驗收時需排除或確認）
+### 7.3 已知問題（驗收時需排除或確認）
 
 | 編號 | 問題 | 相關需求 |
 |---|---|---|
@@ -36,9 +39,9 @@ sidebar_label: 7–8. 驗收與附錄
 | KI-05 | 前端建置任務僅支援 Windows | NFR-MNT-04 |
 | KI-06 | `test-api` 頁面呼叫已不存在的代理路徑 | — |
 
-# 8. 附錄
+## 8. 附錄
 
-## 8.1 需求追蹤表
+### 8.1 需求追蹤表
 
 | 需求 | 設計（SDD） | 管理 API | 使用者文件 |
 |---|---|---|---|
@@ -49,6 +52,6 @@ sidebar_label: 7–8. 驗收與附錄
 | FR-TOOL-001 | [模組設計](../sdd/modules.md) | `POST /ws/genWsdlObj` | [WSDL 轉 Java 工具](../guide/wsdl-tool.md) |
 | FR-TOOL-002 | [模組設計](../sdd/modules.md) | `GET /common/logs/stream` | [疑難排解](../guide/troubleshooting.md) |
 
-## 8.2 變更紀錄
+### 8.2 變更紀錄
 
 見 [0. 文件資訊](./intro.md#變更紀錄)。

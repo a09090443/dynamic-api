@@ -1,6 +1,7 @@
 ---
 id: dynamic-loading
 title: 3.2 動態載入設計
+description: '動態載入設計：CustomClassLoader 與 ClassLoaderSingletonEnum、以 CXF 發布 Endpoint、RESTful 動態註冊、生命週期與類別卸載。'
 sidebar_label: 3.2 動態載入設計
 ---
 

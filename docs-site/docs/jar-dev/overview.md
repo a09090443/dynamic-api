@@ -1,6 +1,7 @@
 ---
 id: overview
 title: JAR 開發總覽
+description: '自訂 JAR 的開發流程與執行模型：父優先 ClassLoader、只載入自己的類別、由 Spring 建立並可注入 Bean，以及可使用的套件。'
 sidebar_label: 開發總覽
 ---
 

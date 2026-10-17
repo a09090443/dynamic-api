@@ -1,6 +1,7 @@
 ---
 id: endpoint
-title: 管理 Endpoint（SOAP）
+title: 管理 Endpoint（SOAP Web Service）
+description: '在管理介面新增、啟用、停用、編輯、刪除 SOAP Endpoint 的操作方式，以及 Ignore CDATA 選項的作用。'
 sidebar_label: 管理 Endpoint
 ---
 

@@ -1,6 +1,7 @@
 ---
 id: base-jar
 title: base-jar 與 Mock 查詢 API
+description: 'base-jar 提供的 RestfulBase、WebserviceBase 與 MockResponseDao，如何放進專案，以及 findByPrimaryKey 的查詢行為。'
 sidebar_label: base-jar 與查詢 API
 ---
 

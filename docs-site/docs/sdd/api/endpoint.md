@@ -1,10 +1,11 @@
 ---
 id: endpoint
-title: 5.2 Endpoint API（/ws）
+title: 5.2 Endpoint API（/dynamic-api/ws）
+description: 'Endpoint 管理 API（/dynamic-api/ws）規格：DTO 結構，以及查詢、新增、修改、刪除、啟停用與 WSDL 轉換端點。'
 sidebar_label: 5.2 Endpoint API
 ---
 
-# 5.2 Endpoint API（`/dynamic-api/ws`）
+# 5.2 Endpoint API（/dynamic-api/ws）
 
 ## 資料結構
 

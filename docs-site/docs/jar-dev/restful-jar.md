@@ -1,6 +1,7 @@
 ---
 id: restful-jar
 title: 開發 RESTful JAR
+description: '以 company-restful 為藍本開發 RESTful JAR：專案結構、build.gradle.kts、Controller 規則清單與 @ResponseResultBody 的影響。'
 sidebar_label: 開發 RESTful JAR
 ---
 

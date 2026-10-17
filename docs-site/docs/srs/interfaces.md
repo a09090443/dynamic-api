@@ -1,6 +1,7 @@
 ---
 id: interfaces
 title: 5. 外部介面需求
+description: '外部介面需求：管理介面、管理 API 與動態 SOAP／REST 服務等系統介面，以及通訊協定、Port、Context Path 與訊息格式。'
 sidebar_label: 5. 外部介面需求
 ---
 

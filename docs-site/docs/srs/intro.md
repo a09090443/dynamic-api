@@ -1,6 +1,7 @@
 ---
 id: intro
-title: 0–1. 文件資訊與簡介
+title: 需求規格書（SRS）
+description: 'SRS 的文件資訊與變更紀錄，以及文件目的、系統範圍、讀者角色與參考文件。'
 sidebar_label: 0–1. 文件資訊與簡介
 ---
 
@@ -20,7 +21,7 @@ sidebar_label: 0–1. 文件資訊與簡介
 
 | 版本 | 日期 | 說明 |
 |---|---|---|
-| 1.x | — | 初版 SRS（`docs/SRS.md` 與舊版網站），部分內容與實作不符 |
+| 1.x | — | 初版 SRS（`docs/SRS.md` 與舊版網站，已移除，可從 git 歷史取得），部分內容與實作不符 |
 | 2.0 | 2026-10-17 | 依程式碼重新整理：修正 JAR 儲存方式、狀態值、上傳限制；新增 RESTful 路徑規則、Mock 比對規則、已知問題與驗收範圍 |
 
 ## 1. 簡介
@@ -69,4 +70,4 @@ sidebar_label: 0–1. 文件資訊與簡介
 | 使用者指南 | [使用者指南](../guide/overview.md) |
 | JAR 開發指南 | [JAR 開發總覽](../jar-dev/overview.md) |
 | Postman 範例集合 | `postman/Endpoints.postman_collection.json` |
-| 前版需求規格書 | `docs/SRS.md` |
+| 前版需求規格書 | `docs/SRS.md`（已移除，可從 git 歷史取得） |

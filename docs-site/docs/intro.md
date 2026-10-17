@@ -1,6 +1,7 @@
 ---
 id: intro
-title: 文件總覽
+title: Dynamic API Manager 文件
+description: 'Dynamic API Manager 文件入口：系統用途、三步驟運作流程、依角色建議的閱讀路徑與預設網址。'
 slug: /intro
 sidebar_label: 文件總覽
 ---

@@ -1,10 +1,11 @@
 ---
 id: common
-title: 5.4 共用 API（/common）
+title: 5.4 共用 API（/dynamic-api/common）
+description: '共用 API（/dynamic-api/common）規格：JAR 上傳、Mock 回應的查詢、新增、修改、刪除、啟停用，以及日誌串流。'
 sidebar_label: 5.4 共用 API
 ---
 
-# 5.4 共用 API（`/dynamic-api/common`）
+# 5.4 共用 API（/dynamic-api/common）
 
 ## POST `/uploadJarFile`
 

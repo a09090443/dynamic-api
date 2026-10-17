@@ -1,6 +1,7 @@
 ---
 id: quick-start
-title: 快速上手
+title: 快速上手：部署第一個 Mock API
+description: '以 restfuls/company-restful 範例走完建置 JAR、建立 RESTful、新增 Mock 回應到呼叫 API 的完整流程。'
 sidebar_label: 快速上手
 ---
 

@@ -1,10 +1,11 @@
 ---
 id: restful
-title: 5.3 RESTful API（/api）
+title: 5.3 RESTful API（/dynamic-api/api）
+description: 'RESTful 管理 API（/dynamic-api/api）規格：DTO 結構，查詢、新增、修改、刪除、啟停用端點，以及 Actuator 路由查詢。'
 sidebar_label: 5.3 RESTful API
 ---
 
-# 5.3 RESTful API（`/dynamic-api/api`）
+# 5.3 RESTful API（/dynamic-api/api）
 
 ## 資料結構
 

@@ -1,6 +1,7 @@
 ---
 id: intro
-title: 0–1. 文件資訊與簡介
+title: 設計規格書（SDD）
+description: 'SDD 的文件資訊、目的、範圍、讀者與參考文件，並提供各章節導覽。'
 sidebar_label: 0–1. 文件資訊與簡介
 ---
 

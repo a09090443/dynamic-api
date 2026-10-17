@@ -1,6 +1,7 @@
 ---
 id: use-cases
 title: 2.3 使用情境
+description: 'UC-01～UC-07 使用情境（部署 SOAP／RESTful 服務、多情境回應、切換情境、更新 JAR、WSDL 轉換、重啟恢復）與需求對照。'
 sidebar_label: 2.3 使用情境
 ---
 

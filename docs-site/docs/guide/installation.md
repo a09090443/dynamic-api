@@ -1,6 +1,7 @@
 ---
 id: installation
 title: 安裝與啟動
+description: '環境需求、資料目錄準備，以及生產模式、開發模式、文件網站三種啟動方式，含 Port 一覽與非 Windows 環境說明。'
 sidebar_label: 安裝與啟動
 ---
 
@@ -85,7 +86,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 ```bash
 cd docs-site
 npm install   # 第一次
-npm start     # http://localhost:3000
+npm start     # http://localhost:3000/dynamic-api/
 ```
 
 Next.js 開發模式也使用 port 3000，兩者同時啟動時請改用 `npm start -- --port 3001`。

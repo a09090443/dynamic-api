@@ -1,6 +1,7 @@
 ---
 id: endpoint-jar
 title: 開發 Endpoint JAR（SOAP）
+description: '以 company-endpoint 為藍本開發 SOAP Endpoint JAR：從 WSDL 產生類別、SEI 與實作類別、建立時的欄位對應、JAXB 命名空間與 SOAP Fault。'
 sidebar_label: 開發 Endpoint JAR
 ---
 

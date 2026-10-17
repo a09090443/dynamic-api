@@ -1,6 +1,7 @@
 ---
 id: condition-design
 title: Condition 設計指南
+description: 'condition 字串的設計策略比較、使用請求 JSON 時的欄位順序陷阱、如何印出 condition，以及給 Mock 維護者的說明範本。'
 sidebar_label: Condition 設計指南
 ---
 

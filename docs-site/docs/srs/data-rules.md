@@ -1,6 +1,7 @@
 ---
 id: data-rules
-title: 6. 資料與業務規則
+title: 6. 資料與業務規則概要
+description: '重要資料物件、關鍵欄位與約束，以及服務狀態流轉等共通業務規則；完整欄位定義在 SDD 資料設計。'
 sidebar_label: 6. 資料與業務規則
 ---
 

@@ -1,6 +1,7 @@
 ---
 id: deployment
 title: 8. 部署、設定與運維
+description: '建置流程（前端建置串進 processResources）、部署步驟、組態管理、監控與日誌、備份與還原。'
 sidebar_label: 8. 部署、設定與運維
 ---
 

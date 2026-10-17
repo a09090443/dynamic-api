@@ -1,6 +1,7 @@
 ---
 id: glossary
 title: 1.4 名詞定義與縮寫
+description: 'SRS 使用的名詞定義與縮寫，例如 Endpoint、Publish URI、Mock 回應、method、condition、Service Type、ClassLoader、CDATA。'
 sidebar_label: 1.4 名詞定義
 ---
 

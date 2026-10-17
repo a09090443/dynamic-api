@@ -1,6 +1,7 @@
 ---
 id: data
 title: 4. 資料設計
+description: '資料設計：概念模型、各資料表欄位、JPA 對應、Flyway 遷移腳本、具名 SQL 與資料一致性策略。'
 sidebar_label: 4. 資料設計
 ---
 

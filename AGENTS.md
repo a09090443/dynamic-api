@@ -75,7 +75,6 @@ Dynamic API Manager 是一套 Mock API 伺服器：在執行期從上傳的 JAR 
 | `docs-site/` | 文件網站（Docusaurus） |
 | `postman/` | 管理 API 與 SOAP 呼叫範例集合 |
 | `frontend/` | 舊版 Angular 管理介面，已不使用，不要修改 |
-| `docs/` | 舊版單檔 SRS / SDD，內容已過時，以 `docs-site/` 為準 |
 | `tools/` | Gradle 前端建置使用的 Windows 版 Node.js 22，不要修改 |
 
 ## 常用命令（Windows；macOS / Linux 用 `./gradlew`）

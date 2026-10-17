@@ -1,6 +1,7 @@
 ---
 id: mock-response
 title: 管理 Mock 回應
+description: 'Mock 回應的比對規則（publishUri、method、condition、serviceType 完全相等且啟用）、欄位說明、常用操作與多情境設計方式。'
 sidebar_label: 管理 Mock 回應
 ---
 

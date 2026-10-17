@@ -1,6 +1,7 @@
 ---
 id: architecture
 title: 2. 系統總體設計
+description: '系統總體架構：單體 Spring Boot 的四個邏輯區塊、單機部署拓撲、關鍵技術與設計限制。'
 sidebar_label: 2. 系統總體設計
 ---
 

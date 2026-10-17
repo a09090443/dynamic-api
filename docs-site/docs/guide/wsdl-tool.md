@@ -1,6 +1,7 @@
 ---
 id: wsdl-tool
 title: WSDL 轉 Java 工具
+description: '使用內建 Apache CXF wsdl2java 把 WSDL 轉成 Java 原始碼 ZIP，包含管理介面操作、API 呼叫與轉換參數。'
 sidebar_label: WSDL 轉 Java 工具
 ---
 

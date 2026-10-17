@@ -1,6 +1,7 @@
 ---
 id: security-errors
-title: 7. 安全性與錯誤處理
+title: 7. 安全性與錯誤處理設計
+description: '安全性設計（無認證，僅限受信任內部網路）、資料保護、例外類型與處理層次，以及建議的統一錯誤格式。'
 sidebar_label: 7. 安全性與錯誤處理
 ---
 

@@ -1,6 +1,7 @@
 ---
 id: tools
 title: 3.5 輔助工具
+description: 'FR-TOOL-001 WSDL 轉 Java 原始碼與 FR-TOOL-002 日誌即時串流的需求。'
 sidebar_label: 3.5 輔助工具
 ---
 

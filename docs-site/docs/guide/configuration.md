@@ -1,6 +1,7 @@
 ---
 id: configuration
 title: 設定參考
+description: '後端 application.yml、resources.properties、data-source.properties 與前端環境變數的設定鍵、預設值，以及 CORS 設定。'
 sidebar_label: 設定參考
 ---
 

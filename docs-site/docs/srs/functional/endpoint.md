@@ -1,6 +1,7 @@
 ---
 id: endpoint
 title: 3.2 Endpoint 管理（SOAP）
+description: 'FR-EP-001～008 Endpoint（SOAP）管理需求：新增、啟用、停用、編輯、刪除、查詢、啟動恢復與 CDATA 處理。'
 sidebar_label: 3.2 Endpoint 管理
 ---
 

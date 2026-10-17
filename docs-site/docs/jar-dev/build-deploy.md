@@ -1,6 +1,7 @@
 ---
 id: build-deploy
 title: 打包、上傳與驗證
+description: '自訂 JAR 的打包（-plain.jar）、透過管理介面或 API 上傳並建立服務、啟用後驗證，以及更新 JAR 版本的步驟。'
 sidebar_label: 打包、上傳與驗證
 ---
 

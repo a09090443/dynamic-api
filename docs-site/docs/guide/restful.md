@@ -1,6 +1,7 @@
 ---
 id: restful
 title: 管理 RESTful
+description: '在管理介面管理 RESTful 服務：新增欄位、服務網址組成規則、啟用時的載入與路徑檢查、查看已註冊路由。'
 sidebar_label: 管理 RESTful
 ---
 

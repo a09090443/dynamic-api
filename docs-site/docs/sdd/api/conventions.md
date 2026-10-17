@@ -1,6 +1,7 @@
 ---
 id: conventions
 title: 5.1 管理 API 概述與慣例
+description: '管理 API 的端點分組、共通慣例、{code, message, data} 回應格式（驗證失敗為 HTTP 200 + code=400），以及 Postman 範例集合。'
 sidebar_label: 5.1 概述與慣例
 ---
 

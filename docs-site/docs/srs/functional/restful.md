@@ -1,6 +1,7 @@
 ---
 id: restful
 title: 3.3 RESTful 管理
+description: 'FR-RS-001～008 RESTful 管理需求：與 Endpoint 管理的差異、專屬規則與查詢已註冊路由。'
 sidebar_label: 3.3 RESTful 管理
 ---
 

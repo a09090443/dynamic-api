@@ -105,7 +105,7 @@ npm install  # 首次需要
 npm start
 ```
 
-**預設訪問**: http://localhost:3000
+**預設訪問**: http://localhost:3000/dynamic-api/
 
 ### ⚠️ Port 衝突解決方案
 
@@ -116,7 +116,7 @@ npm start
 cd docs-site
 npm start -- --port 3001
 ```
-**訪問**: http://localhost:3001
+**訪問**: http://localhost:3001/dynamic-api/
 
 **方案 2：修改 Next.js Port**
 ```bash
@@ -900,8 +900,6 @@ chmod +x gradlew
 - **環境隔離說明.md**: 開發/生產環境隔離原理
 - **PROJECT_STRUCTURE.md**: 專案結構詳細說明
 - **QUICK_START.md**: 快速上手指南
-- **docs/srs.md**: 完整需求規格書（SRS）
-- **docs/sdd.md**: 完整設計規格書（SDD）
 - **docs-site/**: Docusaurus 線上文檔網站（分章節版本）
 
 ---

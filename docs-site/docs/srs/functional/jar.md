@@ -1,6 +1,7 @@
 ---
 id: jar
 title: 3.1 JAR 檔案管理
+description: 'FR-JAR-* JAR 檔案上傳與狀態管理需求，說明 JAR 生命週期跟隨服務的規則與相關已知問題。'
 sidebar_label: 3.1 JAR 檔案管理
 ---
 

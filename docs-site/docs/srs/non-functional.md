@@ -1,6 +1,7 @@
 ---
 id: non-functional
 title: 4. 非功能性需求
+description: '以開發／測試工具定位為前提的非功能性需求：效能、可用性、安全性（無認證機制）、可維護性、使用性與合規。'
 sidebar_label: 4. 非功能性需求
 ---
 

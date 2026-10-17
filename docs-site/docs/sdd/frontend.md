@@ -1,6 +1,7 @@
 ---
 id: frontend
-title: 3.4 管理介面
+title: 3.4 管理介面（Next.js）
+description: 'Next.js 管理介面的目錄結構、API 呼叫設計、頁面流程，以及靜態匯出並打包進後端的方式。'
 sidebar_label: 3.4 管理介面
 ---
 

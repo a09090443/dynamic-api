@@ -1,6 +1,7 @@
 ---
 id: mock-response
 title: 3.4 Mock 回應管理
+description: 'FR-MR-001～008 Mock 回應管理需求：新增、查詢、編輯、啟停用、刪除、執行期查詢與 Publish URI 連動。'
 sidebar_label: 3.4 Mock 回應管理
 ---
 

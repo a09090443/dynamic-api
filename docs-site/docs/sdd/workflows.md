@@ -1,6 +1,7 @@
 ---
 id: workflows
-title: 6. 業務流程
+title: 6. 業務流程與演算法設計
+description: '新增並啟用、編輯、刪除服務、系統啟動恢復與執行期請求處理的流程，以及 RESTful 路徑驗證與日誌末尾讀取演算法。'
 sidebar_label: 6. 業務流程
 ---
 

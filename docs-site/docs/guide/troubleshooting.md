@@ -1,6 +1,7 @@
 ---
 id: troubleshooting
 title: 疑難排解與已知問題
+description: '日誌位置與即時串流，啟用失敗、呼叫 500、上傳 400、頁面 404 等常見問題的排查方式，以及已知問題一覽。'
 sidebar_label: 疑難排解
 ---
 

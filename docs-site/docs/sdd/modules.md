@@ -1,6 +1,7 @@
 ---
 id: modules
 title: 3.1 後端模組
+description: '後端套件結構與分層相依，以及 Endpoint、RESTful、共用功能、WSDL 轉換、啟動恢復各模組對應的類別。'
 sidebar_label: 3.1 後端模組
 ---
 

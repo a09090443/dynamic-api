@@ -1,6 +1,7 @@
 ---
 id: mock-engine
 title: 3.3 Mock 回應機制
+description: 'Mock 回應機制：系統只以四個鍵查詢回應字串、比對邏輯交給 JAR，含元件、查詢流程，以及 base-jar 與後端同名類別的關係。'
 sidebar_label: 3.3 Mock 回應機制
 ---
 

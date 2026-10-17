@@ -1,6 +1,7 @@
 ---
 id: overview
 title: 系統簡介與核心概念
+description: '系統組成（後端、管理介面、base-jar、範例 JAR）與核心概念：Endpoint、RESTful、Mock 回應、啟用狀態，以及一次請求的處理過程。'
 sidebar_label: 系統簡介
 ---
 
