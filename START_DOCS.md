@@ -21,7 +21,7 @@ npm --version
 ### 步驟 1：進入文件目錄
 
 ```bash
-cd website
+cd docs-site
 ```
 
 ### 步驟 2：安裝依賴
@@ -119,7 +119,7 @@ npm run clear
 ## 文件結構說明
 
 ```
-website/docs/
+docs-site/docs/
 ├── srs/                          # 需求規格書
 │   ├── intro.md                  # 文件資訊
 │   ├── introduction/             # 簡介章節
@@ -219,13 +219,13 @@ node --version
 
 若有任何問題，請參考：
 - [Docusaurus 官方文件](https://docusaurus.io/)
-- [website/README.md](website/README.md)（詳細說明）
+- [docs-site/README.md](docs-site/README.md)（詳細說明）
 
 ---
 
 **立即開始**：
 ```bash
-cd website
+cd docs-site
 npm install
 npm start
 ```
