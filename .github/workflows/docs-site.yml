@@ -3,7 +3,7 @@ name: 文件網站
 
 on:
   push:
-    branches: [master, new-frontend]
+    branches: [master]
     paths:
       - 'docs-site/**'
       - '.github/workflows/docs-site.yml'
@@ -45,6 +45,8 @@ jobs:
 
   deploy:
     needs: build
+    # 手動執行時也只允許 master 發布
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

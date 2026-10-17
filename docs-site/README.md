@@ -46,7 +46,7 @@ docs/
 | 分區 LLM 檔案 | `llms-{guide,jar-dev,srs,sdd}.txt`（連結清單）與 `llms-{…}-full.txt`（全文），由 `docusaurus.config.js` 的 `LLM_SECTIONS` 產生 |
 | AI 爬蟲設定 | `robots.txt` 於建置時依 `url` + `baseUrl` 自動產生（`docusaurus.config.js` 的 `robotsTxtPlugin`） |
 
-部署網址預設為 GitHub Pages 專案頁 `https://a09090443.github.io/dynamic-api/`，由 `.github/workflows/docs-site.yml` 在 `master`、`new-frontend` 有 `docs-site/**` 變更時自動建置並部署（也可在 Actions 頁手動執行）。部署到其他位置時，建置前以環境變數覆寫，`llms.txt`、sitemap、`robots.txt` 會一併套用：
+部署網址預設為 GitHub Pages 專案頁 `https://a09090443.github.io/dynamic-api/`，由 `.github/workflows/docs-site.yml` 在 `master` 有 `docs-site/**` 變更時自動建置並部署（也可在 Actions 頁對 `master` 手動執行）。部署到其他位置時，建置前以環境變數覆寫，`llms.txt`、sitemap、`robots.txt` 會一併套用：
 
 ```bash
 DOCS_SITE_URL=https://docs.example.com DOCS_BASE_URL=/ npm run build

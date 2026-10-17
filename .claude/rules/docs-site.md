@@ -60,4 +60,4 @@ npm run build   # 必須成功，且沒有 broken links／anchors 警告
 
 建置會一併產生搜尋索引、`robots.txt`、`llms.txt`、`llms-full.txt`、分區 `llms-{id}*.txt` 與每頁的 `.md`；搜尋要用 `npm run serve` 才能測試。
 
-部署網址預設 `https://a09090443.github.io/dynamic-api/`（GitHub Pages，由 `.github/workflows/docs-site.yml` 於 push 後自動部署），可用環境變數 `DOCS_SITE_URL`、`DOCS_BASE_URL` 覆寫；不要把網址寫死在 `static/`。
+部署網址預設 `https://a09090443.github.io/dynamic-api/`（GitHub Pages，由 `.github/workflows/docs-site.yml` 於 `master` push 後自動部署），可用環境變數 `DOCS_SITE_URL`、`DOCS_BASE_URL` 覆寫；不要把網址寫死在 `static/`。
