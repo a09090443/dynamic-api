@@ -149,23 +149,22 @@ public class CommonServiceImpl implements CommonService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMockResponse(MockResponseRequestDTO request) {
-        ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_RESPONSE);
-
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("publishUri", request.getPublishUri());
-        paramMap.put("method", request.getMethod());
-        paramMap.put("condition", request.getCondition());
-        paramMap.put("responseContent", request.getResponseContent());
-        paramMap.put("id", request.getId());
-        paramMap.put("updatedAt", DateTimeUtils.getDateNow());
+        // 由於 CONDITION 是複合主鍵的一部分，直接更新會有問題
+        // 改用刪除後重新插入的方式
         try {
-            mockResponseJDBC.update(resource, paramMap);
-        } catch (IncorrectResultSizeDataAccessException e) {
+            // 先刪除舊記錄（使用 ID）
+            if (request.getId() != null && !request.getId().isEmpty()) {
+                deleteMockResponse(request.getId());
+            }
+            
+            // 重新插入更新後的記錄
+            saveMockResponse(request);
+        } catch (Exception e) {
             log.error("publishUri:{}", request.getPublishUri());
             log.error("method:{}", request.getMethod());
             log.error("condition:{}", request.getCondition());
             log.error("responseContent:{}", request.getResponseContent());
-            throw new WebserviceException("更新 Mock Response 失敗");
+            throw new WebserviceException("更新 Mock Response 失敗: " + e.getMessage());
         }
     }
 

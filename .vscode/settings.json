@@ -1,0 +1,6 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.dependency.packagePresentation": "hierarchical",
+    "gradle.debug": true,
+    "gradle.javaDebug.cleanOutput": true
+}

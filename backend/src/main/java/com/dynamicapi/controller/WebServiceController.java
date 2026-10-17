@@ -47,6 +47,11 @@ public class WebServiceController {
         this.commonService = commonService;
     }
 
+    /**
+     * 取得所有已註冊的 Web Service Endpoint 列表
+     *
+     * @return List<EndpointResponseDTO>
+     */
     @GetMapping("/getEndpoints")
     public Result<List<EndpointResponseDTO>> getEndpoints() {
         List<EndpointDTO> endpoints = dynamicWebService.getEndpoints();
@@ -58,6 +63,12 @@ public class WebServiceController {
         return Result.success(endpointResponseList);
     }
 
+    /**
+     * 儲存新的 Web Service Endpoint 設定
+     *
+     * @param request WebServiceRequestDTO
+     * @return EndpointResponseDTO
+     */
     @PostMapping("/saveWebService")
     public Result<EndpointResponseDTO> saveWebService(@RequestBody WebServiceRequestDTO request) {
         log.info("Save web service: {}", request);
@@ -91,6 +102,12 @@ public class WebServiceController {
         return Result.success(response);
     }
 
+    /**
+     * 更新現有的 Web Service Endpoint 設定
+     *
+     * @param request WebServiceRequestDTO
+     * @return EndpointResponseDTO
+     */
     @PostMapping("/updateWebService")
     public Result<EndpointResponseDTO> updateWebService(@RequestBody WebServiceRequestDTO request) {
         log.info("Update web service: {}", request);
@@ -136,6 +153,12 @@ public class WebServiceController {
         return Result.success(response);
     }
 
+    /**
+     * 移除指定的 Web Service Endpoint
+     *
+     * @param publishUris Web Service Endpoint 的發布 URI 列表
+     * @return String
+     */
     @DeleteMapping("/removeWebService")
     public Result<String> removeWebService(@RequestBody String[] publishUris) {
         EndpointDTO endpointDTO;
@@ -147,6 +170,13 @@ public class WebServiceController {
         return Result.success(StringUtils.EMPTY);
     }
 
+    /**
+     * 切換 Web Service Endpoint 的啟用狀態
+     *
+     * @param publishUri Web Service Endpoint 的發布 URI
+     * @param isActive   是否啟用
+     * @return String
+     */
     @GetMapping("/switchWebService")
     public Result<String> switchWebService(@RequestParam String publishUri, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(publishUri) && isActive != null) {
@@ -160,6 +190,14 @@ public class WebServiceController {
         return Result.success(StringUtils.EMPTY);
     }
 
+    /**
+     * 根據 WSDL 產生 Java 物件並回傳 ZIP 檔案
+     *
+     * @param wsdlUrl     WSDL 的 URL
+     * @param wsdlFile    WSDL 檔案
+     * @param packageName 套件名稱
+     * @return ResponseEntity<byte[]>
+     */
     @PostMapping("/genWsdlObj")
     public ResponseEntity<byte[]> genWsdlObj(@RequestParam(value = "wsdlUrl", required = false) String wsdlUrl,
                                              @RequestParam(value = "file", required = false) MultipartFile wsdlFile,

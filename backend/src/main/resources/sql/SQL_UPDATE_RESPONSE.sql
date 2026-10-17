@@ -1,5 +1,5 @@
-UPDATE MOCK_RESPONSE t
-SET t.PUBLISH_URI = :publishUri, t.METHOD = :method, t.CONDITION = :condition, t.RESPONSE_CONTENT = :responseContent, t.UPDATED_AT = :updatedAt
+UPDATE MOCK_RESPONSE
+SET PUBLISH_URI = :publishUri, METHOD = :method, CONDITION = :condition, RESPONSE_CONTENT = :responseContent, UPDATED_AT = :updatedAt
 WHERE
-    t.ID = :id
+    ID = :id
 

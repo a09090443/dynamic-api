@@ -33,7 +33,7 @@ public class ExampleController extends RestfulBase {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(exampleDTO);
         log.info("request json:{}", jsonString);
-        String responseContent = mockResponseDao.findByPrimaryKey("example", "getResponseData", jsonString, String.class);
+        String responseContent = findByPrimaryKey("example", "getResponseData", jsonString, String.class);
         ExampleResponseDTO exampleResponseDTO = objectMapper.readValue(responseContent, ExampleResponseDTO.class);
         return exampleResponseDTO;
     }
