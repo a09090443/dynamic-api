@@ -13,16 +13,17 @@ Dynamic API Manager 是一套 Mock API 伺服器：在執行期從上傳的 JAR 
 1. **先查文件**：從 `docs-site/docs/` 找出相關內容（入口見下表）。
 2. **再確認程式**：對照文件描述的行為，閱讀對應程式碼驗證。
 3. **不一致時以程式為準**：回答時依程式碼的實際行為，並說明文件哪裡與程式不符。
-4. **一定要修正文件**：在同一次工作中更新 `docs-site/` 的對應頁面（含已知問題、技術債清單等引用處），並執行 `cd docs-site && npm run build` 確認建置成功。若程式行為明顯是錯誤，文件照實記錄為「已知問題」，不要寫成預期行為；是否修改程式需另外徵詢使用者。
+4. **一定要修正文件**：在同一次工作中更新 `docs-site/` 的對應頁面（含已知問題、技術債清單等引用處），並執行 `cd docs-site && npm run build` 確認建置成功。同時檢查根目錄 `README.md` 是否有相同的錯誤描述。若程式行為明顯是錯誤，文件照實記錄為「已知問題」，不要寫成預期行為；是否修改程式需另外徵詢使用者。
 
 ## 修改程式時的文件同步（必須遵守）
 
 任何程式修改（新功能、修 bug、重構、設定或建置變更）在結束前都要：
 
 1. **依下表找出受影響的文件頁**，逐頁確認內容與修改後的程式一致；不一致就在同一次工作中更新。
-2. **修正了已知問題或技術債**時，從 `KI-*`／`TD-*` 清單移除（編號不重用），並在 SRS／SDD 的變更紀錄註記；同時清掉其他頁面對它的引用。
-3. 執行 `cd docs-site && npm run build`，必須成功。
-4. 回報時列出更新了哪些文件頁；若判斷不需要更新，說明理由。
+2. **確認根目錄 `README.md`**：它是專案入口，涵蓋專案結構、環境需求、啟動方式、常用命令、第一個 Mock API 的流程與 JAR 寫法摘要。修改影響這些內容（版本、目錄、命令、網址、預設路徑、已知問題的暫時解法等）時一併更新；細節只寫在 `docs-site/`，README 以連結引用，不要複製整段。
+3. **修正了已知問題或技術債**時，從 `KI-*`／`TD-*` 清單移除（編號不重用），並在 SRS／SDD 的變更紀錄註記；同時清掉其他頁面與 README 對它的引用。
+4. 執行 `cd docs-site && npm run build`，必須成功。
+5. 回報時列出更新了哪些文件頁與 README；若判斷不需要更新，說明理由。
 
 | 修改的程式 | 要檢查的文件（`docs-site/docs/` 下） |
 |---|---|
@@ -32,9 +33,10 @@ Dynamic API Manager 是一套 Mock API 伺服器：在執行期從上傳的 JAR 
 | `jarbase/`、`base-jar/` | `jar-dev/base-jar.md`、`jar-dev/overview.md` |
 | 資料表、遷移、實體 | `sdd/data.md`、`srs/data-rules.md` |
 | 前端頁面與元件 | `sdd/frontend.md`、`guide/` 對應操作頁 |
-| 設定檔、`build.gradle`、Docker | `guide/configuration.md`、`guide/installation.md`、`sdd/deployment.md` |
-| 範例 JAR（`endpoints/`、`restfuls/`） | `guide/quick-start.md`、`jar-dev/*`，以及範例專案的 README |
-| 任何已列為 `KI-*`／`TD-*` 的行為 | `guide/troubleshooting.md`、`srs/acceptance.md`、`sdd/decisions.md` |
+| 設定檔、`build.gradle`、Docker | `guide/configuration.md`、`guide/installation.md`、`sdd/deployment.md`；根目錄 `README.md` |
+| 範例 JAR（`endpoints/`、`restfuls/`） | `guide/quick-start.md`、`jar-dev/*`，以及範例專案的 README；根目錄 `README.md` |
+| `jarbase/` 的 API、新增或移除模組目錄、版本升級 | 根目錄 `README.md` |
+| 任何已列為 `KI-*`／`TD-*` 的行為 | `guide/troubleshooting.md`、`srs/acceptance.md`、`sdd/decisions.md`；根目錄 `README.md`（若引用） |
 
 文件入口：
 
