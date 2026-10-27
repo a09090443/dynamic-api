@@ -98,6 +98,8 @@ CXF 設定細節：
 
 ## RESTful 動態註冊
 
+`DynamicControllerServiceImpl` 的建構子以 `@Qualifier("requestMappingHandlerMapping")` 指定 Spring MVC 的路由註冊器，避免與 Actuator 的 `controllerEndpointHandlerMapping` 混淆。此選擇不依賴編譯器是否保留參數名稱，IDE 直接編譯啟動時亦適用。
+
 `DynamicControllerServiceImpl.startUpControllerProcess(publishUri, classPath, jarPath)`：
 
 ```mermaid

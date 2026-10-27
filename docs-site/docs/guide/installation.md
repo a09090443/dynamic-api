@@ -38,7 +38,7 @@ cd backend
 .\gradlew.bat bootRun
 ```
 
-`bootRun` / `bootJar` 會先自動執行前端建置：`npm install` → `next build`（靜態匯出）→ 複製到 `backend/src/main/resources/static/`。第一次建置需要數分鐘。
+`bootRun` / `bootJar` 會先自動執行前端建置：`npm install` → `next build --turbopack`（靜態匯出）→ 複製到 `backend/src/main/resources/static/`。目前 `installNextjs` 與 `buildNextjs` 未宣告增量建置所需的輸入與輸出，每次執行這條任務鏈都會再次執行安裝檢查與前端建置，不只第一次可能需要數分鐘。僅開發後端時可使用 `.\gradlew.bat bootRun -x buildFrontend`；詳見 [建置緩慢排查](./troubleshooting.md#vs-code-或-gradle-建置緩慢)。
 
 啟動後開啟：**http://localhost:8080/dynamic-api/**
 
@@ -61,7 +61,7 @@ java -jar build\libs\backend-0.0.1-SNAPSHOT.jar
 ```powershell
 # 終端機 1：後端
 cd backend
-.\gradlew.bat bootRun
+.\gradlew.bat bootRun -x buildFrontend
 
 # 終端機 2：前端
 cd nextjs-dynamic-api-manager
@@ -80,6 +80,27 @@ npm run dev
 NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 :::
+
+## VS Code 執行與偵錯後端
+
+1. 開啟專案根目錄，安裝 Microsoft 的 **Extension Pack for Java**。
+2. 在 `.vscode/settings.json` 確認 `java.configuration.runtimes` 的 `JavaSE-17` 路徑，以及 `java.import.gradle.java.home`，皆指向本機 JDK 17。儲存庫目前使用 `D:/tools/openlogic-openjdk-17.0.14+7-windows-x64`，其他電腦需調整。Java 語言伺服器可繼續使用擴充套件內附的 JRE。
+3. 執行命令面板的 `Developer: Reload Window`，等待 Java 專案匯入完成。若仍保留先前的匯入錯誤，可執行 `Java: Clean Java Language Server Workspace` 並依提示重載。
+4. 在 **Run and Debug** 選擇 **Dynamic API：後端**，按 **F5** 偵錯，或 **Ctrl+F5** 執行；以 **Shift+F5** 停止。
+
+`.vscode/launch.json` 使用 `type: java`、`mainClass: com.dynamicapi.Application`、`projectName: backend`，工作目錄為 `backend/`。此方式由 Java 擴充套件編譯並啟動，不會執行 Gradle 的 Next.js 建置任務，也不會套用 `bootJar -Penv` 的設定覆寫。
+
+尚未建置內嵌前端時，請另依 [開發模式](#方式二開發模式前端熱更新) 啟動管理介面，從 `http://localhost:3000/endpoint` 使用。後端 API 為 `http://localhost:8080/dynamic-api/ws/getEndpoints`。若需要單一服務包含管理介面，改用完整的 `.\gradlew.bat bootRun`。
+
+`base-jar` 與範例 JAR 指定 Java 17 toolchain；只安裝較新版本的 JDK，仍可能無法完成這些專案的匯入。
+
+### 從 VS Code 啟動前端或前後端
+
+第一次先從命令面板執行 `Tasks: Run Task` → **Dynamic API：安裝前端依賴**，等待安裝成功。這與在前端目錄執行 `npm install` 相同，依賴已安裝時不需每次重跑。
+
+在 **Run and Debug** 選擇 **Dynamic API：前端** 後按 F5，會在前端目錄執行 `npm run dev -- --port 3000`，並由啟動設定傳入 `NEXT_PUBLIC_API_URL=http://localhost:8080`，不必另外建立 `.env.local`。看到 `Ready` 後開啟 `http://localhost:3000/endpoint`；若 port 3000 已占用，先停止占用該 port 的服務。
+
+選擇 **Dynamic API：前後端** 後按 F5，會同時啟動兩個服務；此組合設定 `stopAll: true`，停止其中一個偵錯工作階段時會一起停止。若後端已在執行，只啟動前端即可，避免重複占用 port 8080。兩個服務同時啟動時，請等後端出現 `Started Application` 再操作管理介面。
 
 ## 方式三：啟動本文件網站
 

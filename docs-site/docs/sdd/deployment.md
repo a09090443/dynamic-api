@@ -30,7 +30,13 @@ flowchart LR
 | `forceUpdateProperties` | 依 `-Penv`（預設 `dev`）把 `resources_{env}.properties`、`data-source_{env}.properties` 寫到 `build/resources/main/` 的正式檔名，並刪除其他環境檔 |
 | `bootJar` | `duplicatesStrategy = INCLUDE` |
 
+目前 `installNextjs` 與 `buildNextjs` 是未宣告輸入與輸出的 `Exec` 任務，每次進入此任務鏈都會再次執行，不會因為前端原始碼未變更而略過。`cleanStatic` 也會刪除既有靜態資源，再由 `copyNextjsBuild` 複製。此流程同樣影響需要 `processResources` 的 `build` 與 `test`。僅開發或測試後端時可加上 `-x buildFrontend`，但內嵌前端不會更新；詳見 [建置緩慢排查](../guide/troubleshooting.md#vs-code-或-gradle-建置緩慢)。
+
 ### 部署步驟
+
+VS Code 另提供 **Dynamic API：前端**（`node-terminal`）與 **Dynamic API：前後端**（compound）啟動設定。前端固定使用 port 3000，啟動環境傳入本機後端網址；依賴安裝為獨立 task，不會在每次 F5 重跑。操作方式見 [安裝與啟動](../guide/installation.md#從-vs-code-啟動前端或前後端)。
+
+本機也可透過 `.vscode/launch.json` 的 **Dynamic API：後端** 直接啟動 `com.dynamicapi.Application`；這條路徑由 Java 擴充套件處理，不會觸發 Gradle 前端建置或 `bootJar` 的環境設定覆寫。JDK 路徑與操作步驟見 [安裝與啟動](../guide/installation.md#vs-code-執行與偵錯後端)。
 
 ```powershell
 cd backend

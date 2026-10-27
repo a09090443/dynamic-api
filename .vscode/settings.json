@@ -1,6 +1,15 @@
 {
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "D:/tools/openlogic-openjdk-17.0.14+7-windows-x64",
+            "default": true
+        }
+    ],
+    "java.import.gradle.java.home": "D:/tools/openlogic-openjdk-17.0.14+7-windows-x64",
     "java.compile.nullAnalysis.mode": "automatic",
     "java.dependency.packagePresentation": "hierarchical",
     "gradle.debug": true,
-    "gradle.javaDebug.cleanOutput": true
+    "gradle.javaDebug.cleanOutput": true,
+    "java.debug.settings.onBuildFailureProceed": true
 }

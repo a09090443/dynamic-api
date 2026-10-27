@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
 
     private final ControllerJDBC controllerJDBC;
 
-    public DynamicControllerServiceImpl(RequestMappingHandlerMapping requestMappingHandlerMapping,
+    public DynamicControllerServiceImpl(@Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping requestMappingHandlerMapping,
                                         ControllerRepository controllerRepository,
                                         ControllerJDBC controllerJDBC) {
         this.requestMappingHandlerMapping = requestMappingHandlerMapping;

@@ -1,0 +1,34 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Dynamic API：後端",
+      "mainClass": "com.dynamicapi.Application",
+      "projectName": "backend",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node-terminal",
+      "request": "launch",
+      "name": "Dynamic API：前端",
+      "command": "npm run dev -- --port 3000",
+      "cwd": "${workspaceFolder}/nextjs-dynamic-api-manager",
+      "env": {
+        "NEXT_PUBLIC_API_URL": "http://localhost:8080"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Dynamic API：前後端",
+      "configurations": ["Dynamic API：後端", "Dynamic API：前端"],
+      "stopAll": true
+    }
+  ]
+}

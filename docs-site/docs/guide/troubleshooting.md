@@ -17,6 +17,39 @@ sidebar_label: 疑難排解
 
 ## 常見問題
 
+### 啟動出現 RequestMappingHandlerMapping 的 Bean 歧義
+
+若錯誤為 `DynamicControllerServiceImpl` 建構子找到 `requestMappingHandlerMapping` 與 `controllerEndpointHandlerMapping` 兩個候選，代表執行產物未包含明確的 Bean 選擇。程式已以 `@Qualifier("requestMappingHandlerMapping")` 指定 Spring MVC 的註冊器，請重新編譯後再啟動；IDE 若仍使用舊產物，執行 `Java: Clean Java Language Server Workspace` 並依提示重載。此修正不需要停用 Actuator，也不依賴建構子參數名稱。
+
+### VS Code 或 Gradle 建置緩慢
+
+若 F5 顯示工作區建置失敗，先查看 **Problems** 與 **Output → Language Support for Java**：
+
+- 出現 `NoToolchainAvailableException` 時，確認 `.vscode/settings.json` 的 JDK 17 路徑符合本機環境，再重新匯入 Gradle 專案。
+- 出現已不存在的 `redhat.java/<舊版本>/.../init.gradle` 時，表示匯入快取仍引用舊版擴充套件；執行 `Java: Clean Java Language Server Workspace` 並依提示重載。
+- 修改 DAO 方法參數後，也要同步測試呼叫。`ResponseRepositoryTest` 的查詢已補上 `ServiceType.ENDPOINT`；可用 `.\gradlew.bat compileTestJava -x buildFrontend` 確認測試原始碼能編譯。僅執行 `classes` 不會檢查測試編譯。
+
+先確認啟動的是哪一種建置：
+
+| 入口 | 專案目前設定與影響 |
+|---|---|
+| VS Code 的 `java (build): Build Workspace` | `.vscode/tasks.json` 設定 `isFullBuild: true`，要求完整編譯工作區內的 Java 專案；範圍不限於 `backend/`。不能僅憑此設定推定它會執行 Gradle 的前端任務。 |
+| Gradle 的 `build`、`bootJar`、`bootRun`、`test` | 需要處理後端資源的任務會經由 `processResources` 依賴 `buildFrontend`，連帶執行 `npm install`、`next build --turbopack`、清空並重新複製靜態資源。 |
+
+目前 `installNextjs` 與 `buildNextjs` 都是未宣告輸入與輸出的 `Exec` 任務，因此重複建置仍會再次執行；`npm install` 不代表每次重新下載所有套件，但仍須檢查依賴。前端正式建置也會執行 TypeScript、ESLint 檢查與靜態匯出。
+
+只改後端時，可在 `backend/` 執行：
+
+```powershell
+.\gradlew.bat bootRun -x buildFrontend
+# 或只執行後端測試
+.\gradlew.bat test -x buildFrontend
+```
+
+略過前端建置不會更新內嵌管理介面；前端開發請另跑 `npm run dev`，設定方式見 [安裝與啟動](./installation.md#方式二開發模式前端熱更新)。需要完整部署產物時，仍應執行包含前端的建置。
+
+若要確認 Gradle 耗時位置，可在原本的建置命令加上 `--profile`，查看 `backend/build/reports/profile/` 的報表。VS Code 工作區編譯則需查看 Java／Gradle 的輸出紀錄，不能以 Gradle 任務設定直接判定瓶頸。
+
 ### 啟用 Endpoint / RESTful 失敗
 
 | 日誌關鍵字 | 原因 | 處理 |

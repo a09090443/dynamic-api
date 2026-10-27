@@ -56,7 +56,7 @@ cd backend
 .\gradlew.bat bootRun
 ```
 
-`bootRun` 會先自動建置前端並打包進後端，第一次需要數分鐘。啟動後開啟 <http://localhost:8080/dynamic-api/>。
+`bootRun` 每次都會先執行前端依賴安裝檢查與建置，可能需要數分鐘；只開發後端可使用下方略過前端建置的命令。詳見 [建置緩慢排查](./docs-site/docs/guide/troubleshooting.md)。啟動後開啟 <http://localhost:8080/dynamic-api/>。
 
 產出可部署的 JAR：
 
@@ -86,6 +86,10 @@ npm run dev
 ```
 
 開啟 <http://localhost:3000/endpoint>。
+
+### VS Code 執行／偵錯
+
+安裝 **Extension Pack for Java**，確認 `.vscode/settings.json` 的 JDK 17 路徑符合本機環境，執行 `Developer: Reload Window`。等待 Java 專案匯入後，在 **Run and Debug** 選擇 **Dynamic API：後端**、**Dynamic API：前端** 或 **Dynamic API：前後端**，按 **F5**。前端第一次先執行 `Tasks: Run Task` → **Dynamic API：安裝前端依賴**；完整設定見 [安裝與啟動](./docs-site/docs/guide/installation.md)。
 
 ### macOS / Linux
 
