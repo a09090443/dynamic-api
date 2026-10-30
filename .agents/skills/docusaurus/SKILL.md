@@ -32,16 +32,16 @@ This skill includes the following helper scripts:
 
 **Usage:**
 ```bash
-bash .Codex/skills/docusaurus/scaffold.sh <project-name> [typescript]
+bash .agents/skills/docusaurus/scaffold.sh <project-name> [typescript]
 ```
 
 **Examples:**
 ```bash
 # Create a JavaScript project
-bash .Codex/skills/docusaurus/scaffold.sh my-docs-site
+bash .agents/skills/docusaurus/scaffold.sh my-docs-site
 
 # Create a TypeScript project
-bash .Codex/skills/docusaurus/scaffold.sh my-docs-site typescript
+bash .agents/skills/docusaurus/scaffold.sh my-docs-site typescript
 ```
 
 **What it does:**
@@ -69,25 +69,25 @@ bash .Codex/skills/docusaurus/scaffold.sh my-docs-site typescript
 
 **Usage:**
 ```bash
-bash .Codex/skills/docusaurus/start-dev.sh [project-dir] [options]
+bash .agents/skills/docusaurus/start-dev.sh [project-dir] [options]
 ```
 
 **Examples:**
 ```bash
 # Start in current directory on default port (3000)
-bash .Codex/skills/docusaurus/start-dev.sh
+bash .agents/skills/docusaurus/start-dev.sh
 
 # Start in specific project directory
-bash .Codex/skills/docusaurus/start-dev.sh ./my-docs-site
+bash .agents/skills/docusaurus/start-dev.sh ./my-docs-site
 
 # Start on custom port
-bash .Codex/skills/docusaurus/start-dev.sh . --port 9000
+bash .agents/skills/docusaurus/start-dev.sh . --port 9000
 
 # Start with network access
-bash .Codex/skills/docusaurus/start-dev.sh . --host 0.0.0.0
+bash .agents/skills/docusaurus/start-dev.sh . --host 0.0.0.0
 
 # Combine options
-bash .Codex/skills/docusaurus/start-dev.sh ./my-docs-site "--port 9000 --host 0.0.0.0"
+bash .agents/skills/docusaurus/start-dev.sh ./my-docs-site "--port 9000 --host 0.0.0.0"
 ```
 
 **What it does:**
@@ -102,16 +102,16 @@ bash .Codex/skills/docusaurus/start-dev.sh ./my-docs-site "--port 9000 --host 0.
 
 **Usage:**
 ```bash
-bash .Codex/skills/docusaurus/stop-dev.sh [port]
+bash .agents/skills/docusaurus/stop-dev.sh [port]
 ```
 
 **Examples:**
 ```bash
 # Stop server on default port (3000)
-bash .Codex/skills/docusaurus/stop-dev.sh
+bash .agents/skills/docusaurus/stop-dev.sh
 
 # Stop server on specific port
-bash .Codex/skills/docusaurus/stop-dev.sh 9000
+bash .agents/skills/docusaurus/stop-dev.sh 9000
 ```
 
 **What it does:**
@@ -129,25 +129,25 @@ bash .Codex/skills/docusaurus/stop-dev.sh 9000
 ### First time setup
 ```bash
 # 1. Create project
-bash .Codex/skills/docusaurus/scaffold.sh tep-oncology-site
+bash .agents/skills/docusaurus/scaffold.sh tep-oncology-site
 
 # 2. Navigate to project
 cd tep-oncology-site
 
 # 3. Start development server
-bash .Codex/skills/docusaurus/start-dev.sh
+bash .agents/skills/docusaurus/start-dev.sh
 ```
 
 ### Daily development
 ```bash
 # Start server
-bash .Codex/skills/docusaurus/start-dev.sh
+bash .agents/skills/docusaurus/start-dev.sh
 
 # Make changes to files in docs/, blog/, src/
 # Changes will hot-reload automatically
 
 # Stop server when done
-bash .Codex/skills/docusaurus/stop-dev.sh
+bash .agents/skills/docusaurus/stop-dev.sh
 ```
 
 ### Build and deploy
@@ -253,7 +253,7 @@ For large-scale, public production websites, configure official Algolia DocSearc
 
 ## AI Search & LLM Optimization
 
-To make your documentation site highly suitable for AI search engines (e.g. Perplexity, ChatGPT search) and LLM context extraction (e.g. Cursor, Codex, Antigravity), implement the following configurations:
+To make your documentation site highly suitable for AI search engines (e.g. Perplexity, ChatGPT search) and LLM context extraction (e.g. Cursor, Codex, Claude Code, Antigravity), implement the following configurations:
 
 ### 1. Configure `robots.txt` for AI Crawlers
 AI crawlers check `robots.txt` as a legal gatekeeper. To prevent them from ignoring your site (especially on default `.github.io` domains which trigger strict crawler rate limiting), explicitly allow AI bots and point them to your `llms.txt` and `sitemap.xml`.
@@ -355,7 +355,7 @@ AI crawlers tend to de-prioritize or rate-limit default Github Pages domains (`*
 
 **Port already in use:**
 ```bash
-bash .Codex/skills/docusaurus/start-dev.sh . --port 3001
+bash .agents/skills/docusaurus/start-dev.sh . --port 3001
 ```
 
 **Cache issues:**

@@ -53,7 +53,7 @@ if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
     echo -e "  bash start-dev.sh $PROJECT_DIR \"--port 3001\""
     echo ""
     echo -e "${YELLOW}Or stop the process using port $PORT:${NC}"
-    echo -e "  bash .claude/skills/docusaurus/stop-dev.sh $PORT"
+    echo -e "  bash .agents/skills/docusaurus/stop-dev.sh $PORT"
     exit 1
 fi
 
