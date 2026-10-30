@@ -33,8 +33,8 @@ cd backend
 backend/
 ├── build.gradle                     # 相依套件、前端建置任務（installNextjs → buildNextjs → copyNextjsBuild）[frontend.md]
 ├── settings.gradle                  # rootProject.name = 'backend'（決定產物名稱 backend-0.0.1-SNAPSHOT.jar）
-├── Dockerfile                       # 已過時：COPY 的檔名是 dynamic-api-0.0.1-SNAPSHOT.jar，與實際產物不符
-├── docker-compose.yml               # 已過時：SPRING_DATASOURCE_URL 不會生效（資料來源由 dynamic.data-source-map 設定）
+├── Dockerfile                       # 封裝主機預先建置的 backend-0.0.1-SNAPSHOT.jar
+├── docker-compose.yml               # 覆寫容器路徑並以具名 volume 保存 SQLite、JAR 與日誌
 └── src/
     ├── main/java/com/dynamicapi/
     │   ├── Application.java
