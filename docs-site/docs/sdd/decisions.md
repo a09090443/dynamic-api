@@ -52,11 +52,12 @@ sidebar_label: 9–10. 決策與技術債
 | TD-15 | 未使用的類別與設定（`DynamicClassLoader`、`util/JsonToXmlTest`、`SQL_UPDATE_RESPONSE`、`test-api` 頁、DTO 未用欄位） | 維護負擔 | 清理 |
 | TD-16 | 自動化測試覆蓋率低 | 重構風險高 | 優先為動態載入與編輯流程補整合測試 |
 | TD-17 | 預設路徑寫死 `C:/`、`D:/` | 跨平台部署需修改 | 改為相對於工作目錄的預設值 |
-| TD-18 | `backend/Dockerfile` 複製 `dynamic-api-0.0.1-SNAPSHOT.jar`（實際產物為 `backend-0.0.1-SNAPSHOT.jar`）；`docker-compose.yml` 的 `SPRING_DATASOURCE_URL` 不會生效 | 容器建置失敗；資料庫位置無法用環境變數指定 | 修正檔名；以 `dynamic.data-source-map[webservice].url` 或掛載 properties 指定資料庫，並為 `jar.file.dir`、`log.base` 建立 volume |
 
 ## 10. 附錄
 
 ### 10.1 版本歷史
+
+2026-10-30：修正 Docker Compose 部署設定：改用正確的後端 JAR、受維護的 Java 17 執行環境、Spring Boot 命令列屬性與三個具名 volume，並補上 Linux 測試專用 SQLite 設定；相關容器部署技術債已從清單移除。
 
 2026-10-27：RESTful 路由註冊器改以 `@Qualifier` 明確指定 Spring MVC Bean，修正未保留建構子參數名稱時的啟動歧義；新增雙 Bean 注入回歸測試，並同步修正舊 DAO 測試缺少服務類型參數的編譯錯誤。
 

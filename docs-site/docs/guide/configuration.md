@@ -62,6 +62,19 @@ dynamic.data-source-map[webservice].driverClassName=org.sqlite.JDBC
 
 只需要調整 `url` 中的檔案路徑。SQLite 會自動建立資料庫檔案，但**所在目錄必須已存在**。
 
+### 執行期覆寫與 Docker Compose
+
+`db-spring-boot-starter` 以 `@PropertySource` 載入打包在 JAR 內的 `data-source.properties`，再以 `@ConfigurationProperties(prefix = "dynamic")` 綁定。Spring Boot 命令列屬性的優先序高於 `@PropertySource`，因此可以在啟動時用完整設定鍵覆寫資料庫路徑；`jar.file.dir` 與 `log.base` 也可用同樣方式覆寫：
+
+```bash
+java -jar backend-0.0.1-SNAPSHOT.jar \
+  '--dynamic.data-source-map[webservice].url=jdbc:sqlite:/data/sqlite/webservice.db' \
+  --jar.file.dir=/data/jars/ \
+  --log.base=/data/logs
+```
+
+`backend/docker-compose.yml` 使用這組命令列參數，並將 `/data/sqlite`、`/data/jars`、`/data/logs` 分別掛載到具名 volume。`jar.file.dir` 的尾端 `/` 不可省略；三個容器目錄由映像預先建立。
+
 ## 前端環境變數
 
 位於 `nextjs-dynamic-api-manager/`：

@@ -1,16 +1,21 @@
-version: '3.8'
-
 services:
   app:
     image: dynamic-api
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:sqlite:/data/webservice.db
-      SPRING_DATASOURCE_USERNAME: 
-      SPRING_DATASOURCE_PASSWORD: 
+    command:
+      - "--dynamic.data-source-map[webservice].url=jdbc:sqlite:/data/sqlite/webservice.db"
+      - "--jar.file.dir=/data/jars/"
+      - "--log.base=/data/logs"
     ports:
       - "8080:8080"
     volumes:
-      - D:/tmp/sqlite:/data
+      - sqlite-data:/data/sqlite
+      - uploaded-jars:/data/jars
+      - application-logs:/data/logs
+
+volumes:
+  sqlite-data:
+  uploaded-jars:
+  application-logs:
