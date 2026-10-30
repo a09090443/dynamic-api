@@ -54,6 +54,22 @@ java -jar build\libs\backend-0.0.1-SNAPSHOT.jar
 `bootJar` 會把 `resources_{env}.properties` 與 `data-source_{env}.properties` 覆蓋為正式設定，預設 `env=dev`。要使用 `pro` 設定：`.\gradlew.bat bootJar -Penv=pro`。
 :::
 
+### 使用 Docker Compose 部署
+
+Compose 只封裝已建好的 JAR，不會在容器內編譯後端或管理介面。先在主機建立 `backend-0.0.1-SNAPSHOT.jar`，再建置並啟動容器：
+
+```powershell
+cd backend
+.\gradlew.bat bootJar -Penv=pro
+docker compose up --build -d
+```
+
+macOS / Linux 上必須使用 `gradle bootJar -x buildFrontend`（或 `./gradlew bootJar -x buildFrontend`）；這樣產出的 JAR **不含最新的管理介面**。若部署需要管理介面，須先依本頁的[非 Windows 環境](#非-windows-環境)步驟手動建置並複製前端，再建立 JAR。
+
+Compose 會以 Spring Boot 命令列屬性把 SQLite、上傳 JAR 與日誌分別指向容器內的 `/data/sqlite`、`/data/jars/`、`/data/logs`，並使用 `sqlite-data`、`uploaded-jars`、`application-logs` 三個具名 volume 保存。一般 `docker compose down` 會保留資料；`docker compose down -v` 會刪除三個 volume，執行前必須備份 SQLite 與 JAR 目錄。回滾映像時也要保留相同 volume，並先備份資料庫。
+
+系統沒有認證機制，只能部署在受信任的內部網路。啟動後以本頁的[確認服務正常](#確認服務正常)請求檢查應用與資料庫；目前 Compose 未宣告容器健康檢查。
+
 ## 方式二：開發模式（前端熱更新）
 
 適合修改管理介面時使用，需同時啟動後端與前端。

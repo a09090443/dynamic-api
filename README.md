@@ -66,6 +66,8 @@ cd backend
 java -jar build\libs\backend-0.0.1-SNAPSHOT.jar
 ```
 
+也可先在主機建好 JAR，再於 `backend/` 執行 `docker compose up --build -d`。Compose 會用具名 volume 保存 SQLite、上傳 JAR 與日誌；非 Windows 主機以 `-x buildFrontend` 建出的 JAR 不含最新管理介面。系統只能放在受信任的內部網路，完整步驟、備份與清理風險見[安裝與啟動](./docs-site/docs/guide/installation.md#使用-docker-compose-部署)與[部署設計](./docs-site/docs/sdd/deployment.md#docker-compose)。
+
 ### 開發模式（前端熱更新）
 
 先在 `nextjs-dynamic-api-manager/` 建立 `.env.local`（Next.js 的 API 代理路由已移除，必須讓前端直接呼叫後端）：

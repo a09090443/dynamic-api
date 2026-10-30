@@ -55,6 +55,30 @@ cd backend
 
 目前沒有 CI/CD 設定。
 
+### Docker Compose
+
+`backend/Dockerfile` 採單階段封裝，需先在主機產生 `build/libs/backend-0.0.1-SNAPSHOT.jar`：
+
+```powershell
+cd backend
+.\gradlew.bat clean bootJar -Penv=pro
+docker compose up --build -d
+```
+
+非 Windows 主機的 Gradle 前端任務無法執行，建立 JAR 時須加 `-x buildFrontend`。除非先手動建置前端並複製到 `backend/src/main/resources/static/`，否則該 JAR 不含最新的管理介面；容器本身不負責建置前端。
+
+Compose 透過接在 `java -jar` 後的命令列參數覆寫下列路徑。命令列屬性的優先序高於 `db-spring-boot-starter` 以 `@PropertySource` 載入的預設資料來源設定：
+
+| 用途 | 設定鍵與容器路徑 | 具名 volume |
+|---|---|---|
+| SQLite | `dynamic.data-source-map[webservice].url=jdbc:sqlite:/data/sqlite/webservice.db` | `sqlite-data` → `/data/sqlite` |
+| 上傳 JAR | `jar.file.dir=/data/jars/` | `uploaded-jars` → `/data/jars` |
+| 日誌 | `log.base=/data/logs` | `application-logs` → `/data/logs` |
+
+Dockerfile 在應用啟動前建立三個掛載點。`docker compose down` 不會刪除具名 volume；`docker compose down -v` 會永久刪除資料庫、上傳 JAR 與日誌，清理前須先備份 SQLite 與 JAR volume。升級或回滾映像時保留原 volume，回滾前先備份資料庫，避免新版 Flyway 遷移後的資料庫與舊版程式不相容。
+
+系統未提供認證，只能部署在受信任的內部網路。Compose 尚未配置健康檢查；啟動後應呼叫 `GET /dynamic-api/ws/getEndpoints` 驗證應用與資料庫，不可只以容器程序仍在執行判定服務健康。
+
 ## 8.2 組態管理
 
 | 類別 | 位置 | 說明 |
@@ -72,7 +96,7 @@ cd backend
 java -jar backend-0.0.1-SNAPSHOT.jar --jar.file.dir=/opt/dam/jars/ --log.base=/var/log/dam
 ```
 
-資料來源設定由 `db-spring-boot-starter` 讀取 `data-source.properties`，能否用命令列覆寫取決於該 starter 的實作，建議以建置時的 `-Penv` 設定為準。
+資料來源設定由 `db-spring-boot-starter` 透過 `@PropertySource` 讀取 `data-source.properties`，再以 `@ConfigurationProperties(prefix = "dynamic")` 綁定。Spring Boot 命令列屬性的優先序較高，因此使用完整鍵 `--dynamic.data-source-map[webservice].url=...` 可以覆寫打包值；Docker Compose 即採用此方式。
 :::
 
 ## 8.3 監控與紀錄
@@ -91,5 +115,6 @@ java -jar backend-0.0.1-SNAPSHOT.jar --jar.file.dir=/opt/dam/jars/ --log.base=/v
 |---|---|
 | SQLite 檔 | 停機時直接複製；線上可用 `sqlite3 db ".backup file"` |
 | JAR 目錄 | 複製整個 `jar.file.dir` |
+| 日誌目錄 | 依保存需求複製整個 `log.base`；還原服務本身不依賴日誌 |
 
-兩者需要**同時**備份，否則 `JAR_FILE` 記錄與實體檔案可能對不上。
+SQLite 與 JAR 目錄需要**同時**備份，否則 `JAR_FILE` 記錄與實體檔案可能對不上。
