@@ -9,6 +9,10 @@ sidebar_label: 開發 RESTful JAR
 
 以 `restfuls/company-restful` 為藍本，從零建立一個可動態載入的 REST 服務。
 
+:::tip 完整範例
+`restfuls/inventory-restful` 是可直接建置的完整範例：GET／POST 各一條路由、以 `ResponseEntity<String>` 原樣回傳 Mock 內容，查無 Mock 時回 HTTP 404。路由、Mock 設定與操作流程見該目錄的 `README.md`。
+:::
+
 ## 1. 專案結構
 
 ```
@@ -94,6 +98,9 @@ public class OrderController extends RestfulBase {
     public OrderResult get(@PathVariable String orderId) throws Exception {
         // condition 不一定要是 JSON，用路徑參數也可以
         String content = findByPrimaryKey(PUBLISH_URI, "get", orderId, String.class);
+        if (content == null || content.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No mock response: " + orderId);
+        }
         return objectMapper.readValue(content, OrderResult.class);
     }
 }
@@ -129,7 +136,7 @@ public class OrderController extends RestfulBase {
 @PostMapping(value = "/raw", produces = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<String> raw(@RequestBody String body) {
     String content = findByPrimaryKey(PUBLISH_URI, "raw", body.strip(), String.class);
-    return content.isBlank()
+    return content == null || content.isBlank()
             ? ResponseEntity.notFound().build()
             : ResponseEntity.ok(content);
 }
