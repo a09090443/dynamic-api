@@ -29,7 +29,7 @@ flowchart LR
 | `backend/` | Spring Boot 3.2.5（Java 17）：動態載入、管理 API、內嵌 SQLite + Flyway |
 | `nextjs-dynamic-api-manager/` | 管理介面（Next.js 15.5.4 + MUI 7），生產模式靜態匯出並打包進後端 |
 | `base-jar/` | 自訂 JAR 編譯用的 `RestfulBase`、`WebserviceBase`、`MockResponseDao` |
-| `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`company-restful`、`example-restful`） |
+| `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`company-restful`、`example-restful`、`inventory-restful`） |
 | `docs-site/` | 文件網站（Docusaurus），`master` 有變更時自動發布到 GitHub Pages |
 | `postman/` | 管理 API 與 SOAP 呼叫範例集合 |
 | `tools/` | Gradle 前端建置使用的 Windows 版 Node.js 22 |
