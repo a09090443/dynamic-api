@@ -60,6 +60,7 @@ argument-hint: '[API 文件或 WSDL 路徑，以及 publishUri、套件名稱等
 
    - 僅依賴後端執行期已有的套件；額外執行期相依不能只放在 Gradle `implementation`，因上傳的 plain JAR 不會帶入相依套件。需要額外套件時，說明採用攤平打包或要求後端提供套件，避免產出執行時缺類別的 JAR。
    - 範例專案至少提供建置設定、Java 原始碼及 README。README 說明來源規格、路由/操作對應、`publishUri`、類別路徑、`methodKey` / `condition`、建置命令和 JAR 輸出位置；必要時附上可直接建立 Mock 的範例條件與回應。
+   - README 必須另有「呼叫方法／呼叫範例」一節，內容與第 7 步的呼叫方法相同：RESTful 服務列出每個 API 的 HTTP 方法、完整網址、必要 header、請求範例與 curl 範例；SOAP 服務列出服務網址、WSDL 網址、每個 operation 的 SOAP envelope 與 curl 範例。每個操作都標出命中 Mock 用的 `method` 與 `condition`，並寫明呼叫成功的前提（見第 7 步）。
 
 6. **建置及驗證**
    - 在專案目錄使用下列命令（若有測試則一併執行 `test`）。執行前確認目前環境有 JDK 17；若無法建置，回報實際阻礙，不要宣稱 JAR 已產生。
@@ -77,6 +78,36 @@ argument-hint: '[API 文件或 WSDL 路徑，以及 publishUri、套件名稱等
    - 列出新建/修改的主要檔案、建置命令、JAR 的完整相對路徑、驗證結果及未涵蓋的規格。
    - REST 註冊要提供 `publishUri` 和 Controller `classPath`；SOAP 註冊要提供 `publishUri`、`beanName` 和實作類別 `classPath`。
    - 說明打包只會產生 JAR，不會自動上傳、建立或啟用服務。上傳後仍需在管理介面或管理 API 建立設定、啟用服務、建立並啟用 Mock 回應，最後呼叫 endpoint 驗證。
+   - 交付時必須提供產出服務的呼叫方法。主機與 port 使用使用者提供的值；未提供時明確標示採用預設 `http://localhost:8080`。每個操作都要標出命中 Mock 回應用的 `method` 與 `condition`。
+   - **RESTful JAR（API 呼叫方法）**：逐一列出每個操作的
+     - HTTP 方法；
+     - 完整網址：`http://{host}:{port}/dynamic-api` + 類別 `@RequestMapping` + 方法 mapping（含 path variable 與 query 參數的填法），例如類別 `@RequestMapping("/company")`、方法 `@PostMapping("/data")` 為 `POST http://localhost:8080/dynamic-api/company/data`；
+     - 必要的 header，例如有 request body 時的 `Content-Type: application/json`；
+     - 依規格 DTO 產生的請求範例（request body 或參數）；
+     - 可直接執行的呼叫範例，例如：
+
+       ```bash
+       curl -X POST 'http://localhost:8080/dynamic-api/company/data' \
+         -H 'Content-Type: application/json' \
+         -d '{"id":"A001"}'
+       ```
+
+   - **SOAP JAR（Web Service 呼叫方法）**：提供
+     - 服務網址：`http://{host}:{port}/dynamic-api/webservice/{publishUri}`；
+     - WSDL 網址：服務網址加上 `?wsdl`；
+     - 每個 operation 的 SOAP envelope 請求範例，使用 WSDL 實際的 namespace 與元素名稱，不可臆測；
+     - 可直接執行的呼叫範例，使用 `Content-Type: text/xml`；WSDL binding 有定義 SOAPAction 時一併帶入相符的 `SOAPAction` header，例如：
+
+       ```bash
+       curl -X POST 'http://localhost:8080/dynamic-api/webservice/company' \
+         -H 'Content-Type: text/xml; charset=utf-8' \
+         -d @getCompany-request.xml
+       ```
+
+       若該 operation 在 WSDL 定義了 `soapAction="urn:company:v1:updateCompany"`，再加上 `-H 'SOAPAction: "urn:company:v1:updateCompany"'`。
+
+   - 寫明呼叫成功的前提：已上傳 JAR、已建立並啟用服務（RESTful 或 Endpoint），且已建立並啟用對應 `method` / `condition` 的 Mock 回應；任一項未完成時呼叫不會得到預期回應。
+   - 呼叫範例與驗證結果分開寫。沒有在執行中的 Dynamic API Manager 實際呼叫成功，只能標示為「尚未實際呼叫驗證」，不可宣稱呼叫已驗證；已實際呼叫時附上實際的請求與回應摘要。
 
 ## 專案限制
 
