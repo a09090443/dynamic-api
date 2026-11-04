@@ -21,6 +21,7 @@ paths:
 - 不使用 `com.dynamicapi` 套件名稱（會被後端同名類別遮蔽）。
 - 只能使用後端 classpath 上已有的套件（Spring Boot 3.2.5、CXF 4、Jackson、zipe starters 等），或把額外套件攤平打包進 JAR。
 - `base.jar` 放在 `src/main/lib/base.jar`，以 `implementation(files(...))` 引用；更新方式見 `.claude/rules/base-jar.md`。
+- 在 `endpoints/` 或 `restfuls/` 新增 RESTful 或 SOAP 服務時，必須在既有的 `postman/Endpoints.postman_collection.json` 中為該服務新增以服務命名的資料夾：RESTful 收錄每個 API 的呼叫請求；SOAP 收錄 WSDL 的 GET 請求與每個 operation 的 POST 請求。不得刪除、改名或覆寫既有項目，且集合必須維持有效的 Postman Collection v2.1 JSON；請求內容與驗證、交付細節依 `.agents/skills/dynamic-api-jar-builder/SKILL.md` 的工作流程第 5～7 步辦理。
 
 ## 建置
 
