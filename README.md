@@ -29,7 +29,7 @@ flowchart LR
 | `backend/` | Spring Boot 3.2.5（Java 17）：動態載入、管理 API、內嵌 SQLite + Flyway |
 | `nextjs-dynamic-api-manager/` | 管理介面（Next.js 15.5.4 + MUI 7），生產模式靜態匯出並打包進後端 |
 | `base-jar/` | 自訂 JAR 編譯用的 `RestfulBase`、`WebserviceBase`、`MockResponseDao` |
-| `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`company-restful`、`example-restful`、`inventory-restful`） |
+| `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`order-endpoint`、`company-restful`、`example-restful`、`inventory-restful`） |
 | `docs-site/` | 文件網站（Docusaurus），`master` 有變更時自動發布到 GitHub Pages |
 | `postman/` | 管理 API、SOAP 與 RESTful 服務呼叫範例集合 |
 | `tools/` | Gradle 前端建置使用的 Windows 版 Node.js 22 |
@@ -41,7 +41,7 @@ flowchart LR
 |---|---|
 | JDK | 17（範例 JAR 以 toolchain 指定 17） |
 | Node.js | 22（Windows 上 Gradle 使用 `tools/` 內附版本；手動跑前端或文件網站時需自行安裝） |
-| Gradle | 不需安裝，各模組附 Gradle Wrapper |
+| Gradle | 後端與多數範例附 Gradle Wrapper；`endpoints/order-endpoint`、`restfuls/inventory-restful` 不附，需安裝系統 Gradle |
 | 作業系統 | Windows（建議）；macOS / Linux 見下方說明 |
 
 ## 快速啟動

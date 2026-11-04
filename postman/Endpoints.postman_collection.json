@@ -263,6 +263,98 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Order",
+			"item": [
+				{
+					"name": "Order_wsdl",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/webservice/order?wsdl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"webservice",
+								"order"
+							],
+							"query": [
+								{
+									"key": "wsdl",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order_getOrder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/xml;charset=utf-8"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ord=\"http://order.sample.com/\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ord:GetOrderRequest>\n         <ord:orderId>A001</ord:orderId>\n      </ord:GetOrderRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/webservice/order",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"webservice",
+								"order"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order_getOrderStatus",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/xml;charset=utf-8"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ord=\"http://order.sample.com/\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ord:GetOrderStatusRequest>\n         <ord:orderId>A001</ord:orderId>\n      </ord:GetOrderStatusRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/webservice/order",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"webservice",
+								"order"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
