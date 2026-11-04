@@ -61,6 +61,13 @@ argument-hint: '[API 文件或 WSDL 路徑，以及 publishUri、套件名稱等
    - 僅依賴後端執行期已有的套件；額外執行期相依不能只放在 Gradle `implementation`，因上傳的 plain JAR 不會帶入相依套件。需要額外套件時，說明採用攤平打包或要求後端提供套件，避免產出執行時缺類別的 JAR。
    - 範例專案至少提供建置設定、Java 原始碼及 README。README 說明來源規格、路由/操作對應、`publishUri`、類別路徑、`methodKey` / `condition`、建置命令和 JAR 輸出位置；必要時附上可直接建立 Mock 的範例條件與回應。
    - README 必須另有「呼叫方法／呼叫範例」一節，內容與第 7 步的呼叫方法相同：RESTful 服務列出每個 API 的 HTTP 方法、完整網址、必要 header、請求範例與 curl 範例；SOAP 服務列出服務網址、WSDL 網址、每個 operation 的 SOAP envelope 與 curl 範例。每個操作都標出命中 Mock 用的 `method` 與 `condition`，並寫明呼叫成功的前提（見第 7 步）。
+   - **更新 Postman 集合**：建立 RESTful 或 SOAP JAR 後，把該服務的呼叫請求加進既有的 `postman/Endpoints.postman_collection.json`，不要另外建立新的集合檔。
+     - 在最上層 `item` 為這個服務新增一個以服務名稱命名的資料夾；請求名稱沿用現有 `Company` 資料夾的寫法 `{服務名}_{操作}`。
+     - RESTful：每個操作一個請求，包含 HTTP 方法、完整網址 `http://{host}:{port}/dynamic-api/{publishUri}/...`（含 path variable 與 query 參數）、有 request body 時的 `Content-Type: application/json` header，以及依規格 DTO 產生的請求範例。
+     - SOAP：一個 GET `http://{host}:{port}/dynamic-api/webservice/{publishUri}?wsdl` 請求，加上每個 operation 一個 POST `http://{host}:{port}/dynamic-api/webservice/{publishUri}` 請求；POST 帶 `Content-Type: text/xml` header，body 是依 WSDL 實際 namespace 與元素名稱寫成的 SOAP envelope；WSDL binding 有定義 soapAction 時才加上相符的 `SOAPAction` header。
+     - 主機與 port 的寫法與第 7 步相同：使用者有提供就用提供的值，未提供時用 `http://localhost:8080`。現有集合沒有定義變數，不要為此新增集合層級的變數或改動 `info`。
+     - 不得刪除、改名或覆寫既有項目（包括 `Company` 資料夾與 `Upload_jar_file`）。同名資料夾已存在時不要覆寫，在交付摘要說明並請使用者決定。
+     - 修改後檔案必須是有效的 JSON，並維持 Postman Collection v2.1 的 schema（`info.schema` 不變）。
 
 6. **建置及驗證**
    - 在專案目錄使用下列命令（若有測試則一併執行 `test`）。執行前確認目前環境有 JDK 17；若無法建置，回報實際阻礙，不要宣稱 JAR 已產生。
@@ -73,9 +80,11 @@ argument-hint: '[API 文件或 WSDL 路徑，以及 publishUri、套件名稱等
    - Gradle 專案預期產物為 `build/libs/{name}-{version}-plain.jar`。Maven 專案依其設定確認輸出的普通 JAR，不要假設檔名相同。
    - 用 `jar tf <jar-path>` 檢查類別位於 JAR 根目錄，不在 `BOOT-INF/classes/`；確認沒有把 `com/dynamicapi/**` 基底類別或不必要的 fat-JAR 內容包進去。
    - 盡可能執行測試或編譯，並檢查 REST 路由及 OpenAPI 契約，或 SOAP 產生的 WSDL、namespace 和 operation。清楚區分「已建置驗證」與「尚未在執行中的 Dynamic API Manager 實際呼叫驗證」。
+   - 確認 `postman/Endpoints.postman_collection.json` 可以被解析成 JSON（例如以 JSON 解析器讀取或匯入 Postman），且既有項目仍在；無法解析時先修正，不要交付損壞的集合。
 
 7. **說明如何使用產物**
    - 列出新建/修改的主要檔案、建置命令、JAR 的完整相對路徑、驗證結果及未涵蓋的規格。
+   - 列出已更新的 Postman 檔案路徑（`postman/Endpoints.postman_collection.json`），以及新增的資料夾與每個請求名稱。
    - REST 註冊要提供 `publishUri` 和 Controller `classPath`；SOAP 註冊要提供 `publishUri`、`beanName` 和實作類別 `classPath`。
    - 說明打包只會產生 JAR，不會自動上傳、建立或啟用服務。上傳後仍需在管理介面或管理 API 建立設定、啟用服務、建立並啟用 Mock 回應，最後呼叫 endpoint 驗證。
    - 交付時必須提供產出服務的呼叫方法。主機與 port 使用使用者提供的值；未提供時明確標示採用預設 `http://localhost:8080`。每個操作都要標出命中 Mock 回應用的 `method` 與 `condition`。
