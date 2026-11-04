@@ -61,4 +61,4 @@ sidebar_label: 5.1 概述與慣例
 
 ## 範例集合
 
-`postman/Endpoints.postman_collection.json` 收錄 Endpoint 相關的完整呼叫範例（上傳、註冊、啟用、回應 CRUD、SOAP 呼叫）。
+`postman/Endpoints.postman_collection.json` 收錄 Endpoint 相關的完整呼叫範例（上傳、註冊、啟用、回應 CRUD、SOAP 呼叫）。agent 之後新建的 RESTful／SOAP 服務呼叫請求也收錄在同一份集合，每個服務一個資料夾：RESTful 為每個 API 的請求，SOAP 為 WSDL 的 GET 請求與每個 operation 的 POST 請求。

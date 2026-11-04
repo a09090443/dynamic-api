@@ -31,7 +31,7 @@ flowchart LR
 | `base-jar/` | 自訂 JAR 編譯用的 `RestfulBase`、`WebserviceBase`、`MockResponseDao` |
 | `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`company-restful`、`example-restful`、`inventory-restful`） |
 | `docs-site/` | 文件網站（Docusaurus），`master` 有變更時自動發布到 GitHub Pages |
-| `postman/` | 管理 API 與 SOAP 呼叫範例集合 |
+| `postman/` | 管理 API、SOAP 與 RESTful 服務呼叫範例集合 |
 | `tools/` | Gradle 前端建置使用的 Windows 版 Node.js 22 |
 | `frontend/` | 舊版 Angular 管理介面，已不使用 |
 
