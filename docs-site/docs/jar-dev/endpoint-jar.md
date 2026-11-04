@@ -9,6 +9,8 @@ sidebar_label: 開發 Endpoint JAR
 
 以 `endpoints/company-endpoint` 為藍本。SOAP 服務的難點在於讓發布出來的 WSDL 與對方系統一致，建議從對方提供的 WSDL 產生類別。
 
+`endpoints/order-endpoint` 是可直接建置的完整範例：手寫 JAXB 類別（document/literal BARE）、`getOrder`／`getOrderStatus` 兩個 operation，Mock 內容只放回應元素並以 JAXB 轉換，查無 Mock 時回 SOAP Fault。Endpoint 欄位、Mock 設定與呼叫方式見該目錄的 `README.md`。
+
 ## 1. 從 WSDL 產生類別
 
 用系統內建的 [WSDL 轉 Java 工具](../guide/wsdl-tool.md)（或 Apache CXF 的 `wsdl2java`）取得：
@@ -110,5 +112,7 @@ if (soapXml.startsWith("FAULT:")) {
         .createFault(soapXml.substring(6), new QName("http://schemas.xmlsoap.org/soap/envelope/", "Server")));
 }
 ```
+
+`endpoints/order-endpoint` 的 `OrderWebServiceImpl` 是完整範例：查無 Mock（`findByPrimaryKey` 回傳 `null` 或空白）時，以 `Server` 碼回傳含 `publishUri`、`method`、`condition` 的 SOAP Fault，而不是把空字串交給 JAXB 轉換。
 
 下一步：[Condition 設計指南](./condition-design.md)、[打包、上傳與驗證](./build-deploy.md)。

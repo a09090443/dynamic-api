@@ -73,7 +73,7 @@ Dynamic API Manager 是一套 Mock API 伺服器：在執行期從上傳的 JAR 
 | `backend/` | Spring Boot 3.2.5（Java 17）。動態載入、管理 API、內嵌 SQLite + Flyway |
 | `nextjs-dynamic-api-manager/` | 管理介面，Next.js 15.5.4 + MUI 7；生產模式靜態匯出並打包進後端 |
 | `base-jar/` | 提供 `RestfulBase`、`WebserviceBase`、`MockResponseDao` 給自訂 JAR 編譯用（與後端同名類別必須一致） |
-| `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`company-restful`、`example-restful`、`inventory-restful`） |
+| `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`order-endpoint`、`company-restful`、`example-restful`、`inventory-restful`） |
 | `docs-site/` | 文件網站（Docusaurus） |
 | `postman/` | 管理 API、SOAP 與 RESTful 服務呼叫範例集合 |
 | `frontend/` | 舊版 Angular 管理介面，已不使用，不要修改 |
