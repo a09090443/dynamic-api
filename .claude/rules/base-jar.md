@@ -35,5 +35,5 @@ paths:
 
 ## 變更後
 
-1. `cd base-jar && .\gradlew.bat jar`，把 `build/libs/*-plain.jar` 複製到範例專案的 `src/main/lib/base.jar`（`endpoints/company-endpoint`、`restfuls/company-restful`、`restfuls/inventory-restful`）。
+1. `cd base-jar && .\gradlew.bat jar`，把 `build/libs/*-plain.jar` 複製到範例專案的 `src/main/lib/base.jar`（`endpoints/company-endpoint`、`endpoints/order-endpoint`、`restfuls/company-restful`、`restfuls/inventory-restful`）。
 2. 更新 `docs-site/docs/jar-dev/base-jar.md`。
