@@ -61,4 +61,22 @@ sidebar_label: 5.1 概述與慣例
 
 ## 範例集合
 
-`postman/Endpoints.postman_collection.json` 收錄 Endpoint 相關的完整呼叫範例（上傳、註冊、啟用、回應 CRUD、SOAP 呼叫）。agent 之後新建的 RESTful／SOAP 服務呼叫請求也收錄在同一份集合，每個服務一個資料夾：RESTful 為每個 API 的請求，SOAP 為 WSDL 的 GET 請求與每個 operation 的 POST 請求。
+`postman/Endpoints.postman_collection.json` 收錄管理 API、SOAP 與 RESTful 服務的呼叫範例，最上層依序為：
+
+| 項目 | 內容 |
+|---|---|
+| `Company` | `company-endpoint` 的註冊、啟用、移除、回應 CRUD 與 SOAP 呼叫 |
+| `Upload_jar_file` | 上傳 JAR（`/common/uploadJarFile`）；匯入後須在 Body 的 `file` 欄位重新選擇本機 JAR 檔 |
+| `Order` | `order-endpoint` 的 WSDL 與 SOAP 呼叫 |
+| `company-restful` | `POST /company/data` |
+| `example-restful` | `GET /example/response`、`POST /example/data` |
+| `inventory-restful` | `GET /inventory/items/A001`、`POST /inventory/items` |
+| `Management_API` | `/api` 的 RESTful 管理、`/ws` 的 `getEndpoints`、`updateWebService`、`genWsdlObj`，以及 `/common` 的 Mock 回應管理（`saveMockResponse` 的 Endpoint／RESTful 版本、`getResponseList`、`getResponseContent`、`deleteResponse`、`switchResponse`） |
+
+需要 id 的請求以 `REPLACE_WITH_*` 佔位字串表示，執行前換成實際值。`/common/logs/stream`（SSE）不收錄。
+
+:::caution 舊請求缺少 serviceType
+`Company` 資料夾中的 `Company_add_response` 與 `Company_get_responses` 沒有帶 `serviceType`：存入的回應 `SERVICE_TYPE` 為空，服務呼叫時查不到；查清單也只會得到空結果。請改用 `Management_API` 中的 `Common_saveMockResponse_endpoint`、`Common_saveMockResponse_restful` 與 `Common_getResponseList`。
+:::
+
+agent 之後新建的 RESTful／SOAP 服務呼叫請求也收錄在同一份集合，每個服務一個資料夾：RESTful 為每個 API 的請求，SOAP 為 WSDL 的 GET 請求與每個 operation 的 POST 請求。

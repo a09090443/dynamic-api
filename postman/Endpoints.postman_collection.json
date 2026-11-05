@@ -355,6 +355,630 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "company-restful",
+			"item": [
+				{
+					"name": "CompanyRestful_getResponseData",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Acme\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/company/data",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"company",
+								"data"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "example-restful",
+			"item": [
+				{
+					"name": "Example_getExampleResponse",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/example/response",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"example",
+								"response"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Example_getResponseData",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Acme\",\n    \"address\": \"台北市信義區\",\n    \"phone\": \"02-1234-5678\",\n    \"email\": \"contact@acme.example\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/example/data",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"example",
+								"data"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "inventory-restful",
+			"item": [
+				{
+					"name": "Inventory_getItem",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/inventory/items/A001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"inventory",
+								"items",
+								"A001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Inventory_createItem",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sku\": \"SKU-001\",\n    \"quantity\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/inventory/items",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"inventory",
+								"items"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Management_API",
+			"item": [
+				{
+					"name": "Restful_getControllers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/api/getControllers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"api",
+								"getControllers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restful_saveController",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"publishUri\": \"company\",\n    \"classPath\": \"com.company.controller.CompanyController\",\n    \"jarFileId\": \"REPLACE_WITH_JAR_FILE_ID\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/api/saveController",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"api",
+								"saveController"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restful_updateController",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"REPLACE_WITH_CONTROLLER_ID\",\n    \"publishUri\": \"company\",\n    \"classPath\": \"com.company.controller.CompanyController\",\n    \"jarFileId\": \"REPLACE_WITH_JAR_FILE_ID\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/api/updateController",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"api",
+								"updateController"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restful_removeController",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"company\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/api/removeController",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"api",
+								"removeController"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restful_switchController",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/api/switchController?publishUri=company&isActive=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"api",
+								"switchController"
+							],
+							"query": [
+								{
+									"key": "publishUri",
+									"value": "company"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ws_getEndpoints",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/ws/getEndpoints",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"ws",
+								"getEndpoints"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ws_updateWebService",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"REPLACE_WITH_ENDPOINT_ID\",\n    \"beanName\": \"companyWebServiceImpl\",\n    \"publishUri\": \"company\",\n    \"classPath\": \"com.company.webservice.impl.CompanyWebServiceImpl\",\n    \"jarFileId\": \"REPLACE_WITH_JAR_FILE_ID\",\n    \"ignoreCdata\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/ws/updateWebService",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"ws",
+								"updateWebService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ws_genWsdlObj",
+					"request": {
+						"description": "以 WSDL 產生 Java 類別，回應是 ZIP 檔，請用 Send and Download 下載。參數名稱為 wsdlUrl／packageName（也可改用 file 上傳 WSDL 檔），不是前端使用的 wsdlPath。",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "wsdlUrl",
+									"value": "http://localhost:8080/dynamic-api/webservice/order?wsdl",
+									"type": "text"
+								},
+								{
+									"key": "packageName",
+									"value": "com.sample.order.generated",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/ws/genWsdlObj",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"ws",
+								"genWsdlObj"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Common_saveMockResponse_endpoint",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"publishUri\":\"company\",\r\n    \"method\":\"getCompany\",\r\n    \"condition\":\"{\\\"employees\\\":null,\\\"name\\\":\\\"Company\\\",\\\"taxId\\\":\\\"224567\\\"}\",\r\n    \"responseContent\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><soap:Envelope xmlns:soap=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\"><soap:Body><ns4:getCompanyResponse xmlns:ns4=\\\"http://service.other.com\\\" xmlns:ns2=\\\"employee\\\" xmlns:ns3=\\\"company\\\"><companyResponse><ns3:address>Test Address</ns3:address><employees><employee><ns2:grander>G</ns2:grander><ns2:name>Test Employee</ns2:name></employee></employees><ns3:name>Company</ns3:name><ns3:taxId>224567</ns3:taxId></companyResponse></ns4:getCompanyResponse></soap:Body></soap:Envelope>\",\r\n    \"serviceType\":\"ENDPOINT\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/saveMockResponse",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"saveMockResponse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Common_saveMockResponse_restful",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"publishUri\": \"company\",\n    \"method\": \"getResponseData\",\n    \"condition\": \"{\\\"name\\\":\\\"Acme\\\",\\\"address\\\":null,\\\"phone\\\":null,\\\"email\\\":null,\\\"website\\\":null,\\\"description\\\":null}\",\n    \"responseContent\": \"{\\\"name\\\":\\\"Acme\\\",\\\"address\\\":\\\"台北市信義區\\\",\\\"phone\\\":\\\"02-1234-5678\\\",\\\"email\\\":\\\"contact@acme.example\\\",\\\"website\\\":\\\"https://acme.example\\\",\\\"description\\\":\\\"Mock 公司資料\\\"}\",\n    \"serviceType\": \"RESTFUL\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/saveMockResponse",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"saveMockResponse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Common_getResponseList",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"publishUri\": \"company\",\n    \"serviceType\": \"RESTFUL\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/getResponseList",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"getResponseList"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Common_getResponseContent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"publishUri\": \"company\",\n    \"method\": \"getResponseData\",\n    \"condition\": \"{\\\"name\\\":\\\"Acme\\\",\\\"address\\\":null,\\\"phone\\\":null,\\\"email\\\":null,\\\"website\\\":null,\\\"description\\\":null}\",\n    \"serviceType\": \"RESTFUL\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/getResponseContent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"getResponseContent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Common_deleteResponse",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"REPLACE_WITH_RESPONSE_ID\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/deleteResponse",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"deleteResponse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Common_switchResponse",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/common/switchResponse?id=REPLACE_WITH_RESPONSE_ID&isActive=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"common",
+								"switchResponse"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "REPLACE_WITH_RESPONSE_ID"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
