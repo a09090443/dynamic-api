@@ -14,7 +14,7 @@ sidebar_label: 7–8. 驗收與附錄
 | # | 準則 | 驗證方式 |
 |---|---|---|
 | AC-01 | 範例 `company-restful` 可在不重啟的情況下完成上傳、建立、啟用、設定回應並呼叫成功 | 依 [快速上手](../guide/quick-start.md) 執行 |
-| AC-02 | 範例 `company-endpoint` 可取得 WSDL 並以 SOAP 請求取得 Mock 回應 | Postman 集合 `Company_*` 請求 |
+| AC-02 | 範例 `company-endpoint` 可取得 WSDL 並以 SOAP 請求取得 Mock 回應 | Postman 集合 `Company_*` 與 `Common_saveMockResponse_endpoint` 請求 |
 | AC-03 | 停用服務後無法呼叫，重新啟用後恢復 | 手動 |
 | AC-04 | 重啟後先前啟用的服務可直接呼叫 | 重啟後執行 AC-01 / AC-02 的呼叫步驟 |
 | AC-05 | 回應停用後同一請求不再命中 | 手動 |

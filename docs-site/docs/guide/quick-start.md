@@ -119,6 +119,10 @@ curl -X POST http://localhost:8080/dynamic-api/company/data \
 | WSDL | `http://localhost:8080/dynamic-api/webservice/company?wsdl` |
 | method | `getCompany` |
 | condition 範例 | `{"employees":null,"name":"Company","taxId":"224567"}` |
-| 回應內容 | 完整的 SOAP Envelope XML（範例見 `postman/Endpoints.postman_collection.json` 的 `Company_add_response`） |
+| 回應內容 | 完整的 SOAP Envelope XML（範例見 `postman/Endpoints.postman_collection.json` 中 `Management_API` 的 `Common_saveMockResponse_endpoint`） |
 
-專案根目錄的 `postman/Endpoints.postman_collection.json` 收錄了上傳、註冊、啟用、新增回應、呼叫服務的完整請求，可匯入 Postman 直接照順序執行。
+專案根目錄的 `postman/Endpoints.postman_collection.json` 收錄了上傳、註冊、啟用、新增回應、呼叫服務的請求，匯入 Postman 後：
+
+- RESTful：先用 `Upload_jar_file` 上傳 JAR（匯入後要在 Body 的 `file` 欄位重新選擇本機 JAR 檔），再依序執行 `Management_API` 的 `Restful_saveController`、`Restful_switchController`、`Common_saveMockResponse_restful`、`Common_switchResponse`，最後執行 `company-restful` 的 `CompanyRestful_getResponseData`。
+- SOAP：`Upload_jar_file` → `Company_register` → `Company_switch` → `Common_saveMockResponse_endpoint` → `Common_switchResponse` → `Company_getCompany`。
+- 帶 `REPLACE_WITH_*` 的欄位要換成前一步回傳的 id；`Company_add_response`、`Company_get_responses` 沒有帶 `serviceType`，不要用來新增或查詢回應。各資料夾說明見 [管理 API 慣例](../sdd/api/conventions.md#範例集合)。

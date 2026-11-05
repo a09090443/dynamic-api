@@ -19,11 +19,14 @@
     - 可使用 ConvertTest.java 進行 request 和 response 的轉換
     - 當使用 XmlUtil.xmlToBean 將 xml 轉為 java bean 時, 需注意 namespace 的設定和 List 的轉換要用 @JacksonXmlElementWrapper(useWrapping = false)
 - 打包指令
-  - mvn clean package
+  - `.\gradlew.bat jar`（macOS / Linux 用 `./gradlew jar`），上傳 `build/libs/company-endpoint-0.0.1-plain.jar`
 - 完成打包後流程:
-  - 將 postman 目錄中的 Mock.postman_collection.json 匯入至 postman 中
+  - 將專案根目錄的 `postman/Endpoints.postman_collection.json` 匯入至 postman 中
   - 依序執行 postman 中的 request
-    1. Upload_jar_file : 上傳 jar 檔, 會回傳新的 jar 檔名稱
-    2. Register : 註冊 jar 檔內的 webservice
-    3. Add_new_mock_response : 新增 response 的回傳條件, 可根據 request 的內容自訂 condition
-    4. CCMS_getCardListing : 呼叫 webservice, 會回傳自訂的 response
+    1. Upload_jar_file : 上傳 jar 檔, 回傳 jar 檔的 id；匯入後須先在 Body 的 `file` 欄位重新選擇本機的 `company-endpoint-0.0.1-plain.jar`
+    2. Company_register : 註冊 jar 檔內的 webservice（`jarFileId` 換成上一步回傳的 id）
+    3. Company_switch : 啟用 webservice（新註冊的服務預設停用）
+    4. Management_API / Common_saveMockResponse_endpoint : 新增 response 的回傳條件（帶 `serviceType=ENDPOINT`），可根據 request 的內容自訂 condition
+    5. Management_API / Common_switchResponse : 啟用這筆 response（`id` 換成實際的回應 id，新回應預設停用）
+    6. Company_getCompany : 呼叫 webservice, 會回傳自訂的 response
+  - 舊的 Company_add_response 沒有帶 `serviceType`，存入的回應不會被 webservice 查到，請改用 Common_saveMockResponse_endpoint
