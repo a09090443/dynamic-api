@@ -95,5 +95,6 @@ flowchart LR
 | `restfuls/company-restful` | RESTful | 最小可用範例，請求 JSON 當 condition |
 | `restfuls/example-restful` | RESTful（Maven） | 同時示範不查 Mock 的固定回應 `GET /example/response` |
 | `restfuls/inventory-restful` | RESTful | GET／POST 路由、原樣回傳 Mock 內容；查無 Mock 回 404、缺少 `sku` 回 400。不附 Wrapper，以系統 Gradle 建置 |
+| `restfuls/mitake-restful` | RESTful | 模擬三竹簡訊 API（Publish URI `b2c`，`POST /b2c/mtk/SmSend` 等四條路由）；接收 form 參數與純文字本文，以 UTF-8 純文字原樣回傳 Mock 內容；缺帳密回 `statuscode=c`／`d`，查無 Mock 回 404。不附 Wrapper，以系統 Gradle 建置 |
 | `endpoints/company-endpoint` | Endpoint | 從 WSDL 產生的 JAXB 類別、以 SOAP XML 當回應內容 |
 | `endpoints/order-endpoint` | Endpoint | 手寫 JAXB 類別（document/literal BARE）、Mock 內容只放回應元素，不依賴 namespace 前綴；查無 Mock 或缺少 `orderId` 回 SOAP Fault。不附 Wrapper，以系統 Gradle 建置 |

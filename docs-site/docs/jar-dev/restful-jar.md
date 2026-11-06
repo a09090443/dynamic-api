@@ -11,6 +11,8 @@ sidebar_label: 開發 RESTful JAR
 
 :::tip 完整範例
 `restfuls/inventory-restful` 是可直接建置的完整範例：GET／POST 各一條路由、以 `ResponseEntity<String>` 原樣回傳 Mock 內容，查無 Mock 時回 HTTP 404。路由、Mock 設定與操作流程見該目錄的 `README.md`。
+
+`restfuls/mitake-restful` 是回傳純文字的範例：模擬三竹簡訊 API（Publish URI `b2c`，四條 `POST /b2c/mtk/...` 路由），以 `@RequestParam(required = false)` 接收查詢字串或 form 參數、以 `@RequestBody String` 接收純文字本文，並用 `text/plain;charset=UTF-8` 原樣回傳 Mock 內容。說明見該目錄的 `README.md`。
 :::
 
 ## 1. 專案結構

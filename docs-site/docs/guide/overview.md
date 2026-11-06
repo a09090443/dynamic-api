@@ -14,7 +14,7 @@ sidebar_label: 系統簡介
 | 後端服務 | `backend/` | Spring Boot 3.2.5（Java 17）。負責動態載入 JAR、發布服務、提供管理 API，並內嵌 SQLite。 |
 | 管理介面 | `nextjs-dynamic-api-manager/` | Next.js 15 + MUI。生產模式下會被靜態匯出並打包進後端 JAR。 |
 | base-jar | `base-jar/` | 提供 `WebserviceBase`、`RestfulBase`、`MockResponseDao` 給自訂 JAR 編譯時使用。 |
-| 範例 JAR | `endpoints/company-endpoint/`、`endpoints/order-endpoint/`、`restfuls/company-restful/`、`restfuls/example-restful/`、`restfuls/inventory-restful/` | 可直接建置、上傳試用的範例。 |
+| 範例 JAR | `endpoints/company-endpoint/`、`endpoints/order-endpoint/`、`restfuls/company-restful/`、`restfuls/example-restful/`、`restfuls/inventory-restful/`、`restfuls/mitake-restful/` | 可直接建置、上傳試用的範例。 |
 | 文件網站 | `docs-site/` | 本網站（Docusaurus）。 |
 
 :::note 舊版前端
