@@ -19,7 +19,7 @@ RESTful JAR 範例：依《三竹簡訊 API 文件 v2.14》（B2C_MitakeAPI_v2.1
 |---|---|---|---|
 | `POST /b2c/mtk/SmSend` | 單筆發送 | `SmSend` | 正規化後的 `dstaddr`（規則見下方） |
 | `POST /b2c/mtk/SmBulkSend` | 多筆發送 | `SmBulkSend` | 查詢參數 `objectID` 去除前後空白 |
-| `POST /b2c/mtk/SmQuery`（有 `msgid`） | 簡訊狀態查詢 | `SmQuery` | `msgid` 移除所有空白，多筆以半形逗號分隔、順序保留，例如 `1010079522, 1010079523` → `1010079522,1010079523` |
+| `POST /b2c/mtk/SmQuery`（有 `msgid`） | 簡訊狀態查詢 | `SmQuery` | `msgid` 移除所有空白，多筆以半形逗號分隔、順序保留，例如 `0311216947, 0311216948, 0311216949` → `0311216947,0311216948,0311216949` |
 | `POST /b2c/mtk/SmQuery`（沒有 `msgid` 或空白） | 帳號餘額查詢 | `SmQueryBalance` | `username` 去除前後空白 |
 | `POST /b2c/mtk/SmCancel` | 預約簡訊取消 | `SmCancel` | `msgid` 移除所有空白（規則同 SmQuery） |
 
@@ -55,12 +55,12 @@ RESTful JAR 範例：依《三竹簡訊 API 文件 v2.14》（B2C_MitakeAPI_v2.1
 | 操作 | Method | Condition | 回應內容 |
 |---|---|---|---|
 | 單筆發送 | `SmSend` | `0912345678` | `[1]`<br/>`msgid=#000000013`<br/>`statuscode=1`<br/>`AccountPoint=126` |
-| 多筆發送 | `SmBulkSend` | `batch001` | `[A1]`<br/>`msgid=1010079522`<br/>`statuscode=1`<br/>`[A2]`<br/>`msgid=1010079523`<br/>`statuscode=1`<br/>`AccountPoint=98` |
-| 狀態查詢 | `SmQuery` | `1010079522,1010079523` | `1010079522`（Tab）`4`（Tab）`20251106120000`<br/>`1010079523`（Tab）`4`（Tab）`20251106120005` |
+| 多筆發送 | `SmBulkSend` | `batch001` | `[1]`<br/>`msgid=#000000333`<br/>`statuscode=0`<br/>`[2]`<br/>`msgid=#000000334`<br/>`statuscode=1`<br/>`AccountPoint=92` |
+| 狀態查詢 | `SmQuery` | `0311216947,0311216948,0311216949` | `0311216947`（Tab）`6`（Tab）`20060623103807`<br/>`0311216948`（Tab）`4`（Tab）`20060623103810`<br/>`0311216949`（Tab）`4`（Tab）`20060623103809` |
 | 餘額查詢 | `SmQueryBalance` | `testuser` | `AccountPoint=110` |
-| 預約取消 | `SmCancel` | `1010079522` | `1010079522=9` |
+| 預約取消 | `SmCancel` | `0311216947,0311216948,0311216949` | `0311216947=9`<br/>`0311216948=?`<br/>`0311216949=5` |
 
-狀態查詢每行為 `msgid`、`statuscode`、`statustime` 以 Tab 分隔；取消回應每行為 `msgid=statuscode`。實際狀態碼的意義見原文件。
+各回應範例出處：單筆發送為文件第 6 頁、多筆發送為第 8 頁、狀態查詢為第 10 頁、餘額查詢為第 11 頁、預約取消為第 12 頁。狀態查詢每行為 `msgid`、`statuscode`、`statustime` 以 Tab 分隔，換行為 CRLF；取消回應每行為「簡訊序號=簡訊狀態」，換行為 CRLF。實際狀態碼的意義見原文件。Condition 的 `batch001`、`testuser` 是本範例自訂的呼叫參數，不是文件內容。
 
 ## 建置
 
@@ -102,26 +102,28 @@ curl -X POST 'http://localhost:8080/dynamic-api/b2c/mtk/SmSend?CharsetURL=UTF-8'
 
 - `POST http://localhost:8080/dynamic-api/b2c/mtk/SmBulkSend?username=testuser&password=testpass&objectID=batch001&Encoding_PostIn=UTF-8`
 - Header：`Content-Type: text/plain`
-- 本文：每行一筆，格式為 `ClientID$$dstaddr$$dlvtime$$vldtime$$destname$$response$$smbody`（本文不參與比對）
+- 本文：每行一筆，格式為 `ClientID$$dstaddr$$dlvtime$$vldtime$$destname$$response$$smbody`（7 欄，本文不參與比對）。以下兩筆取自文件第 7 頁：
+  - `1$$0999999999$$20170101000000$$20180101000000$$大寶$$$$我是長簡訊我是長簡訊`
+  - `2$$0900000000$$$$$$二寶$$$$我是長簡訊我是長簡訊`
 - 比對：method `SmBulkSend`、condition `batch001`
 
 ```bash
 curl -X POST 'http://localhost:8080/dynamic-api/b2c/mtk/SmBulkSend?username=testuser&password=testpass&objectID=batch001&Encoding_PostIn=UTF-8' \
   -H 'Content-Type: text/plain' \
-  --data-binary $'A1$$0912345678$$$$$$王小明$$$$測試簡訊一\nA2$$0922333444$$$$$$陳小華$$$$測試簡訊二'
+  --data-binary $'1$$0999999999$$20170101000000$$20180101000000$$大寶$$$$我是長簡訊我是長簡訊\n2$$0900000000$$$$$$二寶$$$$我是長簡訊我是長簡訊'
 ```
 
 ### SmQuery：簡訊狀態查詢
 
 - `POST http://localhost:8080/dynamic-api/b2c/mtk/SmQuery`
 - Header：`Content-Type: application/x-www-form-urlencoded`
-- 參數：`username=testuser`、`password=testpass`、`msgid=1010079522,1010079523`
-- 比對：method `SmQuery`、condition `1010079522,1010079523`
+- 參數：`username=testuser`、`password=testpass`、`msgid=0311216947,0311216948,0311216949`（多筆以半形逗號分隔）
+- 比對：method `SmQuery`、condition `0311216947,0311216948,0311216949`
 
 ```bash
 curl -X POST http://localhost:8080/dynamic-api/b2c/mtk/SmQuery \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'username=testuser&password=testpass&msgid=1010079522,1010079523'
+  -d 'username=testuser&password=testpass&msgid=0311216947,0311216948,0311216949'
 ```
 
 ### SmQuery：帳號餘額查詢
@@ -141,13 +143,13 @@ curl -X POST http://localhost:8080/dynamic-api/b2c/mtk/SmQuery \
 
 - `POST http://localhost:8080/dynamic-api/b2c/mtk/SmCancel`
 - Header：`Content-Type: application/x-www-form-urlencoded`
-- 參數：`username=testuser`、`password=testpass`、`msgid=1010079522`
-- 比對：method `SmCancel`、condition `1010079522`
+- 參數：`username=testuser`、`password=testpass`、`msgid=0311216947,0311216948,0311216949`（多筆以半形逗號分隔）
+- 比對：method `SmCancel`、condition `0311216947,0311216948,0311216949`
 
 ```bash
 curl -X POST http://localhost:8080/dynamic-api/b2c/mtk/SmCancel \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'username=testuser&password=testpass&msgid=1010079522'
+  -d 'username=testuser&password=testpass&msgid=0311216947,0311216948,0311216949'
 ```
 
 把 condition 換成沒有建立 Mock 的值，會得到 404；拿掉 `username` 或 `password` 會得到 `statuscode=c`／`statuscode=d`。Postman 範例在 `postman/Endpoints.postman_collection.json` 的 `mitake-restful` 資料夾。
