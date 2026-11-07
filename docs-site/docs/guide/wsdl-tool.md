@@ -47,7 +47,7 @@ curl -X POST http://localhost:8080/dynamic-api/ws/genWsdlObj \
 ## 轉換參數與注意事項
 
 - 後端執行的參數為 `-autoNameResolution -d <暫存目錄> [-p <packageName>] -client <wsdl>`，因此 ZIP 中除了 DTO，也會有 Service 介面與 client 範例類別，挑需要的放進專案即可。
-- 轉換使用 `wsdl.objects.tmp.dir`（預設 `D:/tmp/wsdl/`）當暫存目錄，**完成後會把整個目錄連同內容刪除**，請不要把其他檔案放在那裡。
+- 轉換使用 `wsdl.objects.tmp.dir`（預設 `/tmp/wsdl/`）當暫存目錄，**完成後會把整個目錄連同內容刪除**，請不要把其他檔案放在那裡。
 - 同一時間只會執行一個轉換（以全域鎖序列化）。
 
 產出的類別要怎麼調整成可用的 Endpoint，請看 [開發 Endpoint JAR](../jar-dev/endpoint-jar.md)。

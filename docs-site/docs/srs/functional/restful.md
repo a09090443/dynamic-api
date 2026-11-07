@@ -1,7 +1,7 @@
 ---
 id: restful
 title: 3.3 RESTful 管理
-description: 'FR-RS-001～008 RESTful 管理需求：與 Endpoint 管理的差異、專屬規則與查詢已註冊路由。'
+description: 'FR-RS-001～009 RESTful 管理需求：與 Endpoint 管理的差異、專屬規則、查詢已註冊路由與 OpenAPI／Swagger UI 文件。'
 sidebar_label: 3.3 RESTful 管理
 ---
 
@@ -69,3 +69,13 @@ RESTful 管理的需求結構與 [Endpoint 管理](./endpoint.md) 對應，以�
 |---|---|
 | 描述 | 系統應能列出已啟用 RESTful 實際註冊的路由，便於除錯 |
 | 現況 | Actuator 端點 `show-mappings` 已實作，但未列入 `management.endpoints.web.exposure.include`（設定值為 `custom-api-mappings`），無法透過 HTTP 存取（KI-04） |
+
+## FR-RS-009 RESTful 服務的 OpenAPI 文件與 Swagger UI
+
+| 項目 | 內容 |
+|---|---|
+| 描述 | 系統應為已啟用的 RESTful 服務提供 OpenAPI 3 文件，並以 Swagger UI 瀏覽 |
+| 觸發者 | `GET /dynamic-api/api/getOpenApi`；瀏覽器開啟 `/dynamic-api/swagger-ui.html` |
+| 輸出 | OpenAPI 3.0.3 JSON（最外層即 `openapi` 物件，不包 `{code, message, data}`），標頭 `Cache-Control: no-store` |
+| 業務規則 | 1. 每次請求即時產生、不快取；啟用、停用或重新上傳後下一次請求即反映，不需重啟<br/>2. 只列出 `IS_ACTIVE=1`、且由該服務 ClassLoader 實際註冊在 `RequestMappingHandlerMapping` 的路由<br/>3. 以 `publishUri` 為 tag，`operationId` 不重複；`@PathVariable`／`@RequestParam`／`@RequestHeader` 為參數，`@RequestBody` 為 JSON 請求內容<br/>4. 單一方法解析失敗時略過並記錄日誌，其餘照常輸出；循環參照型別不造成堆疊溢位<br/>5. SOAP Endpoint 不在範圍內，維持使用 WSDL |
+| 驗收標準 | ✅ 沒有已啟用服務時 `paths` 為空物件<br/>✅ 啟用 `example-restful` 後列出 `/example/...` 路由，停用後不重啟即消失 |

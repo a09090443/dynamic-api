@@ -32,6 +32,8 @@ dependencies {
     implementation 'org.flywaydb:flyway-core:10.14.0'
     implementation 'org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws:4.0.0'
     implementation 'org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:4.0.0'
+    // Swagger UI 靜態資源（/webjars/swagger-ui/...），文件由 OpenApiController 即時產生
+    implementation 'org.webjars:swagger-ui:5.17.14'
 
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'

@@ -14,6 +14,7 @@ sidebar_label: 5.1 概述與慣例
 | `/dynamic-api/ws` | `WebServiceController` | Endpoint（SOAP）管理、WSDL 轉換 | [5.2 Endpoint API](./endpoint.md) |
 | `/dynamic-api/api` | `DynamicLoadController` | RESTful 管理 | [5.3 RESTful API](./restful.md) |
 | `/dynamic-api/common` | `CommonController` | JAR 上傳、Mock 回應、日誌串流 | [5.4 共用 API](./common.md) |
+| `/dynamic-api/api/getOpenApi` | `OpenApiController` | 已啟用 RESTful 服務的 OpenAPI 3 文件（Swagger UI：`/dynamic-api/swagger-ui.html`） | 本頁「[回應格式的例外](#回應格式的例外getopenapi)」 |
 
 另有兩類非管理 API 的端點：
 
@@ -58,6 +59,14 @@ sidebar_label: 5.1 概述與慣例
 :::
 
 前端 `apiClient` 的處理方式可作為參考：`code` 為數字且不為 200 時視為失敗；HTTP 錯誤時取 `data.message`，沒有則用 `statusText`。
+
+### 回應格式的例外：getOpenApi
+
+`GET /dynamic-api/api/getOpenApi` 由獨立的 `OpenApiController` 提供，**不標註 `@ResponseResultBody`**，因此**不包成 `{code, message, data}`**：回應本文最外層就是 OpenAPI 3.0.3 物件（`openapi`、`info`、`servers`、`tags`、`paths`），並帶 `Cache-Control: no-store`。Swagger UI 需要這個格式，呼叫端不要用 `code` 判斷成敗。
+
+- 文件每次請求由 `OpenApiServiceImpl` 即時產生：從 `CONTROLLER` 取得 `IS_ACTIVE=1` 的 `publishUri`，以 `ClassLoaderSingletonEnum` 取得 `{publishUri}_controller` 的 ClassLoader，再從 `requestMappingHandlerMapping.getHandlerMethods()` 篩出 Controller 類別由同一個 ClassLoader 載入的路由。
+- `servers[0].url` 為 `server.servlet.context-path`（`/dynamic-api`）。沒有已啟用服務時 `paths` 為空物件。
+- 只涵蓋 RESTful 服務；SOAP Endpoint 使用 WSDL。設計細節見 [3.2 動態載入設計](../dynamic-loading.md#openapi-文件產生)。
 
 ## 範例集合
 

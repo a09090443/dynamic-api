@@ -18,16 +18,20 @@ sidebar_label: 安裝與啟動
 
 ## 啟動前：確認檔案存放目錄
 
-預設設定把資料檔放在固定的 Windows 路徑，第一次啟動前請確認目錄存在，或改成你要的路徑（見 [設定參考](./configuration.md)）：
+預設設定把資料檔放在 Linux 的 `/tmp` 底下，第一次啟動前請確認目錄存在，或改成你要的路徑（見 [設定參考](./configuration.md)）：
 
 | 用途 | 設定鍵 | 預設值 |
 |---|---|---|
-| SQLite 資料庫 | `dynamic.data-source-map[webservice].url` | `jdbc:sqlite:D:/tmp/mockapi.db`（`bootRun`）<br/>`jdbc:sqlite:D:/tmp/webservice.db`（`bootJar`） |
-| 上傳的 JAR | `jar.file.dir` | `D:/tmp/` |
-| WSDL 轉換暫存 | `wsdl.objects.tmp.dir` | `D:/tmp/wsdl/` |
-| 日誌 | `log.base` | `C:/tmp`（`bootRun`）／`D:/tmp`（`bootJar`） |
+| SQLite 資料庫 | `dynamic.data-source-map[webservice].url` | `jdbc:sqlite:/tmp/mockapi.db`（`bootRun`）<br/>`jdbc:sqlite:/tmp/webservice.db`（`bootJar`） |
+| 上傳的 JAR | `jar.file.dir` | `/tmp/` |
+| WSDL 轉換暫存 | `wsdl.objects.tmp.dir` | `/tmp/wsdl/` |
+| 日誌 | `log.base` | `/tmp` |
 
 資料表會在啟動時由 Flyway 自動建立，不需要手動執行 SQL。
+
+:::warning `/tmp` 不是持久目錄；Windows 需要改路徑
+`/tmp` 可能在重開機或系統清理時被清空，資料庫與上傳的 JAR 會一起消失，正式使用請改到持久目錄。Windows 上沒有 `/tmp`，升級後要把路徑改回 Windows 路徑（例如 `D:/tmp/`）或在啟動時覆寫，做法見 [設定參考](./configuration.md#設定檔一覽)。
+:::
 
 ## 方式一：生產模式（單一服務，建議先用這個）
 
@@ -143,7 +147,7 @@ Next.js 開發模式也使用 port 3000，兩者同時啟動時請改用 `npm st
 1. 手動在 `nextjs-dynamic-api-manager/` 執行 `NODE_ENV=production npm run build`，把 `out/` 內容複製到 `backend/src/main/resources/static/`。
 2. 以 `./gradlew bootRun -x buildFrontend` 略過前端任務（Gradle 會一併略過它所依賴的 `installNextjs`、`buildNextjs` 等任務）。
 
-同時記得把 `*.properties` 裡的 `D:/`、`C:/` 路徑改成該系統可用的路徑。
+預設路徑已是 `/tmp`，macOS / Linux 不需要另外修改 `*.properties`；但 `/tmp` 不是持久目錄，正式使用時請改到持久目錄。
 
 ## 確認服務正常
 
@@ -151,4 +155,4 @@ Next.js 開發模式也使用 port 3000，兩者同時啟動時請改用 `npm st
 curl http://localhost:8080/dynamic-api/ws/getEndpoints
 ```
 
-回應 `{"code":200,"message":"OK","data":[]}` 代表後端與資料庫皆正常。接著到 [快速上手](./quick-start.md) 部署第一個服務。
+回應 `{"code":200,"message":"OK","data":[]}` 代表後端與資料庫皆正常。已啟用的 RESTful 服務可在 `http://localhost:8080/dynamic-api/swagger-ui.html` 以 Swagger UI 瀏覽（見 [管理 RESTful](./restful.md#swagger-uiopenapi-文件)）。接著到 [快速上手](./quick-start.md) 部署第一個服務。
