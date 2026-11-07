@@ -210,7 +210,8 @@ public final class OpenApiGenerator {
                 if (!operationParameters.isEmpty()) {
                     operation.put("parameters", operationParameters);
                 }
-                if (requestBody != null && !"get".equals(httpMethod) && !"delete".equals(httpMethod)) {
+                // 依實際 handler 宣告輸出本文，不分 HTTP 方法；OpenAPI 3.0.3 未定義 GET／DELETE 本文的語意，部分工具可能忽略此欄位
+                if (requestBody != null) {
                     operation.put("requestBody", requestBody);
                 }
                 operation.put("responses", responses);

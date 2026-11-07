@@ -175,6 +175,24 @@ public class OpenApiGeneratorTest {
     }
 
     @Test
+    void requestBodyIsListedForGetAndDeleteOperations() throws Exception {
+        IsolatingClassLoader ordersLoader = loader(Set.of(PREFIX + "OrdersController"), Set.of());
+        register(mapping, ordersLoader.loadClass(PREFIX + "OrdersController"));
+        Map<String, Object> paths = asMap(generate(services("orders", ordersLoader)).get("paths"));
+
+        // @RequestBody 不論 HTTP 方法都要輸出 application/json requestBody
+        for (String[] pathAndMethod : new String[][]{{"/orders/bulk", "delete"}, {"/orders/query", "get"}}) {
+            Map<String, Object> op = operation(paths, pathAndMethod[0], pathAndMethod[1]);
+            assertThat(op).containsKey("requestBody");
+            Map<String, Object> requestBody = asMap(op.get("requestBody"));
+            assertThat(requestBody).containsEntry("required", true);
+            Map<String, Object> schema = asMap(asMap(asMap(requestBody.get("content")).get("application/json")).get("schema"));
+            assertThat(schema).containsEntry("type", "object");
+            assertThat(asMap(schema.get("properties"))).containsKeys("orderNo", "amount", "status", "items");
+        }
+    }
+
+    @Test
     void tagsArePublishUriAndOperationIdsAreUnique() throws Exception {
         IsolatingClassLoader ordersLoader = loader(Set.of(PREFIX + "OrdersController"), Set.of());
         IsolatingClassLoader inventoryLoader = loader(Set.of(PREFIX + "InventoryController"), Set.of());
@@ -566,6 +584,15 @@ class OpenApiFixtureOrdersController {
 
     @PostMapping("/find")
     public OrderDto find(@RequestBody OrderDto criteria) {
+        return null;
+    }
+
+    @RequestMapping(value = "/bulk", method = RequestMethod.DELETE)
+    public void bulkDelete(@RequestBody OrderDto criteria) {
+    }
+
+    @GetMapping("/query")
+    public List<OrderDto> query(@RequestBody OrderDto criteria) {
         return null;
     }
 }
