@@ -71,6 +71,7 @@ sidebar_label: 5.1 概述與慣例
 | `company-restful` | `POST /company/data` |
 | `example-restful` | `GET /example/response`、`POST /example/data` |
 | `inventory-restful` | `GET /inventory/items/A001`、`POST /inventory/items` |
+| `mitake-restful` | `POST /b2c/mtk/SmSend`、`SmBulkSend`、`SmQuery`（狀態、餘額各一）、`SmCancel` |
 | `Management_API` | `/api` 的 RESTful 管理、`/ws` 的 `getEndpoints`、`updateWebService`、`genWsdlObj`，以及 `/common` 的 Mock 回應管理（`saveMockResponse` 的 Endpoint／RESTful 版本、`getResponseList`、`getResponseContent`、`deleteResponse`、`switchResponse`） |
 
 需要 id 的請求以 `REPLACE_WITH_*` 佔位字串表示，執行前換成實際值。`/common/logs/stream`（SSE）不收錄。

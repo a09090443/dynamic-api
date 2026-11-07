@@ -520,6 +520,259 @@
 			]
 		},
 		{
+			"name": "mitake-restful",
+			"item": [
+				{
+					"name": "Mitake_SmSend",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "testuser",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testpass",
+									"type": "text"
+								},
+								{
+									"key": "dstaddr",
+									"value": "0912345678",
+									"type": "text"
+								},
+								{
+									"key": "smbody",
+									"value": "測試簡訊",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/b2c/mtk/SmSend?CharsetURL=UTF-8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"b2c",
+								"mtk",
+								"SmSend"
+							],
+							"query": [
+								{
+									"key": "CharsetURL",
+									"value": "UTF-8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mitake_SmBulkSend",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/plain"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "1$$0999999999$$20170101000000$$20180101000000$$大寶$$$$我是長簡訊我是長簡訊\n2$$0900000000$$$$$$二寶$$$$我是長簡訊我是長簡訊",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/b2c/mtk/SmBulkSend?username=testuser&password=testpass&objectID=batch001&Encoding_PostIn=UTF-8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"b2c",
+								"mtk",
+								"SmBulkSend"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "testuser"
+								},
+								{
+									"key": "password",
+									"value": "testpass"
+								},
+								{
+									"key": "objectID",
+									"value": "batch001"
+								},
+								{
+									"key": "Encoding_PostIn",
+									"value": "UTF-8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mitake_SmQuery_status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "testuser",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testpass",
+									"type": "text"
+								},
+								{
+									"key": "msgid",
+									"value": "0311216947,0311216948,0311216949",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/b2c/mtk/SmQuery",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"b2c",
+								"mtk",
+								"SmQuery"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mitake_SmQuery_balance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "testuser",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testpass",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/b2c/mtk/SmQuery",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"b2c",
+								"mtk",
+								"SmQuery"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mitake_SmCancel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "testuser",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testpass",
+									"type": "text"
+								},
+								{
+									"key": "msgid",
+									"value": "0311216947,0311216948,0311216949",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/dynamic-api/b2c/mtk/SmCancel",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"dynamic-api",
+								"b2c",
+								"mtk",
+								"SmCancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Management_API",
 			"item": [
 				{
