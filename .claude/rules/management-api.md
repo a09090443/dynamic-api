@@ -13,7 +13,8 @@ API 規格：`docs-site/docs/sdd/api/`。
 
 ## 回應格式
 
-- 三個管理 Controller（`/ws`、`/api`、`/common`）都標註 `@ResponseResultBody`，回傳 `com.zipe.dto.Result`，序列化為 `{ code, message, data }`。新增端點沿用此方式，不要直接回傳裸物件或 `ResponseEntity`（檔案下載如 `genWsdlObj` 例外）。
+- 既有三個管理 Controller（`/ws`、`/api`、`/common`）都標註 `@ResponseResultBody`，回傳 `com.zipe.dto.Result`，序列化為 `{ code, message, data }`。新增一般管理端點沿用此方式，不要直接回傳裸物件或 `ResponseEntity`（檔案下載如 `genWsdlObj` 例外）。
+- `OpenApiController` 是明確例外：它不標註 `@ResponseResultBody`，`GET /api/getOpenApi` 直接回傳最外層含 `openapi` 的 OpenAPI 物件，並送出 `Cache-Control: no-store`，不得包成 `{ code, message, data }`。
 - 輸入驗證失敗回傳 `Result.failure(ResultStatus.BAD_REQUEST)`：**HTTP 200、`code=400`**。前端 `apiClient` 依 `code !== 200` 判斷失敗，不要改成只靠 HTTP 狀態碼。
 - 例外由 `GlobalExceptionHandler` 與 zipe `ResponseResultBodyAdvice` 兩個 Advice 處理（格式不一致，見 TD-06）。修改錯誤處理時要同時考慮兩者。
 
@@ -40,6 +41,12 @@ API 規格：`docs-site/docs/sdd/api/`。
 ## Controller 層的編排
 
 `updateWebService` / `updateController` 在 Controller 中編排「停用 → 儲存 → 改 JAR 狀態 → 搬移 Mock 回應」，這些步驟不在同一個交易內（TD-13）。調整順序前先讀 `docs-site/docs/sdd/workflows.md` 的 6.2。
+
+## OpenAPI 文件端點
+
+- `controller/OpenApiController.java` 只負責 HTTP 契約；`service/OpenApiService.java` 與 `service/impl/OpenApiServiceImpl.java` 依目前啟用的 RESTful 服務及 `RequestMappingHandlerMapping` 的實際註冊結果組織文件。
+- `util/OpenApiGenerator.java` 以反射建立 paths、參數與 schema。不得引入 springdoc／swagger-core 的使用者型別快取，也不得在 static 或成員欄位保留使用者 JAR 的 `Class`、`Method`、`Type` 或 `ClassLoader`。
+- 文件每次請求即時產生，不快取；Swagger UI 位於 `/swagger-ui.html`，以相對路徑讀取 `api/getOpenApi`。這套文件只涵蓋已啟用的 RESTful 服務，SOAP Endpoint 繼續使用 WSDL。
 
 ## CORS
 

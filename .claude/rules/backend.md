@@ -18,12 +18,12 @@ cd backend
 - `processResources` 依賴 `buildFrontend`，所以 `bootRun`／`bootJar` 每次都會先 `npm install` + `next build` 並複製到 `src/main/resources/static/`，第一次較久。
 - 前端建置任務寫死 `tools/node-v22.20.0-win-x64/npm.cmd`，非 Windows 環境必須加 `-x buildFrontend`（前端需另外手動建置，見 `.claude/rules/frontend.md`）。
 - `bootJar` 會依 `-Penv`（預設 `dev`）把 `*_{env}.properties` 覆蓋成正式檔名，見 `.claude/rules/configuration.md`。
-- 測試很少（`ResponseRepositoryTest`、`DynamicControllerServiceTest`），動態載入相關修改需要以範例 JAR 手動驗證。
+- 後端測試涵蓋 Repository、動態 Controller 註冊、Endpoint fault 與 OpenAPI 產生；動態載入相關修改仍需要以範例 JAR 手動驗證。
 
 ## 執行期的檔案
 
-- 上傳的 JAR 存在**檔案系統** `jar.file.dir`（預設 `D:/tmp/`），檔名為 `{UUID}.jar`；資料庫 `JAR_FILE` 只存中繼資料，`STATUS` 為 `A`（使用中）／`I`（未使用）／`D`（已刪除，實體檔會被刪除）。
-- SQLite 檔與日誌位置依執行方式不同，見 `.claude/rules/configuration.md`。所需目錄要事先存在。
+- 上傳的 JAR 存在**檔案系統** `jar.file.dir`（預設 `/tmp/`），檔名為 `{UUID}.jar`；資料庫 `JAR_FILE` 只存中繼資料，`STATUS` 為 `A`（使用中）／`I`（未使用）／`D`（已刪除，實體檔會被刪除）。
+- `bootRun` 與 `bootJar` 的 SQLite 預設檔名不同，日誌預設都寫入 `/tmp`；完整位置見 `.claude/rules/configuration.md`。所需目錄要事先存在。
 
 ## 目錄樹
 
@@ -41,19 +41,22 @@ backend/
     │   ├── controller/              # 管理 API [management-api.md]
     │   │   ├── WebServiceController.java     # /ws：Endpoint 管理、genWsdlObj
     │   │   ├── DynamicLoadController.java    # /api：RESTful 管理
+    │   │   ├── OpenApiController.java        # /api/getOpenApi：即時 OpenAPI 文件（裸物件、不快取）
     │   │   └── CommonController.java         # /common：JAR 上傳、Mock 回應、日誌串流
     │   ├── service/
-    │   │   ├── DynamicWebService.java、DynamicControllerService.java、CommonService.java
+    │   │   ├── DynamicWebService.java、DynamicControllerService.java、CommonService.java、OpenApiService.java
     │   │   └── impl/
     │   │       ├── BaseService.java                    # JAR 路徑與狀態更新（D 時刪檔）[dynamic-loading.md]
     │   │       ├── DynamicWebServiceImpl.java          # Endpoint 啟停、WSDL 轉換 [dynamic-loading.md]
     │   │       ├── DynamicControllerServiceImpl.java   # RESTful 載入與 RequestMapping 註冊 [dynamic-loading.md]
+    │   │       ├── OpenApiServiceImpl.java             # 依啟用服務與已註冊路由即時產生 OpenAPI
     │   │       └── CommonServiceImpl.java              # JAR 上傳、Mock 回應 CRUD、SSE 日誌 [mock-response.md]
     │   ├── util/
     │   │   ├── WebServiceHandler.java       # CXF 發布／撤銷 [dynamic-loading.md]
     │   │   ├── DynamicBeanUtil.java         # 動態註冊 Bean Definition
     │   │   ├── Wsdl2JavaUtil.java           # CXF WSDLToJava，輸出 ZIP
     │   │   ├── DynamicClassLoader.java      # (未使用)，實際使用 zipe 的 CustomClassLoader
+    │   │   ├── OpenApiGenerator.java        # 以反射建立 OpenAPI paths 與 schema，不保留使用者型別快取
     │   │   └── JsonToXmlTest.java           # (未使用) 實驗程式
     │   ├── setup/                   # SmartLifecycle：啟動時恢復已啟用服務 [dynamic-loading.md]
     │   │   ├── SetupWebservices.java
@@ -85,11 +88,20 @@ backend/
     │   ├── db.migration/V1.0～V1.2__*.sql        # Flyway，不可修改既有腳本 [database.md]
     │   ├── sql/SQL_*.sql                         # 具名 SQL，檔名 = *JDBC 常數 [database.md]
     │   ├── META-INF/spring.factories
+    │   ├── public/swagger-ui.html             # Swagger UI，讀取相對路徑 api/getOpenApi
     │   └── static/                               # 前端建置產物（建置時清空重建，不要手動修改）
-    └── test/java/com/dynamicapi/
-        ├── jarbase/TestBase.java
-        ├── repository/ResponseRepositoryTest.java
-        └── service/DynamicControllerServiceTest.java
+    └── test/
+        ├── java/com/dynamicapi/
+        │   ├── jarbase/TestBase.java
+        │   ├── repository/ResponseRepositoryTest.java
+        │   ├── sample/OrderEndpointFaultTest.java
+        │   └── service/
+        │       ├── DynamicControllerMappingInjectionTest.java
+        │       ├── DynamicControllerServiceTest.java
+        │       └── OpenApiGeneratorTest.java
+        └── resources/
+            ├── data-source.properties         # 測試 SQLite：build/dynamic-api-test.db
+            └── resources.properties           # 測試日誌、JAR、WSDL：build/ 下的相對路徑
 ```
 
 新增類別時放在既有的對應套件；新增「被使用者 JAR 依賴」的類別時，放在 `jarbase/` 或 `dao/` 並同步到 `base-jar/`。
