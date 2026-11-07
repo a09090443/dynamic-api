@@ -44,10 +44,19 @@ flowchart LR
 | Gradle | 後端與多數範例附 Gradle Wrapper；`endpoints/order-endpoint`、`restfuls/inventory-restful` 不附，需安裝系統 Gradle |
 | 作業系統 | Windows（建議）；macOS / Linux 見下方說明 |
 
-## 快速啟動
+## 本機啟動與停止服務
 
-> [!IMPORTANT]
-> 預設設定把資料庫、上傳的 JAR、日誌放在 `D:/tmp/`、`C:/tmp/`。第一次啟動前請確認目錄存在，或修改 `backend/src/main/resources/*.properties`（見 [設定參考](https://a09090443.github.io/dynamic-api/docs/guide/configuration)）。
+依序完成：**前置條件 → 啟動 → 確認服務正常 → 停止服務**。
+
+> [!NOTE]
+> 本段指令是依現行設定（`backend/src/main/resources/application.yml` 的 port `8080`、context-path `/dynamic-api`，以及 `*.properties` 的檔案路徑）與[安裝與啟動](./docs-site/docs/guide/installation.md)核對整理，撰寫時**沒有在本機實際執行**。標示「**未實測**」的步驟（包括 macOS / Linux 啟動、Ctrl+C 停止、Docker Compose 停止）請自行確認結果；若與實際行為不符，以安裝指南與程式為準。
+
+### 前置條件
+
+- **JDK 17**（見上方[環境需求](#環境需求)）。
+- **資料目錄**：預設設定把 SQLite 資料庫（`D:/tmp/mockapi.db`）、上傳的 JAR（`D:/tmp/`）、WSDL 暫存（`D:/tmp/wsdl/`）放在 `D:/tmp/`，日誌放在 `C:/tmp`。第一次啟動前請確認目錄存在，或修改 `backend/src/main/resources/*.properties`（見 [設定參考](https://a09090443.github.io/dynamic-api/docs/guide/configuration)）。
+- **macOS / Linux**：Gradle 的前端建置任務寫死使用 Windows 版 Node，必須先手動建置前端（需自行安裝 Node.js 22），並在 Gradle 命令加上 `-x buildFrontend`，步驟見下方 [macOS / Linux](#macos--linux)。
+- **開發模式**：需自行安裝 Node.js 22，並建立 `.env.local`（見下方[開發模式](#開發模式前端熱更新)）。
 
 ### 生產模式（建議先用這個）
 
@@ -95,7 +104,7 @@ npm run dev
 
 ### macOS / Linux
 
-前端建置任務寫死使用 Windows 版 Node，直接 `./gradlew bootRun` 會失敗。請先手動建置前端，再略過 Gradle 的前端任務：
+（**未實測**）前端建置任務寫死使用 Windows 版 Node，直接 `./gradlew bootRun` 會失敗。請先手動建置前端，再略過 Gradle 的前端任務：
 
 ```bash
 cd nextjs-dynamic-api-manager
@@ -111,10 +120,28 @@ cd ../backend
 
 ### 確認服務正常
 
-```bash
-curl http://localhost:8080/dynamic-api/ws/getEndpoints
-# {"code":200,"message":"OK","data":[]}
-```
+1. 瀏覽器開啟 <http://localhost:8080/dynamic-api/>，應看到管理介面（開發模式改開 <http://localhost:3000/endpoint>）。
+2. 呼叫管理 API，確認後端與資料庫正常：
+
+   ```bash
+   curl http://localhost:8080/dynamic-api/ws/getEndpoints
+   # {"code":200,"message":"OK","data":[]}
+   ```
+
+   回應的 `code` 為 `200` 即正常；`data` 會列出已建立的 Endpoint，第一次啟動時是空陣列。
+
+### 停止服務
+
+| 啟動方式 | 停止方式 |
+|---|---|
+| 終端機前景執行的 `gradlew bootRun`、`java -jar`、`npm run dev` | 在該終端機按 **Ctrl+C**（**未實測**）；開發模式要在前後端兩個終端機各按一次 |
+| VS Code **Run and Debug** | 按 **Shift+F5**；**Dynamic API：前後端** 設定了 `stopAll`，停止其中一個會一起停止 |
+| Docker Compose（在 `backend/` 執行） | `docker compose down`（**未實測**），具名 volume 內的資料會保留 |
+
+> [!CAUTION]
+> `docker compose down -v` 會一併刪除 `sqlite-data`、`uploaded-jars`、`application-logs` 三個 volume，也就是 SQLite 資料庫、上傳的 JAR 與日誌。只想停止服務時不要加 `-v`；確定要清除前先備份 SQLite 與 JAR 目錄。
+
+停止後可用上方的 `curl` 再確認：無法連線即代表服務已停止。
 
 ## 部署第一個 Mock API
 
