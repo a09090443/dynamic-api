@@ -22,8 +22,19 @@ sidebar_label: 設定參考
 | `sql/*.sql` | 程式使用的具名 SQL |
 
 :::info `bootRun` 與 `bootJar` 用的設定不同
-`bootRun` 直接讀取 `resources.properties`、`data-source.properties`；`bootJar` 會先把 `*_{env}.properties` 複製成上述檔名再打包。目前兩者的差異在 SQLite 檔名（`mockapi.db` vs `webservice.db`）與日誌目錄（`C:/tmp` vs `D:/tmp`）。
+`bootRun` 直接讀取 `resources.properties`、`data-source.properties`；`bootJar` 會先把 `*_{env}.properties` 複製成上述檔名再打包。目前兩者唯一的差異是 SQLite 檔名（`/tmp/mockapi.db` vs `/tmp/webservice.db`），日誌、上傳 JAR 與 WSDL 暫存目錄都在 `/tmp` 底下。
 :::
+
+:::warning 預設路徑是 Linux 的 `/tmp`
+所有預設路徑都放在 `/tmp`：SQLite、上傳的 JAR、WSDL 暫存與日誌。`/tmp` 在部分 Linux 發行版重開機或系統清理時會被清空，資料庫與已上傳的 JAR 會一起消失；**正式使用請改到權限適當的持久目錄**（例如 `/var/lib/dynamic-api/`），或用下方「[執行期覆寫](#執行期覆寫與-docker-compose)」在啟動時指定。
+
+**Windows 使用者升級後**，預設路徑已不再是 `C:/tmp`、`D:/tmp`，請擇一處理，否則會找不到原本的資料庫與 JAR 目錄：
+
+- 修改實際使用的設定檔：`bootRun` 改 `resources.properties`、`data-source.properties`；`bootJar` 改所選 `-Penv` 的 `resources_{env}.properties`、`data-source_{env}.properties`。例如 `jar.file.dir = D:/tmp/`、`wsdl.objects.tmp.dir = D:/tmp/wsdl/`、`log.base = D:/tmp`、`dynamic.data-source-map[webservice].url=jdbc:sqlite:D:/tmp/webservice.db`。
+- 或不改檔案，啟動時以命令列參數覆寫（設定鍵同下方範例，路徑換成 Windows 路徑）。
+:::
+
+後端測試另有 `backend/src/test/resources/` 下的 `resources.properties` 與 `data-source.properties`，只在測試時取代正式檔，所有路徑都指向 `backend/build/` 底下的相對路徑（`build/test-logs`、`build/test-jars/`、`build/test-wsdl/`、`build/dynamic-api-test.db`），不需要事先建立 `/tmp` 目錄。
 
 ## application.yml
 
@@ -43,9 +54,9 @@ sidebar_label: 設定參考
 
 | 設定鍵 | 預設值 | 說明 |
 |---|---|---|
-| `jar.file.dir` | `D:/tmp/` | 上傳 JAR 的存放目錄。**結尾必須有 `/`**，程式以字串直接串接檔名。 |
-| `wsdl.objects.tmp.dir` | `D:/tmp/wsdl/` | WSDL 轉換暫存目錄，每次轉換完會整個刪除 |
-| `log.base` | `C:/tmp` | 日誌目錄 |
+| `jar.file.dir` | `/tmp/` | 上傳 JAR 的存放目錄。**結尾必須有 `/`**，程式以字串直接串接檔名。 |
+| `wsdl.objects.tmp.dir` | `/tmp/wsdl/` | WSDL 轉換暫存目錄，每次轉換完會整個刪除 |
+| `log.base` | `/tmp` | 日誌目錄 |
 | `log.moduleName` | `MockWebservice` | 日誌檔名前綴（`/common/logs/stream` 預設讀取 `MockWebservice.log`） |
 | `log.root.level` | `DEBUG` | 根日誌等級 |
 | `log.max.history` / `log.max.size` | `100` / `100MB` | 日誌保留天數與單檔大小 |
@@ -56,11 +67,11 @@ sidebar_label: 設定參考
 dynamic.primary=webservice
 dynamic.entity-scan=com.dynamicapi
 dynamic.is-encrypt=false
-dynamic.data-source-map[webservice].url=jdbc:sqlite:D:/tmp/mockapi.db
+dynamic.data-source-map[webservice].url=jdbc:sqlite:/tmp/mockapi.db
 dynamic.data-source-map[webservice].driverClassName=org.sqlite.JDBC
 ```
 
-只需要調整 `url` 中的檔案路徑。SQLite 會自動建立資料庫檔案，但**所在目錄必須已存在**。
+`data-source_dev.properties`、`data-source_pro.properties`（`bootJar` 使用）的 `url` 為 `jdbc:sqlite:/tmp/webservice.db`。只需要調整 `url` 中的檔案路徑。SQLite 會自動建立資料庫檔案，但**所在目錄必須已存在**。
 
 ### 執行期覆寫與 Docker Compose
 
@@ -74,6 +85,10 @@ java -jar backend-0.0.1-SNAPSHOT.jar \
 ```
 
 `backend/docker-compose.yml` 使用這組命令列參數，並將 `/data/sqlite`、`/data/jars`、`/data/logs` 分別掛載到具名 volume。`jar.file.dir` 的尾端 `/` 不可省略；三個容器目錄由映像預先建立。
+
+## Swagger UI 與 OpenAPI
+
+動態 RESTful 服務的 OpenAPI 文件（`/dynamic-api/api/getOpenApi`）與 Swagger UI（`/dynamic-api/swagger-ui.html`）**不需要額外設定鍵**，也沒有開關：文件每次請求依目前已啟用的 RESTful 服務即時產生，`servers` 取自 `server.servlet.context-path`。Swagger UI 的靜態資源來自 `backend/build.gradle` 的 `org.webjars:swagger-ui` 相依。用法見 [管理 RESTful](./restful.md#swagger-uiopenapi-文件)。
 
 ## 前端環境變數
 

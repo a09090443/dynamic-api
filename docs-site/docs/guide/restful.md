@@ -1,7 +1,7 @@
 ---
 id: restful
 title: 管理 RESTful
-description: '在管理介面管理 RESTful 服務：新增欄位、服務網址組成規則、啟用時的載入與路徑檢查、查看已註冊路由。'
+description: '在管理介面管理 RESTful 服務：新增欄位、服務網址組成規則、啟用時的載入與路徑檢查、Swagger UI／OpenAPI 文件、查看已註冊路由。'
 sidebar_label: 管理 RESTful
 ---
 
@@ -48,6 +48,22 @@ http://localhost:8080/dynamic-api + 類別 @RequestMapping + 方法 @XxxMapping
 - 編輯後會變成**停用**，需要重新打開開關。
 - 修改 Publish URI 時，Mock 回應會跟著搬到新 URI；**請同時重新上傳 JAR**（原因見 [Endpoint 的已知問題](./endpoint.md#編輯)）。
 - 刪除會移除設定並刪除 JAR 實體檔案，Mock 回應保留。
+
+## Swagger UI／OpenAPI 文件
+
+已啟用的 RESTful 服務可以直接用 Swagger UI 瀏覽與試打：
+
+| 用途 | 網址 |
+|---|---|
+| Swagger UI | `http://localhost:8080/dynamic-api/swagger-ui.html` |
+| OpenAPI 3 文件（JSON） | `http://localhost:8080/dynamic-api/api/getOpenApi` |
+
+- **只涵蓋已啟用的 RESTful 服務**。SOAP Endpoint 不在這份文件中，請繼續使用 WSDL（`/dynamic-api/webservice/{publishUri}?wsdl`）。
+- 文件**每次請求即時產生、不快取**：打開或停用 RESTful、重新上傳 JAR 後，重新整理頁面就會反映，不需要重啟後端。
+- 路徑與 HTTP 方法取自實際註冊的路由，因此和上方「啟用時系統做了什麼」的規則一致：路徑正規式（如 `{id:\d+}`）顯示為 `{id}`；未指定方法的 `@RequestMapping` 會列出 GET、POST、PUT、DELETE、PATCH。
+- 每個服務以 Publish URI 分組（tag）。`@PathVariable`、`@RequestParam`、`@RequestHeader` 會列為參數，`@RequestBody` 列為 JSON 請求內容；`HttpServletRequest` 這類沒有註解的參數不列出。
+- 請求與回應的結構由 Java 欄位推算，循環參照或超過 5 層的物件不再展開。某個方法無法解析（例如 JAR 缺少相依類別）時只略過該方法並記錄日誌，其他路由照常顯示。
+- 系統沒有認證機制，Swagger UI 的「Try it out」會直接呼叫 Mock 服務。
 
 ## 查看目前註冊的路由
 

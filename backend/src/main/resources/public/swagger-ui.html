@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Dynamic API Manager - RESTful OpenAPI</title>
+    <!-- 資源來自 org.webjars:swagger-ui（版本與 backend/build.gradle 一致），一律使用相對路徑，不寫死主機與埠號 -->
+    <link rel="stylesheet" type="text/css" href="webjars/swagger-ui/5.17.14/swagger-ui.css">
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="webjars/swagger-ui/5.17.14/swagger-ui-bundle.js" charset="UTF-8"></script>
+<script src="webjars/swagger-ui/5.17.14/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+<script>
+    window.onload = function () {
+        // 文件由後端每次請求即時產生，只涵蓋目前已啟用的 RESTful 服務（SOAP Endpoint 請使用 WSDL）
+        window.ui = SwaggerUIBundle({
+            url: 'api/getOpenApi',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+            layout: 'StandaloneLayout'
+        });
+    };
+</script>
+</body>
+</html>

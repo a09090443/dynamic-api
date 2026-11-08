@@ -19,7 +19,7 @@ flowchart LR
 ```
 
 - **SOAP**：以 Apache CXF 發布到 `/dynamic-api/webservice/{publishUri}`，WSDL 加上 `?wsdl`
-- **RESTful**：直接註冊進 Spring MVC，網址為 `/dynamic-api/{publishUri}/...`
+- **RESTful**：直接註冊進 Spring MVC，網址為 `/dynamic-api/{publishUri}/...`；已啟用的 RESTful 服務可在 Swagger UI `/dynamic-api/swagger-ui.html` 瀏覽，OpenAPI 文件為 `/dynamic-api/api/getOpenApi`（只涵蓋已啟用的 RESTful，每次請求即時產生；SOAP 仍用 WSDL，見 [管理 RESTful](https://a09090443.github.io/dynamic-api/docs/guide/restful)）
 - **Mock 回應**：`publishUri`、`method`、`condition`、`serviceType` 四個鍵完全相等且已啟用才會命中
 
 ## 專案結構
@@ -47,7 +47,7 @@ flowchart LR
 ## 快速啟動
 
 > [!IMPORTANT]
-> 預設設定把資料庫、上傳的 JAR、日誌放在 `D:/tmp/`、`C:/tmp/`。第一次啟動前請確認目錄存在，或修改 `backend/src/main/resources/*.properties`（見 [設定參考](https://a09090443.github.io/dynamic-api/docs/guide/configuration)）。
+> 預設設定把資料庫、上傳的 JAR、WSDL 暫存與日誌放在 Linux 的 `/tmp/`。`/tmp` 可能在重開機時被清空，正式使用請改到持久目錄；**Windows 使用者升級後必須把路徑改回 Windows 路徑（例如 `D:/tmp/`）或在啟動時覆寫**，做法見 [設定參考](https://a09090443.github.io/dynamic-api/docs/guide/configuration)。
 
 ### 生產模式（建議先用這個）
 

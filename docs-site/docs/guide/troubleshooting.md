@@ -12,7 +12,7 @@ sidebar_label: 疑難排解
 大多數錯誤在畫面上只會顯示簡短訊息，原因寫在後端日誌：
 
 - 主控台輸出（`bootRun` 的終端機）
-- 日誌檔：`{log.base}/MockWebservice.log`（預設 `C:/tmp` 或 `D:/tmp`，見 [設定參考](./configuration.md#resourcesproperties)）
+- 日誌檔：`{log.base}/MockWebservice.log`（預設 `/tmp`，見 [設定參考](./configuration.md#resourcesproperties)）
 - 即時串流：`GET /dynamic-api/common/logs/stream?logFileName=MockWebservice.log&tailLines=100`（Server-Sent Events，30 秒後自動斷線）
 
 ## 常見問題

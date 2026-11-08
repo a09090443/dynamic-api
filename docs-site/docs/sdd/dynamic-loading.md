@@ -143,6 +143,36 @@ sequenceDiagram
 2. 類別沒有 `@RestController` 時方法直接結束，不報錯，但服務仍被標記為啟用。
 :::
 
+## OpenAPI 文件產生
+
+動態 RESTful 服務的 OpenAPI 3.0.3 文件由 `GET /dynamic-api/api/getOpenApi`（`OpenApiController`）提供，Swagger UI 頁面為 `/dynamic-api/swagger-ui.html`（`backend/src/main/resources/public/swagger-ui.html`，使用 `org.webjars:swagger-ui` 的靜態資源，以相對路徑讀取 `api/getOpenApi`）。**SOAP Endpoint 不在範圍內，維持使用 WSDL。**
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as OpenApiController
+    participant S as OpenApiServiceImpl
+    participant D as ControllerRepository
+    participant R as ClassLoaderSingletonEnum
+    participant M as RequestMappingHandlerMapping
+    participant G as OpenApiGenerator
+    C->>S: getOpenApi()
+    S->>D: findAllByIsActive(true)
+    loop 每個啟用中的 publishUri
+        S->>R: get(publishUri_controller)
+    end
+    S->>M: getHandlerMethods()
+    S->>G: generate(contextPath, publishUri→ClassLoader, handlerMethods)
+    G-->>C: OpenAPI 物件（Map／List）
+```
+
+- **即時產生、不快取**：每次請求都重新讀取資料庫與實際註冊結果，回應帶 `Cache-Control: no-store`。啟用、停用或重新上傳後，下一次請求就反映，不需重啟；取消註冊的路由不會殘留。
+- **路由來源是實際註冊結果**：路徑與 HTTP 方法取自 `RequestMappingInfo`（`getPatternValues()`、`getMethodsCondition()`），不以 `publishUri` 字串推算。路由屬於哪個服務，以「Controller 類別的 `getClassLoader()` 與登錄表中的 ClassLoader 是否為同一物件」判斷；因此系統自身的管理 API、未啟用或已關閉的 ClassLoader 都不會列出。
+- 路徑正規式 `{id:\d+}` 輸出為 `{id}`；沒有指定方法的 `@RequestMapping` 輸出 `get`／`post`／`put`／`delete`／`patch`。`@PathVariable`（`in: path`，必填）、`@RequestParam`（`in: query`，有 `defaultValue` 或 `required=false` 時非必填）、`@RequestHeader`（`in: header`）、`@RequestBody`（`application/json` 的 `requestBody`，不分 HTTP 方法一律輸出；OpenAPI 3.0.3 未定義 GET／DELETE 本文的語意，部分工具可能忽略該欄位）；沒有這些註解的參數（如 `HttpServletRequest`）不列出。tag 為 `publishUri`，`operationId` 為 `{publishUri}_{方法名}`，重複時加流水號。
+- **避免 ClassLoader 洩漏**：不使用 springdoc／swagger-core，也不使用 Spring 或 Jackson 帶全域快取的型別解析工具；`OpenApiGenerator` 只用 `java.lang.reflect` 讀取欄位與泛型，任何 static 或成員欄位都不保存使用者的 `Class`、`Method`、`Type` 或 `ClassLoader`。每次請求新建 `SchemaBuilder`，產出只含字串、數字、布林、`Map`、`List`，請求結束即可回收，不會阻止停用後的 ClassLoader 被 GC。
+- **容錯**：schema 以 inline 展開，同一路徑上重複出現的型別（自我或互相參照）或超過 5 層時不再展開；單一路由解析失敗（例如 JAR 缺少相依類別而拋出 `NoClassDefFoundError`）只略過該路由並記錄 `WARN` 日誌，其餘照常輸出。
+- 本功能不修改 `DynamicControllerServiceImpl`、`ClassLoaderSingletonEnum` 與 `setup/` 的載入流程，只讀取它們的結果。
+
 ## 生命週期總覽
 
 ```mermaid

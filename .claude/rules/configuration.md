@@ -23,11 +23,14 @@ paths:
 
 | 項目 | `bootRun`（基本檔） | `bootJar`（預設 `env=dev`） |
 |---|---|---|
-| SQLite | `D:/tmp/mockapi.db` | `D:/tmp/webservice.db` |
-| 日誌 `log.base` | `C:/tmp` | `D:/tmp` |
-| 上傳 JAR `jar.file.dir` | `D:/tmp/` | `D:/tmp/` |
+| SQLite | `/tmp/mockapi.db` | `/tmp/webservice.db` |
+| 日誌 `log.base` | `/tmp` | `/tmp` |
+| 上傳 JAR `jar.file.dir` | `/tmp/` | `/tmp/` |
+| WSDL 暫存 `wsdl.objects.tmp.dir` | `/tmp/wsdl/` | `/tmp/wsdl/` |
 
 日誌檔名為 `{log.base}/MockWebservice.log`（另有 `_err.log`、`_print.log`）。這些目錄需事先存在（SQLite 不會建立目錄）。
+
+`/tmp` 可能在 Linux 重開機或系統清理時被清除。正式環境應將 SQLite、JAR、WSDL 暫存與日誌改到權限適當的持久目錄。Windows 使用者升級後也必須在實際使用的 `resources*.properties` 與 `data-source*.properties` 覆寫為有效的 Windows 路徑；`bootRun` 修改基本檔，`bootJar` 則同步修改所選 `-Penv` 的環境檔。
 
 ## 不可破壞的值
 
