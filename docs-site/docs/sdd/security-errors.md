@@ -65,6 +65,8 @@ flowchart TD
 | 啟動恢復 | 個別失敗不中斷，改為停用 |
 | Mock 查詢 | 吞掉例外，回傳空物件 |
 
+兩個 Advice 都是全域的，動態註冊的 RESTful JAR 拋出的例外（包括 `ResponseStatusException`）同樣由它們處理並回 HTTP 500，不會依例外指定的狀態碼回應。JAR 要回 404 等狀態時，應直接回傳帶狀態碼的 `ResponseEntity`，寫法見 [base.jar 說明](../jar-dev/base-jar.md)。
+
 :::caution `GlobalExceptionHandler` 的參數型別
 `handleCustomException` 同時宣告處理 `WebserviceException` 與 `ControllerException`，但方法參數型別是 `WebserviceException`。當 `ControllerException` 進入此方法時會因參數型別不符而無法正確呼叫（TD-06）。應改為共同父型別 `RuntimeException`。
 :::

@@ -66,4 +66,4 @@ WHERE PUBLISH_URI = :publishUri
 
 ## 查無回應時會發生什麼
 
-`findByPrimaryKey` 查無資料時不會丟出例外，而是回傳「指定型別的空物件」：要求 `String` 就得到空字串 `""`。接下來的行為由 JAR 決定，以兩個範例 JAR 來說都會因為解析空字串失敗而回傳 HTTP 500。排查步驟見 [疑難排解](./troubleshooting.md#呼叫服務得到-500)。
+`findByPrimaryKey` 查無資料時不會丟出例外，而是回傳「指定型別的空物件」：要求 `String` 就得到空字串 `""`。接下來的行為由 JAR 決定：範例 RESTful JAR 會先判斷空值，回傳 HTTP 404（`company-restful`、`example-restful` 的本文含 `MOCK_RESPONSE_NOT_FOUND` 與實際使用的 `condition`）；自寫 JAR 若沒有處理空字串，就會因解析失敗回傳 HTTP 500。排查步驟見 [疑難排解](./troubleshooting.md#呼叫服務得到-404)。
