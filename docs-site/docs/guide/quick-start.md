@@ -31,7 +31,8 @@ public class CompanyController extends RestfulBase {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Result.failure(NotFoundStatus.MOCK_RESPONSE_NOT_FOUND, error));
         }
-        return ResponseEntity.ok(objectMapper.readValue(responseContent, CompanyResponseDTO.class));
+        // @ResponseResultBody 不會包裝 ResponseEntity 內的本文，成功分支也要自行包成 Result
+        return ResponseEntity.ok(Result.success(objectMapper.readValue(responseContent, CompanyResponseDTO.class)));
     }
 }
 ```
@@ -94,7 +95,7 @@ curl -X POST http://localhost:8080/dynamic-api/company/data \
   -d '{"name":"Acme"}'
 ```
 
-預期回應（`@ResponseResultBody` 會把結果包成統一格式）：
+預期回應（範例以 `Result.success(...)` 把結果包成統一格式）：
 
 ```json
 {

@@ -98,7 +98,8 @@ public class OrderController extends RestfulBase {
         if (content == null || content.isBlank()) {
             return notFound("query", condition);
         }
-        return ResponseEntity.ok(objectMapper.readValue(content, OrderResult.class));
+        // @ResponseResultBody 不會包裝 ResponseEntity 內的本文，成功時也要自行包成 Result
+        return ResponseEntity.ok(Result.success(objectMapper.readValue(content, OrderResult.class)));
     }
 
     @GetMapping("/{orderId}")
@@ -108,7 +109,7 @@ public class OrderController extends RestfulBase {
         if (content == null || content.isBlank()) {
             return notFound("get", orderId);
         }
-        return ResponseEntity.ok(objectMapper.readValue(content, OrderResult.class));
+        return ResponseEntity.ok(Result.success(objectMapper.readValue(content, OrderResult.class)));
     }
 
     // 不要 throw ResponseStatusException：全域例外處理會把它轉成 HTTP 500
@@ -149,20 +150,21 @@ public class OrderController extends RestfulBase {
 
 ## `@ResponseResultBody` 的影響
 
-加上 `@ResponseResultBody` 時，回傳值會被包成：
+加上 `@ResponseResultBody` 時，方法直接回傳的物件（不是 `ResponseEntity`）會被包成：
 
 ```json
 { "code": 200, "message": "OK", "data": { ... } }
 ```
 
-這個註解對 `ResponseEntity` 的本文同樣生效，但會保留 `ResponseEntity` 設定的 HTTP 狀態碼：
+這個註解**不會**包裝 `ResponseEntity` 內的本文（部署實測），本文是什麼就輸出什麼，HTTP 狀態碼依 `ResponseEntity` 的設定：
 
 | 回傳 | HTTP 狀態 | 本文 |
 |---|---|---|
-| `ResponseEntity.ok(dto)` | 200 | `{code:200, message:"OK", data:{...dto}}` |
-| `ResponseEntity.status(NOT_FOUND).body(Result.failure(狀態, map))` | 404 | `Result` 原樣輸出：`{code:404, message, data:{...map}}` |
-| `ResponseEntity.status(NOT_FOUND).body(map)` | 404 | 仍被包成 `{code:200, message:"OK", data:{...map}}` |
-| `ResponseEntity<String>` | 依設定 | 字串被包成 `data`，JSON 會變成跳脫後的字串，不建議 |
+| 直接回傳 `dto`（方法回傳型別不是 `ResponseEntity`） | 200 | `{code:200, message:"OK", data:{...dto}}` |
+| `ResponseEntity.ok(Result.success(dto))` | 200 | `{code:200, message:"OK", data:{...dto}}` |
+| `ResponseEntity.ok(dto)` | 200 | 裸 DTO，沒有外層 `code`、`message`、`data`，不建議 |
+| `ResponseEntity.status(NOT_FOUND).body(Result.failure(狀態, map))` | 404 | `{code:404, message, data:{...map}}` |
+| `ResponseEntity<String>` | 依設定 | 不建議用來回傳 JSON，本文格式不受統一包裝控制 |
 | 拋出 `ResponseStatusException` 等例外 | 500 | 由全域例外處理回應，見 [安全與錯誤處理](../sdd/security-errors.md) |
 
 若要模擬的是第三方 API 的**原始格式**，請不要加這個註解，讓 Controller 直接回傳原始結構（或直接回傳 `ResponseEntity<String>` 把 `content` 原封不動送出）。

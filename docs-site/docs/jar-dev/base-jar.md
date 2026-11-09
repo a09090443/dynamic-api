@@ -88,7 +88,7 @@ WHERE mr.PUBLISH_URI = :publishUri AND mr.METHOD = :method
 
 查無時請**直接回傳帶 404 的 `ResponseEntity`**，不要 `throw new ResponseStatusException(HttpStatus.NOT_FOUND, ...)`：後端的 `GlobalExceptionHandler` 與 zipe `ResponseResultBodyAdvice` 都以 `@ExceptionHandler(Exception.class)` 攔截所有例外，拋出的例外會變成 HTTP 500（見 [安全與錯誤處理](../sdd/security-errors.md)）。
 
-類別有 `@ResponseResultBody` 時（`company-restful`、`example-restful` 的寫法），回傳型別用 `ResponseEntity<Object>`，404 的本文包成 zipe `Result`，`@ResponseResultBody` 會原樣放行：
+類別有 `@ResponseResultBody` 時（`company-restful`、`example-restful` 的寫法），回傳型別用 `ResponseEntity<Object>`。`@ResponseResultBody` **不會**包裝 `ResponseEntity` 內的本文，所以成功與 404 兩個分支的本文都要自行包成 zipe `Result`：
 
 ```java
 String content = findByPrimaryKey("company", "getResponseData", condition, String.class);
@@ -103,9 +103,9 @@ if (content == null || content.isBlank()) {
             .contentType(MediaType.APPLICATION_JSON)
             .body(Result.failure(NotFoundStatus.MOCK_RESPONSE_NOT_FOUND, error));
 }
-return ResponseEntity.ok(objectMapper.readValue(content, CompanyResponseDTO.class));
+return ResponseEntity.ok(Result.success(objectMapper.readValue(content, CompanyResponseDTO.class)));
 ```
 
-命中時回 HTTP 200 與 `{code:200, message:"OK", data:{...}}`；查無時回 HTTP 404 與 `{code:404, message:"Mock response not found", data:{error, publishUri, method, condition}}`。若 404 的本文直接放 `Map` 而不包成 `Result`，HTTP 狀態仍是 404，但本文會被包成 `{code:200, ...}`；若用 `ResponseEntity<String>`，JSON 會被包成跳脫後的字串。
+命中時回 HTTP 200 與 `{code:200, message:"OK", data:{...}}`；查無時回 HTTP 404 與 `{code:404, message:"Mock response not found", data:{error, publishUri, method, condition}}`。若直接寫 `ResponseEntity.ok(dto)` 而不包成 `Result`，回應本文會是裸 DTO，沒有外層的 `code`、`message`、`data`；不要用 `ResponseEntity<String>` 回傳 JSON。
 
 類別沒有 `@ResponseResultBody` 時（`inventory-restful` 的寫法），直接回傳 `ResponseEntity.status(HttpStatus.NOT_FOUND)` 加 JSON 本文即可。

@@ -51,7 +51,8 @@ public class CompanyController extends RestfulBase {
                     .body(Result.failure(NotFoundStatus.MOCK_RESPONSE_NOT_FOUND, error));
         }
         CompanyResponseDTO companyResponseDTO = objectMapper.readValue(responseContent, CompanyResponseDTO.class);
-        return ResponseEntity.ok(companyResponseDTO);
+        // @ResponseResultBody 不會包裝 ResponseEntity 內的本文，成功分支也要自行包成 Result
+        return ResponseEntity.ok(Result.success(companyResponseDTO));
     }
 
     private enum NotFoundStatus implements IResultStatus {

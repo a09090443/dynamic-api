@@ -93,6 +93,8 @@ sidebar_label: 疑難排解
 
 若命中了但仍是 500，通常是 **回應內容格式**與 JAR 期望的不符（例如 JSON 欄位名稱不同、SOAP XML 缺少 JAR 用來擷取的節點）。
 
+若命中後回 HTTP 200，但本文沒有外層的 `code`、`message`、`data`：方法回傳 `ResponseEntity` 時，`@ResponseResultBody` 不會包裝其中的本文，`ResponseEntity.ok(dto)` 會直接輸出裸 DTO。成功分支要寫成 `ResponseEntity.ok(Result.success(dto))`，見 [base.jar 說明](../jar-dev/base-jar.md)。
+
 ### 上傳 JAR 回應 400
 
 只接受副檔名為 `.jar` 且非空的檔案；檔案超過 100MB 也會被拒絕。
