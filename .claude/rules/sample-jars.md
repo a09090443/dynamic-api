@@ -34,4 +34,6 @@ paths:
 
 ## 範例程式的已知缺點（作為範本時注意）
 
-舊範例 `restfuls/company-restful` 與 `restfuls/example-restful` 在查無 Mock 回應時直接 `objectMapper.readValue("")`，會讓呼叫端得到 HTTP 500。`restfuls/inventory-restful` 與 `restfuls/mitake-restful` 已同時判斷 `null` 與空白內容並回傳 HTTP 404；`endpoints/order-endpoint` 也有相同的空值與空白防護，並以 SOAP Fault 回應。新寫的範例或修改時應採用相同防護，並參考 `docs-site/docs/jar-dev/base-jar.md` 的建議寫法。
+`restfuls/company-restful`、`restfuls/example-restful`、`restfuls/inventory-restful` 與 `restfuls/mitake-restful` 都會在反序列化前同時判斷 Mock 回應是否為 `null` 或空白，查無時安全回傳 HTTP 404。company 與 example 範例的錯誤資料包含 `error=MOCK_RESPONSE_NOT_FOUND`、`publishUri`、`method` 與實際使用的 `condition`；命中時仍維持原本的成功回應格式。`endpoints/order-endpoint` 也有相同的空值與空白防護，並以 SOAP Fault 回應。
+
+新寫的範例或修改時應採用相同防護，並參考 `docs-site/docs/jar-dev/base-jar.md` 的建議寫法。RESTful Controller 應直接回傳帶有 HTTP 404 的 `ResponseEntity`；不要以 `ResponseEntity<String>` 回傳 JSON，也不要拋出 `ResponseStatusException`，否則統一回應或全域例外處理可能改變本文格式或回成 HTTP 500。
