@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<title>Endpoint 清單（重新設計）</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+</style>
+</helmet>
+<div style="position: relative; min-height: 960px; display: flex; flex-wrap: wrap; font-family: Inter, 'Noto Sans TC', system-ui, sans-serif; font-size: 14px; color: #1f2937; background: #f5f7fa">
+
+  <nav aria-label="主選單" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; background: #ffffff; border-right: 1px solid #e5e7eb">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px 20px">
+      <div style="width: 32px; height: 32px; border-radius: 8px; background: #2563eb; display: flex; align-items: center; justify-content: center; color: #ffffff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"></path></svg></div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 15px; font-weight: 700">Dynamic API</span>
+        <span style="font-size: 12px; color: #6b7280">Mock 伺服器管理</span>
+      </div>
+    </div>
+    <span style="padding: 8px 12px 4px; font-size: 12px; font-weight: 600; color: #6b7280">服務</span>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 8px; font-weight: 600; text-decoration: none; color: #1d4ed8; background: #eff4ff">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="1.5"></rect><rect x="3" y="14" width="18" height="6" rx="1.5"></rect></svg>
+      <span style="flex: 1">SOAP Endpoint</span><span style="font-size: 12px; color: #1d4ed8">12</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 8px; text-decoration: none; color: #374151">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+      <span style="flex: 1">RESTful API</span><span style="font-size: 12px; color: #6b7280">8</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 8px; text-decoration: none; color: #374151">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"></path></svg>
+      <span style="flex: 1">Mock 回應</span>
+    </a>
+    <span style="padding: 16px 12px 4px; font-size: 12px; font-weight: 600; color: #6b7280">工具</span>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 8px; text-decoration: none; color: #374151">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"></path></svg>
+      <span>WSDL 轉換</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 8px; text-decoration: none; color: #374151">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>
+      <span>系統資訊</span>
+    </a>
+  </nav>
+
+  <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-height: 56px; padding: 0 32px; background: #ffffff; border-bottom: 1px solid #e5e7eb">
+      <span style="font-size: 13px; color: #6b7280">服務 / <strong style="color: #1f2937; font-weight: 600">SOAP Endpoint</strong></span>
+      <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4b5563"><span style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a"></span>後端連線正常 · localhost:8080</span>
+    </div>
+
+    <main style="padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1280px; box-sizing: border-box; width: 100%">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px">
+        <div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #111827">SOAP Endpoint</h1>
+          <p style="margin: 0; color: #4b5563">從上傳的 JAR 發布的 Web Service。新建或編輯後預設為停用，確認 Mock 回應後再啟用。</p>
+        </div>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; font-family: inherit; font-size: 14px; font-weight: 600; color: #374151; background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px; cursor: pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"></path></svg>
+          WSDL 轉換
+        </button>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; font-family: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: #2563eb; border: 1px solid #2563eb; border-radius: 8px; cursor: pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          新增 Endpoint
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+        <div style="padding: 16px 20px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; display: flex; flex-direction: column; gap: 4px"><span style="color: #4b5563">全部服務</span><span style="font-size: 24px; font-weight: 700">12</span></div>
+        <div style="padding: 16px 20px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; display: flex; flex-direction: column; gap: 4px"><span style="color: #4b5563">啟用中</span><span style="font-size: 24px; font-weight: 700; color: #15803d">7</span></div>
+        <div style="padding: 16px 20px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; display: flex; flex-direction: column; gap: 4px"><span style="color: #4b5563">尚未上傳 JAR</span><span style="font-size: 24px; font-weight: 700; color: #b45309">2</span></div>
+      </div>
+
+      <section style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #e5e7eb">
+          <div style="flex: 1 1 280px; position: relative; display: flex; align-items: center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" aria-hidden="true" style="position: absolute; left: 12px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <label for="q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">搜尋 Endpoint</label>
+            <input id="q" type="search" placeholder="搜尋發布名稱、Bean、Class 路徑" style="width: 100%; height: 40px; box-sizing: border-box; padding: 0 12px 0 36px; font-family: inherit; font-size: 14px; color: #1f2937; background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px">
+          </div>
+          <div role="group" aria-label="狀態篩選" style="display: inline-flex; padding: 3px; background: #f3f4f6; border-radius: 8px">
+            <button type="button" aria-pressed="true" style="min-height: 34px; padding: 0 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #111827; background: #ffffff; border: 0; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.08)">全部 12</button>
+            <button type="button" aria-pressed="false" style="min-height: 34px; padding: 0 14px; font-family: inherit; font-size: 13px; color: #4b5563; background: transparent; border: 0; border-radius: 6px">啟用 7</button>
+            <button type="button" aria-pressed="false" style="min-height: 34px; padding: 0 14px; font-family: inherit; font-size: 13px; color: #4b5563; background: transparent; border: 0; border-radius: 6px">停用 5</button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; background: #eff4ff; border-bottom: 1px solid #c7d7fe">
+          <span style="font-weight: 600; color: #1e3a8a">已選取 1 筆</span>
+          <button type="button" style="min-height: 32px; padding: 0 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: #1d4ed8; background: #ffffff; border: 1px solid #c7d7fe; border-radius: 6px">批次啟用</button>
+          <button type="button" style="min-height: 32px; padding: 0 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: #1d4ed8; background: #ffffff; border: 1px solid #c7d7fe; border-radius: 6px">批次停用</button>
+          <button type="button" style="min-height: 32px; padding: 0 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: #b91c1c; background: #ffffff; border: 1px solid #fecaca; border-radius: 6px">刪除</button>
+          <button type="button" style="margin-left: auto; min-height: 32px; padding: 0 8px; font-family: inherit; font-size: 13px; color: #1d4ed8; background: transparent; border: 0">取消選取</button>
+        </div>
+
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 960px; border-collapse: collapse">
+            <thead>
+              <tr style="background: #f9fafb">
+                <th style="width: 44px; padding: 0 0 0 16px; border-bottom: 1px solid #e5e7eb"><input type="checkbox" aria-label="全選本頁" style="width: 16px; height: 16px; accent-color: #2563eb"></th>
+                <th style="padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb">服務</th>
+                <th style="padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb">實作類別</th>
+                <th style="padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb">JAR</th>
+                <th style="padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb">Mock 回應</th>
+                <th style="padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb">狀態</th>
+                <th style="padding: 12px 16px; text-align: right; font-size: 12px; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+                <tr style="background: {{r.bg}}">
+                  <td style="padding: 0 0 0 16px; border-bottom: 1px solid #f1f2f4"><input type="checkbox" aria-label="選取 {{r.uri}}" checked="{{r.sel}}" style="width: 16px; height: 16px; accent-color: #2563eb"></td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid #f1f2f4">
+                    <div style="display: flex; flex-direction: column; gap: 2px">
+                      <a href="#" style="font-weight: 600; text-decoration: none">{{r.uri}}</a>
+                      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6b7280">/webservice/{{r.uri}}</span>
+                    </div>
+                  </td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid #f1f2f4">
+                    <div style="display: flex; flex-direction: column; gap: 2px">
+                      <span>{{r.bean}}</span>
+                      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6b7280">{{r.cls}}</span>
+                    </div>
+                  </td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid #f1f2f4">
+                    <sc-if value="{{r.hasJar}}" hint-placeholder-val="{{true}}"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #374151">{{r.jar}}</span></sc-if>
+                    <sc-if value="{{r.noJar}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; font-size: 12px; font-weight: 600; color: #92400e; background: #fef3c7; border-radius: 999px">未上傳</span></sc-if>
+                  </td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid #f1f2f4"><a href="#" style="text-decoration: none; font-weight: 500">{{r.resp}} 筆 ›</a></td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid #f1f2f4">
+                    <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer">
+                      <input type="checkbox" role="switch" checked="{{r.on}}" aria-label="啟用 {{r.uri}}" style="position: absolute; opacity: 0; width: 1px; height: 1px">
+                      <span style="position: relative; width: 36px; height: 20px; border-radius: 10px; background: {{r.track}}"><span style="position: absolute; top: 2px; left: {{r.knob}}; width: 16px; height: 16px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.25)"></span></span>
+                      <span style="font-size: 13px; font-weight: 600; color: {{r.stateColor}}">{{r.state}}</span>
+                    </label>
+                  </td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid #f1f2f4">
+                    <div style="display: flex; justify-content: flex-end; gap: 4px">
+                      <button type="button" style="min-height: 36px; padding: 0 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: #374151; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px">編輯</button>
+                      <button type="button" aria-label="更多操作" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; color: #4b5563; background: transparent; border: 0; border-radius: 6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="12" cy="19" r="1.7"></circle></svg></button>
+                    </div>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px 16px; color: #4b5563; font-size: 13px">
+          <span>顯示 1–5，共 12 筆</span>
+          <span style="margin-left: auto">每頁</span>
+          <select aria-label="每頁筆數" style="height: 32px; padding: 0 8px; font-family: inherit; font-size: 13px; color: #1f2937; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px"><option>10</option><option>50</option><option>100</option></select>
+          <div style="display: inline-flex; gap: 4px">
+            <button type="button" aria-label="上一頁" disabled style="width: 32px; height: 32px; color: #9ca3af; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px">‹</button>
+            <button type="button" aria-current="page" style="width: 32px; height: 32px; font-family: inherit; font-weight: 600; color: #ffffff; background: #2563eb; border: 0; border-radius: 6px">1</button>
+            <button type="button" style="width: 32px; height: 32px; font-family: inherit; color: #374151; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px">2</button>
+            <button type="button" aria-label="下一頁" style="width: 32px; height: 32px; color: #374151; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px">›</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div role="status" style="position: absolute; right: 32px; bottom: 32px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #ffffff; background: #111827; border-radius: 10px; box-shadow: 0 10px 30px rgba(17,24,39,0.25)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.4" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+    <span>已啟用 company</span>
+    <button type="button" style="min-height: 28px; padding: 0 8px; font-family: inherit; font-size: 13px; font-weight: 600; color: #93c5fd; background: transparent; border: 0">復原</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const rows = [
+      { uri: 'company', bean: 'companyService', cls: 'com.example.endpoint.CompanyServiceImpl', jar: 'company-endpoint.jar', resp: 4, on: true, sel: true },
+      { uri: 'order', bean: 'orderService', cls: 'com.example.endpoint.OrderServiceImpl', jar: 'order-endpoint.jar', resp: 2, on: true, sel: false },
+      { uri: 'customer', bean: 'customerService', cls: 'com.example.endpoint.CustomerServiceImpl', jar: '', resp: 0, on: false, sel: false },
+      { uri: 'invoice', bean: 'invoiceService', cls: 'com.example.endpoint.InvoiceServiceImpl', jar: 'invoice-endpoint.jar', resp: 6, on: false, sel: false },
+      { uri: 'shipment', bean: 'shipmentService', cls: 'com.example.endpoint.ShipmentServiceImpl', jar: 'shipment-endpoint.jar', resp: 1, on: true, sel: false }
+    ];
+    return {
+      rows: rows.map((r) => ({
+        ...r,
+        hasJar: !!r.jar, noJar: !r.jar,
+        bg: r.sel ? '#f5f8ff' : '#ffffff',
+        track: r.on ? '#16a34a' : '#d1d5db',
+        knob: r.on ? '18px' : '2px',
+        state: r.on ? '啟用' : '停用',
+        stateColor: r.on ? '#15803d' : '#4b5563'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
