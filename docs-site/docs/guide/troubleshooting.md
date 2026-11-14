@@ -1,7 +1,7 @@
 ---
 id: troubleshooting
 title: 疑難排解與已知問題
-description: '日誌位置與即時串流，啟用失敗、呼叫 500、上傳 400、頁面 404 等常見問題的排查方式，以及已知問題一覽。'
+description: '日誌位置與即時串流，啟用失敗、呼叫 404／500、上傳 400、頁面 404 等常見問題的排查方式，以及已知問題一覽。'
 sidebar_label: 疑難排解
 ---
 
@@ -61,16 +61,39 @@ sidebar_label: 疑難排解
 | `Web Service 註冊服務失敗`，原因為 Bean 衝突 | Bean 名稱與既有 Bean 相同 | 換一個 Bean 名稱 |
 | JAR 檔不存在（`FileNotFoundException`） | 修改 Publish URI 時沒重新上傳 JAR，舊檔已被刪除 | 編輯並重新上傳 JAR |
 
-### 呼叫服務得到 500
+### 呼叫服務得到 404
 
-最常見的原因是**沒有命中任何 Mock 回應**，JAR 拿到空字串後解析失敗。依序檢查：
+範例 RESTful JAR（`company-restful`、`example-restful`、`inventory-restful`、`mitake-restful`）在**沒有命中任何 Mock 回應**時回 HTTP 404。`company-restful` 與 `example-restful` 的本文會列出這次查詢用的鍵：
+
+```json
+{
+  "code": 404,
+  "message": "Mock response not found",
+  "data": {
+    "error": "MOCK_RESPONSE_NOT_FOUND",
+    "publishUri": "company",
+    "method": "getResponseData",
+    "condition": "{\"name\":\"NoSuch\",\"address\":null,\"phone\":null,\"email\":null,\"website\":null,\"description\":null}"
+  }
+}
+```
+
+`error=MOCK_RESPONSE_NOT_FOUND` 表示 JAR 正常執行、只是查不到回應。把 `publishUri`、`method`、`condition` 與 Response 頁面上的設定比對，依序檢查：
 
 1. 回應的 **開關是否打開**（新增與編輯後都會變成停用）。
 2. `method` 是否與 JAR 程式碼裡寫的一致。
-3. `condition` 是否與 JAR 實際產生的字串**一字不差**。範例 RESTful JAR 會在日誌印出 `request json:{...}`，直接複製比對。
+3. `condition` 是否與 JAR 實際產生的字串**一字不差**。可直接複製錯誤本文的 `condition`（JSON 字串中的 `\"` 要還原成 `"`），或從日誌的 `request json:{...}` 複製。
 4. 回應是否建在正確的服務類型下（從 Endpoint 進去建的是 `ENDPOINT`，從 RESTful 進去建的是 `RESTFUL`）。
 
+若是 `/dynamic-api/...` 路徑本身不存在（服務未啟用或 Publish URI 打錯），回的是 Spring 預設的 404，本文不會有 `MOCK_RESPONSE_NOT_FOUND`，請先確認服務已啟用。
+
+### 呼叫服務得到 500
+
+自己寫的 JAR 最常見的原因是**沒有命中任何 Mock 回應**：`findByPrimaryKey` 查無時回傳空字串，程式沒先判斷就直接 `readValue("")`，丟出 `No content to map due to end-of-input`。另外，在查無時 `throw ResponseStatusException(HttpStatus.NOT_FOUND)` 也會被全域例外處理轉成 HTTP 500。修正方式見 [base.jar 說明](../jar-dev/base-jar.md)：先判斷 `null` 與空白，再直接回傳帶 404 的 `ResponseEntity`。命中檢查步驟與上一節的四項相同。
+
 若命中了但仍是 500，通常是 **回應內容格式**與 JAR 期望的不符（例如 JSON 欄位名稱不同、SOAP XML 缺少 JAR 用來擷取的節點）。
+
+若命中後回 HTTP 200，但本文沒有外層的 `code`、`message`、`data`：方法回傳 `ResponseEntity` 時，`@ResponseResultBody` 不會包裝其中的本文，`ResponseEntity.ok(dto)` 會直接輸出裸 DTO。成功分支要寫成 `ResponseEntity.ok(Result.success(dto))`，見 [base.jar 說明](../jar-dev/base-jar.md)。
 
 ### 上傳 JAR 回應 400
 

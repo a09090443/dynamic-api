@@ -84,13 +84,28 @@ WHERE mr.PUBLISH_URI = :publishUri AND mr.METHOD = :method
 | 命中一筆 | `response_content` 字串 |
 | 查無資料或發生任何例外 | 記錄錯誤日誌，回傳 `clazz` 的無參數建構實例（`String` → `""`）；無法建構時回傳 `null` |
 
-因此**一定要處理空字串**，否則像範例程式那樣直接 `readValue("")` 會丟出例外，呼叫端收到 HTTP 500。建議寫法：
+因此**一定要先判斷 `null` 與空白**，否則直接 `readValue("")` 會丟出 `No content to map due to end-of-input`，呼叫端收到 HTTP 500。
+
+查無時請**直接回傳帶 404 的 `ResponseEntity`**，不要 `throw new ResponseStatusException(HttpStatus.NOT_FOUND, ...)`：後端的 `GlobalExceptionHandler` 與 zipe `ResponseResultBodyAdvice` 都以 `@ExceptionHandler(Exception.class)` 攔截所有例外，拋出的例外會變成 HTTP 500（見 [安全與錯誤處理](../sdd/security-errors.md)）。
+
+類別有 `@ResponseResultBody` 時（`company-restful`、`example-restful` 的寫法），回傳型別用 `ResponseEntity<Object>`。`@ResponseResultBody` **不會**包裝 `ResponseEntity` 內的本文，所以成功與 404 兩個分支的本文都要自行包成 zipe `Result`：
 
 ```java
 String content = findByPrimaryKey("company", "getResponseData", condition, String.class);
 if (content == null || content.isBlank()) {
-    // 回傳預設值、404，或明確的錯誤訊息，方便測試人員判斷是「沒設定回應」
-    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No mock response for condition: " + condition);
+    Map<String, String> error = new LinkedHashMap<>();
+    error.put("error", "MOCK_RESPONSE_NOT_FOUND");
+    error.put("publishUri", "company");
+    error.put("method", "getResponseData");
+    error.put("condition", condition);
+    // NotFoundStatus 是實作 com.zipe.exception.IResultStatus 的列舉（HttpStatus.NOT_FOUND、404、訊息）
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Result.failure(NotFoundStatus.MOCK_RESPONSE_NOT_FOUND, error));
 }
-return objectMapper.readValue(content, CompanyResponseDTO.class);
+return ResponseEntity.ok(Result.success(objectMapper.readValue(content, CompanyResponseDTO.class)));
 ```
+
+命中時回 HTTP 200 與 `{code:200, message:"OK", data:{...}}`；查無時回 HTTP 404 與 `{code:404, message:"Mock response not found", data:{error, publishUri, method, condition}}`。若直接寫 `ResponseEntity.ok(dto)` 而不包成 `Result`，回應本文會是裸 DTO，沒有外層的 `code`、`message`、`data`；不要用 `ResponseEntity<String>` 回傳 JSON。
+
+類別沒有 `@ResponseResultBody` 時（`inventory-restful` 的寫法），直接回傳 `ResponseEntity.status(HttpStatus.NOT_FOUND)` 加 JSON 本文即可。

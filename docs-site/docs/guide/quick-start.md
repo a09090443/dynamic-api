@@ -20,15 +20,24 @@ sidebar_label: 快速上手
 public class CompanyController extends RestfulBase {
 
     @PostMapping("/data")
-    public CompanyResponseDTO getResponseData(@RequestBody CompanyDTO exampleDTO) throws JsonProcessingException {
+    public ResponseEntity<Object> getResponseData(@RequestBody CompanyDTO exampleDTO) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(exampleDTO);
         log.info("request json:{}", jsonString);
         String responseContent = findByPrimaryKey("company", "getResponseData", jsonString, String.class);
-        return objectMapper.readValue(responseContent, CompanyResponseDTO.class);
+        if (responseContent == null || responseContent.isBlank()) {
+            // 查無 Mock：回 HTTP 404 與錯誤資料（error、publishUri、method、condition）
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Result.failure(NotFoundStatus.MOCK_RESPONSE_NOT_FOUND, error));
+        }
+        // @ResponseResultBody 不會包裝 ResponseEntity 內的本文，成功分支也要自行包成 Result
+        return ResponseEntity.ok(Result.success(objectMapper.readValue(responseContent, CompanyResponseDTO.class)));
     }
 }
 ```
+
+（上面省略了 `error` Map 的建立與 `NotFoundStatus` 列舉，完整程式見範例檔。）
 
 所以這個服務的 Mock 鍵是：`publishUri = company`、`method = getResponseData`、`condition = 請求 JSON`。
 
@@ -86,7 +95,7 @@ curl -X POST http://localhost:8080/dynamic-api/company/data \
   -d '{"name":"Acme"}'
 ```
 
-預期回應（`@ResponseResultBody` 會把結果包成統一格式）：
+預期回應（範例以 `Result.success(...)` 把結果包成統一格式）：
 
 ```json
 {
@@ -103,7 +112,22 @@ curl -X POST http://localhost:8080/dynamic-api/company/data \
 }
 ```
 
-換一個 `name` 再呼叫，因為條件對不到，會得到 HTTP 500——這是範例程式在查無回應時把空字串交給 `readValue` 造成的，處理方式見 [疑難排解](./troubleshooting.md#呼叫服務得到-500)。
+換一個 `name` 再呼叫（例如 `{"name":"NoSuch"}`），因為條件對不到，會得到 **HTTP 404**，本文標出查詢時使用的鍵，方便比對：
+
+```json
+{
+  "code": 404,
+  "message": "Mock response not found",
+  "data": {
+    "error": "MOCK_RESPONSE_NOT_FOUND",
+    "publishUri": "company",
+    "method": "getResponseData",
+    "condition": "{\"name\":\"NoSuch\",\"address\":null,\"phone\":null,\"email\":null,\"website\":null,\"description\":null}"
+  }
+}
+```
+
+排查方式見 [疑難排解](./troubleshooting.md#呼叫服務得到-404)。
 
 ## 進一步：試試 SOAP 範例
 

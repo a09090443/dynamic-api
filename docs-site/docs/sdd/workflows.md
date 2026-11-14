@@ -132,7 +132,7 @@ sequenceDiagram
 
 ### REST
 
-`DispatcherServlet` → `RequestMappingHandlerMapping`（含動態註冊的對應）→ 使用者 Controller 方法 → `findByPrimaryKey` → 回傳值經 `@ResponseResultBody` 包裝（若有標註）。
+`DispatcherServlet` → `RequestMappingHandlerMapping`（含動態註冊的對應）→ 使用者 Controller 方法 → `findByPrimaryKey` → 回傳值經 `@ResponseResultBody` 包裝（若有標註；回傳 `ResponseEntity` 時其中的本文不包裝）。
 
 ## 6.6 核心演算法
 

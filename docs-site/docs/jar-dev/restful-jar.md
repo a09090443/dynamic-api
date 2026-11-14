@@ -73,10 +73,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycorp.dto.OrderQuery;
 import com.mycorp.dto.OrderResult;
 import com.zipe.annotation.ResponseResultBody;
+import com.zipe.dto.Result;
+import com.zipe.exception.IResultStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
 @ResponseResultBody                       // 選用：包成 {code, message, data}
@@ -87,26 +92,49 @@ public class OrderController extends RestfulBase {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/query")
-    public OrderResult query(@RequestBody OrderQuery query) throws Exception {
+    public ResponseEntity<Object> query(@RequestBody OrderQuery query) throws Exception {
         String condition = objectMapper.writeValueAsString(query);
         String content = findByPrimaryKey(PUBLISH_URI, "query", condition, String.class);
         if (content == null || content.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No mock response: " + condition);
+            return notFound("query", condition);
         }
-        return objectMapper.readValue(content, OrderResult.class);
+        // @ResponseResultBody 不會包裝 ResponseEntity 內的本文，成功時也要自行包成 Result
+        return ResponseEntity.ok(Result.success(objectMapper.readValue(content, OrderResult.class)));
     }
 
     @GetMapping("/{orderId}")
-    public OrderResult get(@PathVariable String orderId) throws Exception {
+    public ResponseEntity<Object> get(@PathVariable String orderId) throws Exception {
         // condition 不一定要是 JSON，用路徑參數也可以
         String content = findByPrimaryKey(PUBLISH_URI, "get", orderId, String.class);
         if (content == null || content.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No mock response: " + orderId);
+            return notFound("get", orderId);
         }
-        return objectMapper.readValue(content, OrderResult.class);
+        return ResponseEntity.ok(Result.success(objectMapper.readValue(content, OrderResult.class)));
+    }
+
+    // 不要 throw ResponseStatusException：全域例外處理會把它轉成 HTTP 500
+    private ResponseEntity<Object> notFound(String method, String condition) {
+        Map<String, String> error = new LinkedHashMap<>();
+        error.put("error", "MOCK_RESPONSE_NOT_FOUND");
+        error.put("publishUri", PUBLISH_URI);
+        error.put("method", method);
+        error.put("condition", condition);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Result.failure(NotFoundStatus.MOCK_RESPONSE_NOT_FOUND, error));
+    }
+
+    private enum NotFoundStatus implements IResultStatus {
+        MOCK_RESPONSE_NOT_FOUND;
+
+        @Override public HttpStatus getHttpStatus() { return HttpStatus.NOT_FOUND; }
+        @Override public Integer getCode() { return HttpStatus.NOT_FOUND.value(); }
+        @Override public String getMessage() { return "Mock response not found"; }
     }
 }
 ```
+
+`restfuls/company-restful` 與 `restfuls/example-restful` 的 `POST /data` 採用同樣寫法。
 
 ## 規則清單
 
@@ -122,11 +150,22 @@ public class OrderController extends RestfulBase {
 
 ## `@ResponseResultBody` 的影響
 
-加上 `@ResponseResultBody` 時，回傳值會被包成：
+加上 `@ResponseResultBody` 時，方法直接回傳的物件（不是 `ResponseEntity`）會被包成：
 
 ```json
 { "code": 200, "message": "OK", "data": { ... } }
 ```
+
+這個註解**不會**包裝 `ResponseEntity` 內的本文（部署實測），本文是什麼就輸出什麼，HTTP 狀態碼依 `ResponseEntity` 的設定：
+
+| 回傳 | HTTP 狀態 | 本文 |
+|---|---|---|
+| 直接回傳 `dto`（方法回傳型別不是 `ResponseEntity`） | 200 | `{code:200, message:"OK", data:{...dto}}` |
+| `ResponseEntity.ok(Result.success(dto))` | 200 | `{code:200, message:"OK", data:{...dto}}` |
+| `ResponseEntity.ok(dto)` | 200 | 裸 DTO，沒有外層 `code`、`message`、`data`，不建議 |
+| `ResponseEntity.status(NOT_FOUND).body(Result.failure(狀態, map))` | 404 | `{code:404, message, data:{...map}}` |
+| `ResponseEntity<String>` | 依設定 | 不建議用來回傳 JSON，本文格式不受統一包裝控制 |
+| 拋出 `ResponseStatusException` 等例外 | 500 | 由全域例外處理回應，見 [安全與錯誤處理](../sdd/security-errors.md) |
 
 若要模擬的是第三方 API 的**原始格式**，請不要加這個註解，讓 Controller 直接回傳原始結構（或直接回傳 `ResponseEntity<String>` 把 `content` 原封不動送出）。
 
