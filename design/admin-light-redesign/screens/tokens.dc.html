@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<title>明亮版樣式規格</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+</style>
+</helmet>
+<div style="width: 1100px; height: 1240px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 40px; font-family: Inter, 'Noto Sans TC', system-ui, sans-serif; color: #1f2937; background: #ffffff">
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <h1 style="margin: 0; font-size: 30px; font-weight: 700; color: #111827">明亮版樣式規格</h1>
+    <p style="margin: 0; font-size: 15px; color: #4b5563">白底淺灰背景、單一藍色主色、狀態用綠／灰／琥珀區分。可直接對應成 MUI createTheme（mode: light）。</p>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 16px">
+    <h2 style="margin: 0; font-size: 18px; font-weight: 700">色票</h2>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{swatches}}" as="s" hint-placeholder-count="12">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="height: 64px; border-radius: 10px; border: 1px solid #e5e7eb; background: {{s.hex}}"></div>
+          <div style="font-size: 13px; font-weight: 600">{{s.name}}</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #4b5563">{{s.hex}}</div>
+          <div style="font-size: 12px; color: #6b7280">{{s.use}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">字型</h2>
+      <div style="font-size: 24px; font-weight: 700">頁面標題 24 / 700</div>
+      <div style="font-size: 16px; font-weight: 700">區塊標題 16 / 700</div>
+      <div style="font-size: 14px">內文 14 / 400 Inter + Noto Sans TC</div>
+      <div style="font-size: 12px; font-weight: 600; color: #4b5563">表頭、標籤 12 / 600</div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #374151">com.example.CompanyServiceImpl</div>
+      <p style="margin: 0; font-size: 13px; color: #6b7280">等寬字只用在路徑、類別、條件與回應內容；按鈕不轉大寫。圓角：按鈕 8、卡片 12、徽章全圓。</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">元件</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <button type="button" style="min-height: 40px; padding: 0 16px; font-family: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: #2563eb; border: 1px solid #2563eb; border-radius: 8px">主要動作</button>
+        <button type="button" style="min-height: 40px; padding: 0 16px; font-family: inherit; font-size: 14px; font-weight: 600; color: #374151; background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px">次要動作</button>
+        <button type="button" style="min-height: 40px; padding: 0 16px; font-family: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: #dc2626; border: 1px solid #dc2626; border-radius: 8px">確認刪除</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; font-size: 12px; font-weight: 600; color: #15803d; background: #dcfce7; border-radius: 999px">啟用</span>
+        <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; font-size: 12px; font-weight: 600; color: #4b5563; background: #f3f4f6; border-radius: 999px">停用</span>
+        <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; font-size: 12px; font-weight: 600; color: #92400e; background: #fef3c7; border-radius: 999px">未上傳</span>
+        <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; font-size: 12px; font-weight: 600; color: #6d28d9; background: #ede9fe; border-radius: 999px">SOAP</span>
+        <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; font-size: 12px; font-weight: 600; color: #0e7490; background: #cffafe; border-radius: 999px">REST</span>
+      </div>
+      <div style="padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 12px 32px rgba(17,24,39,0.12); display: flex; flex-direction: column; gap: 12px">
+        <div style="font-size: 16px; font-weight: 700">刪除 2 個 Endpoint？</div>
+        <div style="font-size: 14px; color: #4b5563">company、order 會停止服務，對應的 Mock 回應一併移除，無法復原。</div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px">
+          <button type="button" style="min-height: 36px; padding: 0 14px; font-family: inherit; font-size: 14px; font-weight: 600; color: #374151; background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px">取消</button>
+          <button type="button" style="min-height: 36px; padding: 0 14px; font-family: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: #dc2626; border: 1px solid #dc2626; border-radius: 8px">刪除 2 個</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 18px; font-weight: 700">操作習慣上的調整</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{changes}}" as="c" hint-placeholder-count="6">
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px">
+          <div style="font-size: 14px; font-weight: 700">{{c.t}}</div>
+          <div style="font-size: 13px; line-height: 1.6; color: #4b5563">{{c.d}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      swatches: [
+        { name: 'primary', hex: '#2563eb', use: '主要按鈕、選取' },
+        { name: 'primary-text', hex: '#1d4ed8', use: '連結、目前頁' },
+        { name: 'primary-soft', hex: '#eff4ff', use: '選取列、側欄目前項' },
+        { name: 'success', hex: '#16a34a', use: '啟用開關' },
+        { name: 'warning', hex: '#b45309', use: '未上傳、提醒' },
+        { name: 'danger', hex: '#dc2626', use: '刪除' },
+        { name: 'background', hex: '#f5f7fa', use: '頁面底色' },
+        { name: 'surface', hex: '#ffffff', use: '卡片、表格、側欄' },
+        { name: 'border', hex: '#e5e7eb', use: '分隔線、卡片框' },
+        { name: 'text', hex: '#1f2937', use: '主要文字' },
+        { name: 'text-muted', hex: '#4b5563', use: '說明文字' },
+        { name: 'text-subtle', hex: '#6b7280', use: '提示、次要資訊' }
+      ],
+      changes: [
+        { t: '左側固定選單，四個功能一眼看到', d: 'SOAP Endpoint、RESTful API、Mock 回應、WSDL 轉換、系統資訊都在側欄，取代收在 MENU 下拉裡的做法；目前頁有底色標示。' },
+        { t: '主要動作固定在右上', d: '「新增」放頁首右側，次要工具（WSDL 轉換）用白底按鈕，視覺上分出主次。' },
+        { t: '先選取，再出現批次操作列', d: '勾選後才顯示「批次啟用／停用／刪除」，避免平常就有一顆反灰的移除按鈕。' },
+        { t: '狀態文字化、篩選一鍵切換', d: '開關旁直接寫「啟用／停用」；表格上方有全部／啟用／停用分段篩選與數量。' },
+        { t: 'Mock 回應數量直接可點', d: '清單顯示每個服務有幾筆回應，點了進入該服務的回應頁，麵包屑可返回。' },
+        { t: '側欄編輯取代彈窗與瀏覽器 alert', d: '編輯在右側面板完成、表格仍看得到；操作結果用可「復原」的提示，刪除用說明影響範圍的確認框。' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
