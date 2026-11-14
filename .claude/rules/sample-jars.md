@@ -36,6 +36,6 @@ paths:
 
 `restfuls/company-restful`、`restfuls/example-restful`、`restfuls/inventory-restful` 與 `restfuls/mitake-restful` 都會在反序列化前同時判斷 Mock 回應是否為 `null` 或空白，查無時安全回傳 HTTP 404。company 與 example 範例的錯誤資料包含 `error=MOCK_RESPONSE_NOT_FOUND`、`publishUri`、`method` 與實際使用的 `condition`；命中時仍維持原本的成功回應格式 `{code:200,message:"OK",data:{...}}`。`endpoints/order-endpoint` 也有相同的空值與空白防護，並以 SOAP Fault 回應。
 
-新寫的範例或修改時應採用相同防護，並參考 `docs-site/docs/jar-dev/base-jar.md` 的建議寫法。RESTful Controller 應直接回傳帶有 HTTP 404 的 `ResponseEntity`；不要以 `ResponseEntity<String>` 回傳 JSON，也不要拋出 `ResponseStatusException`，否則統一回應或全域例外處理可能改變本文格式或回成 HTTP 500。
+新寫的範例或修改時應採用相同防護，並參考 `docs-site/docs/jar-dev/base-jar.md` 的建議寫法。RESTful Controller 應直接回傳帶有 HTTP 404 的 `ResponseEntity`；不要拋出 `ResponseStatusException`，否則全域例外處理會把它轉成 HTTP 500。類別標註 `@ResponseResultBody` 的 Controller（如 company、example）不要以 `ResponseEntity<String>` 回傳 JSON，否則統一回應可能改變本文格式；`restfuls/inventory-restful` 刻意不加 `@ResponseResultBody`、以 `ResponseEntity<String>` 原樣回傳第三方格式，是另一種寫法，不適用這條限制。
 
 方法回傳型別改成 `ResponseEntity` 後，`@ResponseResultBody` 不會再包裝 `ResponseEntity` 內的本文（部署實測：`ResponseEntity.ok(dto)` 會直接輸出裸 DTO）。因此成功與失敗分支的本文都要自行包成 `com.zipe.dto.Result`：成功分支寫成 `ResponseEntity.ok(Result.success(dto))`，查無分支寫成 `ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.failure(...))`；實際可用的方法以目前 `base.jar` 與 zipe 版本的編譯結果為準。
