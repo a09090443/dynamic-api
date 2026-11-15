@@ -88,5 +88,8 @@ flowchart LR
 :::
 
 :::note 表單驗證的實際行為
-`RestfulForm`、`EndpointForm` 的必填欄位帶原生 `required` 且 `form` 沒有 `noValidate`，空白送出時由瀏覽器原生提示先擋下，yup 的錯誤文字（例如「發布名稱為必填」）不會出現。E2E 驗證失敗案例先斷言原生擋下，再以程式派送 `submit` 事件檢查 yup 規則。
+- `RestfulForm`：`form` 帶 `noValidate`，關閉瀏覽器原生提示，改由 yup 驗證並在欄位下方顯示錯誤；兩個欄位仍保留 `required`（顯示必填星號）。發布名稱（`publishUri`）規則為 `trim()` 後必填，空白或只有空白字元時顯示「請輸入發布路徑」且不送出 API，送出的值會去掉頭尾空白；Class 路徑空白時顯示「Class 路徑為必填」。新增與編輯共用同一套規則。
+- `EndpointForm`：必填欄位帶原生 `required` 且 `form` 沒有 `noValidate`，空白送出時由瀏覽器原生提示先擋下，yup 的錯誤文字（「發布名稱為必填」）不會出現。
+
+`e2e/restful-form.spec.ts` 以真實點擊「新增」驗證：發布名稱完全空白、只有空白字元、Class 路徑空白時，以欄位的無障礙說明文字與 `aria-invalid="true"` 斷言錯誤，並確認新增與上傳 API 呼叫次數為 0；補上有效值後錯誤消失；頭尾帶空白的有效值送出時已去掉空白。
 :::
