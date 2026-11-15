@@ -20,7 +20,8 @@ const nextConfig = {
 
   // 生產模式配置 - 用於 Gradle 建置
   ...(process.env.NODE_ENV === 'production' && {
-    output: 'export', // 靜態導出
+    // 靜態導出；Playwright E2E 建置（DYNAMIC_API_E2E=1）時停用，讓 next start 可以啟動
+    ...(process.env.DYNAMIC_API_E2E !== '1' && { output: 'export' }),
     basePath: '/dynamic-api', // 與 Spring Boot 路徑匹配
     trailingSlash: true, // 只在生產模式啟用尾隨斜線
   }),
