@@ -23,7 +23,7 @@ interface RestfulFormProps {
 }
 
 const schema = yup.object({
-  publishUri: yup.string().required('發布名稱為必填'),
+  publishUri: yup.string().trim().required('請輸入發布路徑'),
   classPath: yup.string().required('Class 路徑為必填')
 });
 
@@ -129,7 +129,8 @@ const RestfulForm: React.FC<RestfulFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    // noValidate：關閉瀏覽器原生 required 提示，改由 yup 在欄位下方顯示錯誤；欄位仍保留 required 以顯示必填星號
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* 錯誤/成功訊息 */}
         {error && <Alert severity="error">{error}</Alert>}
