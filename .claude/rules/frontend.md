@@ -18,6 +18,7 @@ npm install
 npm run dev          # http://localhost:3000/endpoint（需另外啟動後端，並設定 .env.local，見下方「API 呼叫」）
 npm run type-check
 npm run lint
+npm run test:e2e     # Playwright；先安裝 chromium，測試會自行在 127.0.0.1:3100 建置並啟動前端
 ```
 
 非 Windows 環境要手動建置生產版本：`NODE_ENV=production npm run build`，再把 `out/` 複製到 `backend/src/main/resources/static/`，並把各頁 `<page>/index.html` 複製為 `<page>.html`。
@@ -28,8 +29,10 @@ npm run lint
 
 ```
 nextjs-dynamic-api-manager/
-├── package.json                 # scripts：dev / build（皆用 --turbopack）、type-check、lint
-├── next.config.ts               # 生產模式：output export、basePath /dynamic-api、trailingSlash
+├── package.json                 # scripts：dev / build（皆用 --turbopack）、type-check、lint、test:e2e
+├── playwright.config.ts         # chromium E2E；webServer 使用 127.0.0.1:3100
+├── e2e/                         # Playwright 規格、API 假資料與共用攔截夾具
+├── next.config.ts               # 生產模式：output export、basePath /dynamic-api、trailingSlash；DYNAMIC_API_E2E=1 時停用 export
 ├── next.config.js               # 與 .ts 內容相近的舊設定（TD-10），修改時兩份一起改
 ├── tsconfig.json                # 路徑別名 @/* → src/*
 ├── eslint.config.mjs、postcss.config.mjs
@@ -82,6 +85,8 @@ nextjs-dynamic-api-manager/
 - 使用 `useSearchParams` 的元件要包在 `<Suspense>` 中（參考 `src/app/response/page.tsx`），否則靜態匯出會失敗。
 - `basePath` 必須等於後端 `server.servlet.context-path`（`/dynamic-api`），兩者同步修改。
 
+Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停用 `output: 'export'`，讓測試能以 `next start` 在 `127.0.0.1:3100` 啟動；`basePath` 與 `trailingSlash` 仍維持生產設定。未設定此變數時，正式建置與出貨產物不變。E2E 測試跑的是非靜態匯出版本，與實際出貨形式略有差異。
+
 ## 新增頁面要改三個地方
 
 1. `nextjs-dynamic-api-manager/src/app/<page>/page.tsx`
@@ -114,4 +119,4 @@ nextjs-dynamic-api-manager/
 
 ## 驗證
 
-`npm run type-check`、`npm run lint`；涉及路由或建置設定時，執行 `cd backend && .\gradlew.bat bootRun`，從 `http://localhost:8080/dynamic-api/` 驗證生產模式。
+`npm run type-check`、`npm run lint`；瀏覽器 E2E 使用 `npm run test:e2e`。E2E 會把 `.next` 建成非匯出版本，不影響正式建置產生的 `out/`。涉及路由或建置設定時，執行 `cd backend && .\gradlew.bat bootRun`，從 `http://localhost:8080/dynamic-api/` 驗證生產模式。
