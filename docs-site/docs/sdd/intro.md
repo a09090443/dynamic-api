@@ -44,7 +44,8 @@ sidebar_label: 0–1. 文件資訊與簡介
 | [SRS](../srs/intro.md) | 功能與非功能需求、需求編號 |
 | [JAR 開發指南](../jar-dev/overview.md) | 自訂 JAR 的開發規範 |
 | `backend/build.gradle` | 相依套件與前端建置任務 |
-| `backend/src/main/resources/db.migration/` | 資料庫遷移腳本 |
+| `backend/src/main/resources/db.migration/` | 資料庫遷移腳本（SQLite） |
+| `backend/src/main/resources/db.postgresql/` | 資料庫遷移腳本（PostgreSQL，只在切換 PostgreSQL 時執行） |
 | [zipe-spring-boot-starters](https://a09090443.github.io/zipe-spring-boot-starters/) | 後端使用的 base / web / db / web-service starter |
 
 ## 章節導覽

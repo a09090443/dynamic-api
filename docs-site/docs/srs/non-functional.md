@@ -46,7 +46,7 @@ sidebar_label: 4. 非功能性需求
 
 | 編號 | 需求 | 現況說明 |
 |---|---|---|
-| NFR-MNT-01 | 資料庫結構以版本化遷移管理 | Flyway，腳本位於 `db.migration/` |
+| NFR-MNT-01 | 資料庫結構以版本化遷移管理 | Flyway，SQLite 腳本位於 `db.migration/`，PostgreSQL 腳本位於 `db.postgresql/` |
 | NFR-MNT-02 | 自訂 JAR 只依賴穩定的基底 API | `RestfulBase`、`WebserviceBase`、`MockResponseDao` |
 | NFR-MNT-03 | 設定與程式分離 | 路徑、資料來源、日誌皆在 `*.properties` |
 | NFR-MNT-04 | 前後端可分開開發、合併部署 | 開發模式分開啟動；`bootJar` 整合為單一 JAR |
