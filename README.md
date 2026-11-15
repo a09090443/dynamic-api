@@ -26,7 +26,7 @@ flowchart LR
 
 | 目錄 | 說明 |
 |---|---|
-| `backend/` | Spring Boot 3.2.5（Java 17）：動態載入、管理 API、內嵌 SQLite + Flyway |
+| `backend/` | Spring Boot 3.2.5（Java 17）：動態載入、管理 API、資料庫（預設內嵌 SQLite，可選 PostgreSQL）+ Flyway |
 | `nextjs-dynamic-api-manager/` | 管理介面（Next.js 15.5.4 + MUI 7），生產模式靜態匯出並打包進後端 |
 | `base-jar/` | 自訂 JAR 編譯用的 `RestfulBase`、`WebserviceBase`、`MockResponseDao` |
 | `endpoints/`、`restfuls/` | 自訂 JAR 範例（`company-endpoint`、`order-endpoint`、`company-restful`、`example-restful`、`inventory-restful`，以及模擬三竹簡訊 API、回傳純文字的 `mitake-restful`） |
@@ -43,6 +43,7 @@ flowchart LR
 | Node.js | 22（Windows 上 Gradle 使用 `tools/` 內附版本；手動跑前端或文件網站時需自行安裝） |
 | Gradle | 後端與多數範例附 Gradle Wrapper；`endpoints/order-endpoint`、`restfuls/inventory-restful`、`restfuls/mitake-restful` 不附，需安裝系統 Gradle |
 | 作業系統 | Windows（建議）；macOS / Linux 見下方說明 |
+| 資料庫 | 預設 SQLite（內嵌，免安裝）；可選 PostgreSQL 12 以上（建議 14 以上，資料庫需事先建立）。PostgreSQL 支援**尚未在實際 PostgreSQL 環境驗證**，切換方式見 [設定參考：切換到 PostgreSQL](./docs-site/docs/guide/configuration.md#切換到-postgresql可選) |
 
 ## 快速啟動
 

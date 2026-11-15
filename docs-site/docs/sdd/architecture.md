@@ -38,7 +38,7 @@ flowchart TB
         DAO[MockResponseDao]
         SETUP[SetupWebservices / SetupController<br/>啟動時恢復]
     end
-    DB[(SQLite)]
+    DB[(SQLite 預設 / PostgreSQL 可選)]
     FS[(jar.file.dir)]
 
     UI -->|HTTP JSON| Mgmt
@@ -69,7 +69,7 @@ flowchart TB
 flowchart LR
     subgraph Host[主機]
         JVM[java -jar backend-0.0.1-SNAPSHOT.jar<br/>:8080]
-        DBF[(SQLite 檔)]
+        DBF[(SQLite 檔<br/>或外部 PostgreSQL)]
         JARS[(上傳的 JAR 目錄)]
         LOGS[(日誌目錄)]
     end
@@ -78,7 +78,7 @@ flowchart LR
     JVM --- DBF & JARS & LOGS
 ```
 
-系統狀態分散在三處：**SQLite**（設定與回應）、**JAR 目錄**（類別）、**JVM 記憶體**（已載入的 ClassLoader 與已註冊的服務）。前兩者持久化，第三者在啟動時由前兩者重建。因此無法水平擴展成多個節點共用資料（見 [9. 設計決策](./decisions.md)）。
+系統狀態分散在三處：**資料庫**（設定與回應；預設 SQLite 檔，可選 PostgreSQL）、**JAR 目錄**（類別）、**JVM 記憶體**（已載入的 ClassLoader 與已註冊的服務）。前兩者持久化，第三者在啟動時由前兩者重建。因此無法水平擴展成多個節點共用資料（見 [9. 設計決策](./decisions.md)）。
 
 ## 2.3 執行環境與關鍵技術
 
@@ -88,10 +88,10 @@ flowchart LR
 | 框架 | Spring Boot | 3.2.5 |
 | SOAP | Apache CXF（經 `web-service-spring-boot-starter`） | 4.0.x |
 | WSDL 轉換 | `cxf-tools-wsdlto-frontend-jaxws` | 4.0.0 |
-| ORM | Spring Data JPA + Hibernate（`SQLiteDialect`，hibernate-community-dialects） | 6.4.4 |
+| ORM | Spring Data JPA + Hibernate（預設 `SQLiteDialect`，hibernate-community-dialects；選 PostgreSQL 時為 `PostgreSQLDialect`） | 6.4.4 |
 | JDBC | `NamedParameterJdbcTemplate`（經 `db-spring-boot-starter`） | — |
-| 資料庫 | SQLite（`sqlite-jdbc`） | 3.45.1.0 |
-| 遷移 | Flyway | 10.14.0 |
+| 資料庫 | 預設 SQLite（`sqlite-jdbc`）；可選 PostgreSQL 12 以上（`org.postgresql:postgresql`，版本由 Spring Boot 管理；尚未實機驗證） | 3.45.1.0 |
+| 遷移 | Flyway（PostgreSQL 另需 `flyway-database-postgresql`） | 10.14.0 |
 | 共用元件 | `io.github.a09090443` base / web / db / web-service starter | 3.2.5.x |
 | 前端 | Next.js、React、MUI、axios、react-hook-form、yup | 15.5.4、19.1.0、7.x |
 | 建置 | Gradle Wrapper（後端、JAR 範例）、npm | 8.7 |

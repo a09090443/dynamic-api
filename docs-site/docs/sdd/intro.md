@@ -28,7 +28,7 @@ sidebar_label: 0–1. 文件資訊與簡介
 | 涵蓋 | 不涵蓋 |
 |---|---|
 | 後端 Spring Boot 應用的模組與動態載入機制 | 第三方函式庫（CXF、Spring）的內部實作 |
-| SQLite 資料結構與遷移 | 自訂 JAR 的業務邏輯 |
+| 資料結構與遷移（預設 SQLite、可選 PostgreSQL） | 自訂 JAR 的業務邏輯 |
 | 管理 API 規格 | 舊版 Angular 前端（`frontend/`） |
 | Next.js 管理介面的架構與建置整合 | UI 視覺規範 |
 | 部署、設定與已知技術債 | |
@@ -44,7 +44,8 @@ sidebar_label: 0–1. 文件資訊與簡介
 | [SRS](../srs/intro.md) | 功能與非功能需求、需求編號 |
 | [JAR 開發指南](../jar-dev/overview.md) | 自訂 JAR 的開發規範 |
 | `backend/build.gradle` | 相依套件與前端建置任務 |
-| `backend/src/main/resources/db.migration/` | 資料庫遷移腳本 |
+| `backend/src/main/resources/db.migration/` | 資料庫遷移腳本（SQLite） |
+| `backend/src/main/resources/db.postgresql/` | 資料庫遷移腳本（PostgreSQL，只在切換 PostgreSQL 時執行） |
 | [zipe-spring-boot-starters](https://a09090443.github.io/zipe-spring-boot-starters/) | 後端使用的 base / web / db / web-service starter |
 
 ## 章節導覽

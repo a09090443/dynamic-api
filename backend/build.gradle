@@ -30,6 +30,9 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
     implementation 'org.hibernate.orm:hibernate-community-dialects:6.4.4.Final'
     implementation 'org.flywaydb:flyway-core:10.14.0'
+    // 可選的 PostgreSQL 支援（預設仍為 SQLite）；Flyway 10 需另加資料庫模組
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql:10.14.0'
     implementation 'org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws:4.0.0'
     implementation 'org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:4.0.0'
     // Swagger UI 靜態資源（/webjars/swagger-ui/...），文件由 OpenApiController 即時產生

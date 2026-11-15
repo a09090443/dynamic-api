@@ -15,6 +15,7 @@ sidebar_label: 安裝與啟動
 | Node.js | 22 | Windows 上 Gradle 會使用專案內附的 `tools/node-v22.20.0-win-x64`；手動跑前端開發模式時需自行安裝 |
 | Gradle | 不需安裝 | 各模組都附 Gradle Wrapper |
 | 作業系統 | Windows（建議） | 見下方「非 Windows 環境」 |
+| 資料庫 | 預設 SQLite（內嵌，免安裝）；可選 PostgreSQL 12 以上（建議 14 以上） | PostgreSQL 為可選項，尚未在實際 PostgreSQL 環境驗證，見 [切換到 PostgreSQL](./configuration.md#切換到-postgresql可選) |
 
 ## 啟動前：確認檔案存放目錄
 
@@ -28,6 +29,8 @@ sidebar_label: 安裝與啟動
 | 日誌 | `log.base` | `/tmp` |
 
 資料表會在啟動時由 Flyway 自動建立，不需要手動執行 SQL。
+
+改用 PostgreSQL 時，上表的 SQLite 路徑不適用：**資料庫必須事先建立**（例如 `CREATE DATABASE dynamic_api;`），連線帳號要能在目標 schema 建表，再依 [切換到 PostgreSQL](./configuration.md#切換到-postgresql可選) 整組修改 `data-source*.properties` 的設定鍵（`jdbc:postgresql` URL、`org.postgresql.Driver`、帳密、`app.database.dialect`、`app.database.flyway-locations`）。資料表同樣由 Flyway 自動建立。PostgreSQL 支援尚未在實際 PostgreSQL 環境驗證。
 
 :::warning `/tmp` 不是持久目錄；Windows 需要改路徑
 `/tmp` 可能在重開機或系統清理時被清空，資料庫與上傳的 JAR 會一起消失，正式使用請改到持久目錄。Windows 上沒有 `/tmp`，升級後要把路徑改回 Windows 路徑（例如 `D:/tmp/`）或在啟動時覆寫，做法見 [設定參考](./configuration.md#設定檔一覽)。

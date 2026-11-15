@@ -17,7 +17,7 @@ sidebar_label: 4. 非功能性需求
 | NFR-PERF-02 | 啟用／停用單一服務應在數秒內完成 | 只涉及單一 JAR 的類別載入與註冊 |
 | NFR-PERF-03 | 支援上傳 100MB 以內的 JAR | 由 multipart 設定控制 |
 | NFR-PERF-04 | 支援數十個服務同時啟用 | 每個服務一個 ClassLoader；數量主要受 JVM Metaspace 限制 |
-| NFR-PERF-05 | 適用低並發寫入情境 | SQLite 單一寫入者；多人同時大量編輯可能遇到鎖定 |
+| NFR-PERF-05 | 適用低並發寫入情境 | 預設 SQLite 為單一寫入者，多人同時大量編輯可能遇到鎖定；可選的 PostgreSQL 無此限制（尚未實機驗證） |
 
 ## 4.2 可用性與可靠度
 
@@ -26,7 +26,7 @@ sidebar_label: 4. 非功能性需求
 | NFR-AVL-01 | 重啟後自動恢復已啟用的服務 | `SetupWebservices`、`SetupController` 於啟動時執行 |
 | NFR-AVL-02 | 單一服務載入失敗不得影響其他服務或系統啟動 | 失敗者改為停用並記錄日誌 |
 | NFR-AVL-03 | 啟用失敗時不得留下半註冊狀態 | Endpoint 失敗時移除 ClassLoader；RESTful 若在註冊部分方法後失敗，已註冊的對應不會回收（技術債 TD-05） |
-| NFR-AVL-04 | 資料與 JAR 應可備份 | 備份 SQLite 檔與 `jar.file.dir` 即可完整還原 |
+| NFR-AVL-04 | 資料與 JAR 應可備份 | 備份資料庫（SQLite 檔，或選用時的 PostgreSQL 資料庫）與 `jar.file.dir` 即可完整還原 |
 
 ## 4.3 安全性與隱私
 
@@ -35,8 +35,8 @@ sidebar_label: 4. 非功能性需求
 | NFR-SEC-01 | 僅部署於受信任的內部網路 | 系統**沒有任何認證或授權**，可執行上傳的任意 JAR，等同允許遠端執行程式碼 |
 | NFR-SEC-02 | CORS 僅允許已知的前端來源 | 允許 `http://localhost:3000`、`http://localhost:4200` |
 | NFR-SEC-03 | 日誌串流應限制於日誌目錄內 | 目前 `logFileName` 未過濾 `..`，可讀取任意檔案（技術債 TD-07） |
-| NFR-SEC-04 | Mock 回應不應存放真實個資 | 回應內容以明文存放於 SQLite |
-| NFR-SEC-05 | 資料庫密碼加密選項 | `dynamic.is-encrypt=false`；SQLite 無帳密 |
+| NFR-SEC-04 | Mock 回應不應存放真實個資 | 回應內容以明文存放於資料庫（預設 SQLite） |
+| NFR-SEC-05 | 資料庫密碼加密選項 | `dynamic.is-encrypt=false`；預設 SQLite 無帳密，選用 PostgreSQL 時帳密以明文設定，版控只放佔位值 |
 
 :::danger 部署提醒
 任何能存取管理 API 的人都能上傳並執行任意 Java 程式碼。若需要在共用環境部署，至少應以反向代理加上認證或 IP 白名單。
@@ -46,7 +46,7 @@ sidebar_label: 4. 非功能性需求
 
 | 編號 | 需求 | 現況說明 |
 |---|---|---|
-| NFR-MNT-01 | 資料庫結構以版本化遷移管理 | Flyway，腳本位於 `db.migration/` |
+| NFR-MNT-01 | 資料庫結構以版本化遷移管理 | Flyway，SQLite 腳本位於 `db.migration/`，PostgreSQL 腳本位於 `db.postgresql/` |
 | NFR-MNT-02 | 自訂 JAR 只依賴穩定的基底 API | `RestfulBase`、`WebserviceBase`、`MockResponseDao` |
 | NFR-MNT-03 | 設定與程式分離 | 路徑、資料來源、日誌皆在 `*.properties` |
 | NFR-MNT-04 | 前後端可分開開發、合併部署 | 開發模式分開啟動；`bootJar` 整合為單一 JAR |

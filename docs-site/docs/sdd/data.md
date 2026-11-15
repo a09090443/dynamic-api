@@ -55,7 +55,7 @@ erDiagram
     CONTROLLER ||..o{ MOCK_RESPONSE : "PUBLISH_URI + RESTFUL"
 ```
 
-所有關聯皆為**邏輯關聯**，資料庫沒有建立外鍵約束；一致性由應用程式維護。
+所有關聯皆為**邏輯關聯**，資料庫沒有建立外鍵約束；一致性由應用程式維護。圖中與下表的型別以預設的 SQLite 為準；PostgreSQL 的布林欄位為 `BOOLEAN`，見 [PostgreSQL 遷移腳本](#postgresql-遷移腳本)。
 
 ## 4.2 資料儲存設計
 
@@ -117,7 +117,31 @@ erDiagram
 | V1.1 | `V1.1__create_controller_tables.sql` | 建立 `CONTROLLER` |
 | V1.2 | `V1.2__alter_column.sql` | `PUBLISH_URL` → `PUBLISH_URI`；`ENDPOINT` 新增 `IGNORE_CDATA` |
 
-新增欄位或資料表時，請新增 `V1.3__xxx.sql`，不要修改已執行過的腳本。SQLite 的 `ALTER TABLE` 能力有限（不支援修改欄位型別、刪除約束），複雜變更需要「建新表 → 搬資料 → 改名」。
+上表是 SQLite 的腳本（`classpath:db.migration`）。新增欄位或資料表時，請新增 `V1.3__xxx.sql`，不要修改已執行過的腳本；SQLite 與 PostgreSQL 兩個位置都要新增相同版本的腳本。SQLite 的 `ALTER TABLE` 能力有限（不支援修改欄位型別、刪除約束），複雜變更需要「建新表 → 搬資料 → 改名」。
+
+### PostgreSQL 遷移腳本 {#postgresql-遷移腳本}
+
+資料庫預設為 SQLite；PostgreSQL 為可選項，由 `data-source*.properties` 的 `app.database.flyway-locations` 選擇腳本位置（設定方式見 [設定參考](../guide/configuration.md#切換到-postgresql可選)）。兩套腳本位置互斥，每種資料庫只執行自己的腳本：
+
+| 資料庫 | Flyway 位置 | 腳本 |
+|---|---|---|
+| SQLite（預設） | `classpath:db.migration` | `V1.0`～`V1.2`（見上表） |
+| PostgreSQL | `classpath:db.postgresql` | `V1.2__create_tables.sql`：一次建立 `ENDPOINT`、`JAR_FILE`、`MOCK_RESPONSE`、`CONTROLLER`，結構等同 SQLite 執行完 V1.0～V1.2 的最終狀態 |
+
+PostgreSQL 腳本從 `V1.2` 起算，讓兩種資料庫的下一版都是 `V1.3`。型別對應：
+
+| 欄位 | SQLite | PostgreSQL | 說明 |
+|---|---|---|---|
+| `IS_ACTIVE` | INTEGER, DEFAULT 1 | BOOLEAN, DEFAULT TRUE | 對應實體的 `Boolean`；`SQL_SELECT_RESPONSE_CONTENT` 的 `IS_ACTIVE = TRUE` 在兩者皆成立 |
+| `IGNORE_CDATA` | INTEGER, DEFAULT 0 | BOOLEAN, DEFAULT FALSE | 同上 |
+| `CREATED_AT` / `UPDATED_AT` | TEXT, DEFAULT CURRENT_TIMESTAMP | TEXT, DEFAULT `TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS')` | 維持 TEXT，與 SQLite 格式相同（TD-09 未修正） |
+| 其他欄位 | VARCHAR／TEXT／CHAR | 相同 | PostgreSQL 會強制 VARCHAR 長度，SQLite 不會 |
+
+識別字不加雙引號，主鍵與 NOT NULL 約束與 SQLite 相同；具名 SQL 與 JPA 查詢都是標準語法，兩種資料庫共用，不需分支。`CONDITION` 為複合主鍵的一部分，PostgreSQL btree 索引單筆上限約 2.7KB，過長的條件字串會無法寫入。
+
+:::warning 尚未實機驗證
+PostgreSQL 腳本與設定只經過讀檔核對與 SQLite 回歸測試，尚未在實際 PostgreSQL 環境驗證連線、建表與 Mock 命中。
+:::
 
 ### 具名 SQL
 

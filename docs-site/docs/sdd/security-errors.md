@@ -30,8 +30,8 @@ sidebar_label: 7. 安全性與錯誤處理
 | 項目 | 現況 |
 |---|---|
 | 傳輸加密 | 未設定 HTTPS |
-| 儲存加密 | SQLite 檔與 JAR 檔皆為明文 |
-| 機密設定 | 無（SQLite 不需帳密；`dynamic.is-encrypt=false`） |
+| 儲存加密 | SQLite 檔與 JAR 檔皆為明文；選用 PostgreSQL 時依資料庫本身設定 |
+| 機密設定 | 預設 SQLite 不需帳密；選用 PostgreSQL 時帳密寫在 `data-source*.properties`（`dynamic.is-encrypt=false`，明文），版控只放佔位值，實際值建議以啟動參數提供 |
 | 個資 | 系統本身不收集；Mock 回應內容由使用者決定，建議使用假資料 |
 
 ## 7.3 例外與錯誤處理策略

@@ -47,7 +47,7 @@ cd backend
 在目標主機：
 
 1. 安裝 JDK 17 以上。
-2. 建立 SQLite、JAR、日誌所需目錄（依 properties）。
+2. 建立 SQLite、JAR、日誌所需目錄（依 properties）。若選用 PostgreSQL（可選，12 以上，尚未實機驗證），改為事先建立資料庫與具建表權限的帳號，並依 [切換到 PostgreSQL](../guide/configuration.md#切換到-postgresql可選) 整組修改 `data-source_{env}.properties`；預設仍為 SQLite。
 3. `java -jar backend-0.0.1-SNAPSHOT.jar`
 4. 開啟 `http://{host}:8080/dynamic-api/`。
 
@@ -85,6 +85,7 @@ Dockerfile 在應用啟動前建立三個掛載點。`docker compose down` 不�
 |---|---|---|
 | 應用設定 | `application.yml` | 打包在 JAR 內；可用 `--server.port=9090` 等命令列參數或外部 `application.yml` 覆寫 |
 | 環境差異 | `resources_{env}.properties`、`data-source_{env}.properties` | 建置時決定 |
+| 資料庫選擇 | `data-source*.properties` 的 `app.database.dialect`、`app.database.flyway-locations` 與資料來源鍵 | 預設 SQLite；可選 PostgreSQL（`classpath:db.postgresql`），三份檔案鍵名一致 |
 | 前端 | `.env.development`、`.env.production`、`.env.local` | 建置時嵌入 |
 
 各設定鍵說明見 [使用者指南：設定參考](../guide/configuration.md)。
@@ -114,7 +115,8 @@ java -jar backend-0.0.1-SNAPSHOT.jar --jar.file.dir=/opt/dam/jars/ --log.base=/v
 | 對象 | 方式 |
 |---|---|
 | SQLite 檔 | 停機時直接複製；線上可用 `sqlite3 db ".backup file"` |
+| PostgreSQL（選用時） | 使用 `pg_dump` 匯出、`pg_restore`／`psql` 還原 |
 | JAR 目錄 | 複製整個 `jar.file.dir` |
 | 日誌目錄 | 依保存需求複製整個 `log.base`；還原服務本身不依賴日誌 |
 
-SQLite 與 JAR 目錄需要**同時**備份，否則 `JAR_FILE` 記錄與實體檔案可能對不上。
+資料庫（SQLite 檔或 PostgreSQL 資料庫）與 JAR 目錄需要**同時**備份，否則 `JAR_FILE` 記錄與實體檔案可能對不上。

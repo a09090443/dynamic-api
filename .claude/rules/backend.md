@@ -85,7 +85,8 @@ backend/
     │   ├── application.yml                       [configuration.md]
     │   ├── resources*.properties、data-source*.properties  [configuration.md]
     │   ├── logback-spring.xml                    [configuration.md]
-    │   ├── db.migration/V1.0～V1.2__*.sql        # Flyway，不可修改既有腳本 [database.md]
+    │   ├── db.migration/V1.0～V1.2__*.sql        # Flyway，SQLite 專用（預設），不可修改既有腳本 [database.md]
+    │   ├── db.postgresql/V1.2__create_tables.sql # Flyway，PostgreSQL 專用（app.database.flyway-locations 切換），不可修改既有腳本 [database.md]
     │   ├── sql/SQL_*.sql                         # 具名 SQL，檔名 = *JDBC 常數 [database.md]
     │   ├── META-INF/spring.factories
     │   ├── public/swagger-ui.html             # Swagger UI，讀取相對路徑 api/getOpenApi
@@ -103,5 +104,7 @@ backend/
             ├── data-source.properties         # 測試 SQLite：build/dynamic-api-test.db
             └── resources.properties           # 測試日誌、JAR、WSDL：build/ 下的相對路徑
 ```
+
+- 兩套遷移目錄由 `app.database.flyway-locations` 擇一使用（未設定時為 SQLite 的 `classpath:db.migration`），結構變更時兩邊都要新增同版本的下一支腳本，細節見 `.claude/rules/database.md`。
 
 新增類別時放在既有的對應套件；新增「被使用者 JAR 依賴」的類別時，放在 `jarbase/` 或 `dao/` 並同步到 `base-jar/`。
