@@ -28,7 +28,7 @@ sidebar_label: 0–1. 文件資訊與簡介
 | 涵蓋 | 不涵蓋 |
 |---|---|
 | 後端 Spring Boot 應用的模組與動態載入機制 | 第三方函式庫（CXF、Spring）的內部實作 |
-| SQLite 資料結構與遷移 | 自訂 JAR 的業務邏輯 |
+| 資料結構與遷移（預設 SQLite、可選 PostgreSQL） | 自訂 JAR 的業務邏輯 |
 | 管理 API 規格 | 舊版 Angular 前端（`frontend/`） |
 | Next.js 管理介面的架構與建置整合 | UI 視覺規範 |
 | 部署、設定與已知技術債 | |

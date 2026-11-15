@@ -56,7 +56,7 @@ flowchart TB
         LOADER[動態載入<br/>ClassLoader + CXF + Spring MVC]
         SVC["已發布的 Mock 服務<br/>/webservice/* 、/{publishUri}/*"]
     end
-    DB[(SQLite)]
+    DB[(SQLite 預設 / PostgreSQL 可選)]
     FS[(檔案系統<br/>JAR、日誌)]
 
     U1 --> UI --> MAPI

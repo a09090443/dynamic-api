@@ -15,10 +15,11 @@ sidebar_label: 設定參考
 |---|---|
 | `application.yml` | Spring Boot 主設定：context path、port、上傳大小、Flyway、CXF 路徑、Actuator |
 | `resources.properties` | 日誌、JAR 存放目錄、WSDL 暫存目錄（由 `spring.config.import` 載入） |
-| `data-source.properties` | SQLite 資料來源（由 `db-spring-boot-starter` 讀取） |
+| `data-source.properties` | 資料來源與資料庫選擇（預設 SQLite，可選 PostgreSQL；由 `db-spring-boot-starter` 讀取） |
 | `resources_{env}.properties`、`data-source_{env}.properties` | 各環境版本，`bootJar` 時依 `-Penv`（預設 `dev`）覆蓋上面兩個檔案 |
 | `logback-spring.xml` | 日誌格式與輸出 |
-| `db.migration/V*.sql` | Flyway 資料庫遷移腳本 |
+| `db.migration/V*.sql` | Flyway 資料庫遷移腳本（SQLite） |
+| `db.postgresql/V*.sql` | Flyway 資料庫遷移腳本（PostgreSQL，只在切換 PostgreSQL 時執行） |
 | `sql/*.sql` | 程式使用的具名 SQL |
 
 :::info `bootRun` 與 `bootJar` 用的設定不同
@@ -44,8 +45,8 @@ sidebar_label: 設定參考
 | `server.servlet.context-path` | `/dynamic-api` | 所有網址的前綴；前端生產建置的 `basePath` 也寫死為 `/dynamic-api`，兩者需一致 |
 | `spring.servlet.multipart.max-file-size` / `max-request-size` | `100MB` | 上傳 JAR 的大小上限 |
 | `spring.main.allow-bean-definition-overriding` | `true` | 允許重複註冊同名 Bean；Endpoint 重新啟用時會再次註冊同名 Bean，必須開啟 |
-| `spring.flyway.locations` | `classpath:db.migration` | 遷移腳本位置 |
-| `spring.jpa.properties.hibernate.dialect` | `SQLiteDialect` | SQLite 方言 |
+| `spring.flyway.locations` | `${app.database.flyway-locations:classpath:db.migration}` | 遷移腳本位置，由 `data-source*.properties` 的 `app.database.flyway-locations` 決定；未設定時為 SQLite 的 `classpath:db.migration` |
+| `spring.jpa.properties.hibernate.dialect` | `${app.database.dialect:org.hibernate.community.dialect.SQLiteDialect}` | Hibernate 方言，由 `app.database.dialect` 決定；未設定時為 `SQLiteDialect` |
 | `web.service.uri-mapping` | `/webservice/*` | CXF Servlet 路徑，決定 SOAP 服務網址 `/dynamic-api/webservice/{publishUri}` |
 | `web.service.map.*` | `example`、`user` | 隨後端一起發布的內建範例服務（`ExampleWebServiceImpl`、`ExampleUserServiceImpl`），非動態載入 |
 | `management.endpoints.web.exposure.include` | `custom-api-mappings` | Actuator 開放清單（名稱與實際端點 id `show-mappings` 不符，見 [管理 RESTful](./restful.md#查看目前註冊的路由)） |
@@ -69,9 +70,44 @@ dynamic.entity-scan=com.dynamicapi
 dynamic.is-encrypt=false
 dynamic.data-source-map[webservice].url=jdbc:sqlite:/tmp/mockapi.db
 dynamic.data-source-map[webservice].driverClassName=org.sqlite.JDBC
+app.database.dialect=org.hibernate.community.dialect.SQLiteDialect
+app.database.flyway-locations=classpath:db.migration
 ```
 
 `data-source_dev.properties`、`data-source_pro.properties`（`bootJar` 使用）的 `url` 為 `jdbc:sqlite:/tmp/webservice.db`。只需要調整 `url` 中的檔案路徑。SQLite 會自動建立資料庫檔案，但**所在目錄必須已存在**。
+
+`app.database.dialect`、`app.database.flyway-locations` 決定 Hibernate 方言與 Flyway 腳本位置，三份 `data-source*.properties` 使用相同鍵名。沒有設定這兩個鍵時（例如舊版設定檔或測試設定），系統回退為 SQLite（`SQLiteDialect` 與 `classpath:db.migration`），既有 SQLite 使用者不需修改任何設定。
+
+### 切換到 PostgreSQL（可選） {#切換到-postgresql可選}
+
+:::warning 尚未在實際 PostgreSQL 環境驗證
+PostgreSQL 支援目前只完成設定、相依套件與建表腳本，並以 SQLite 回歸測試確認既有行為不受影響；**尚未在實際的 PostgreSQL 伺服器上驗證**連線、Flyway 建表與 Mock 命中。正式使用前請先在測試環境確認。
+:::
+
+- **預設是 SQLite**，不做任何設定就維持原本行為。
+- **最低支援版本**：PostgreSQL 12，建議 14 以上（依 Hibernate 6.4 `PostgreSQLDialect` 與 Flyway 10 社群版的支援範圍訂定）。
+- **資料庫需事先建立**（例如 `CREATE DATABASE dynamic_api;`），連線帳號要有目標 schema 的建表權限。PostgreSQL 15 起 `public` schema 預設不再開放一般使用者 `CREATE`，需另外授權或使用帳號擁有的 schema。
+- 本系統不提供從 SQLite 搬移既有資料到 PostgreSQL 的工具；切換後是一個空的資料庫。
+
+在實際使用的設定檔（`bootRun` 改 `data-source.properties`；`bootJar` 改所選 `-Penv` 的 `data-source_{env}.properties`）中，把 SQLite 區塊（`url`、`username`、`pa55word`、`driverClassName` 與兩個 `app.database.*`）註解掉，再取消檔案下方 PostgreSQL 區塊的註解，並把佔位值換成實際值：
+
+```properties
+dynamic.data-source-map[webservice].name=webservice
+dynamic.data-source-map[webservice].url=jdbc:postgresql://localhost:5432/dynamic_api
+dynamic.data-source-map[webservice].username=your_username
+dynamic.data-source-map[webservice].pa55word=your_password
+dynamic.data-source-map[webservice].driverClassName=org.postgresql.Driver
+app.database.dialect=org.hibernate.dialect.PostgreSQLDialect
+app.database.flyway-locations=classpath:db.postgresql
+```
+
+這七個鍵必須整組切換；只改 `url` 而沒改方言或 Flyway 位置，會讓 PostgreSQL 執行 SQLite 的遷移腳本而失敗。帳號密碼不要提交進版控，可改用下方的命令列參數在啟動時提供。腳本位置與型別對應見 [資料設計](../sdd/data.md#postgresql-遷移腳本)。
+
+與 SQLite 的行為差異：
+
+- PostgreSQL 會強制 `VARCHAR` 長度（例如 `PUBLISH_URI` 最多 100 字、`METHOD` 最多 50 字），超過時新增或修改會失敗；SQLite 不檢查長度。
+- `CONDITION` 是 `MOCK_RESPONSE` 主鍵的一部分，PostgreSQL 的 btree 索引單筆上限約 2.7KB，條件字串過長時新增 Mock 回應會失敗。
+- `CREATED_AT`、`UPDATED_AT` 仍為 `TEXT`（與 SQLite 相同，TD-09 未修正）。
 
 ### 執行期覆寫與 Docker Compose
 

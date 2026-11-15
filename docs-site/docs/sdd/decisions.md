@@ -16,7 +16,7 @@ sidebar_label: 9–10. 決策與技術債
 | D-01 | 在同一個 JVM 中動態載入使用者 JAR | 不需額外行程或容器；使用者類別可直接使用 Spring、CXF 與注入 | 沒有隔離，使用者程式可影響整個系統 |
 | D-02 | 每個服務一個 ClassLoader，父優先 | 不同服務的同名類別不衝突；確保基底類別型別一致 | 使用者無法使用與系統不同版本的函式庫 |
 | D-03 | 比對邏輯放在 JAR，系統只提供四鍵查詢 | 系統保持協定無關、實作簡單；JAR 作者可完全控制比對 | 回應維護者需知道 JAR 的 condition 格式；容易填錯 |
-| D-04 | 以 SQLite 作為唯一資料庫 | 零安裝、單檔備份，符合工具型系統定位 | 不適合多節點與高並發寫入 |
+| D-04 | 以 SQLite 作為預設資料庫，PostgreSQL 為可選項（以 `app.database.*` 切換方言與 Flyway 位置，兩套遷移腳本） | SQLite 零安裝、單檔備份，符合工具型系統定位；需要外部資料庫的使用者可改用 PostgreSQL | 兩種資料庫的遷移腳本都要維護；PostgreSQL 尚未在實際環境驗證；JVM 執行狀態仍在單一行程，改用 PostgreSQL 也不代表能多節點部署 |
 | D-05 | JAR 存檔案系統、DB 只存中繼資料 | 避免大型 BLOB；`URLClassLoader` 需要檔案 URL | DB 與檔案需一起備份，可能不一致 |
 | D-06 | 新建／編輯後一律停用，需明確啟用 | 避免半成品設定直接對外 | 使用者容易忘記啟用 |
 | D-07 | 前端靜態匯出並打包進後端 JAR | 部署只有一個產物、同源無 CORS 問題 | 生產模式無法使用 Next.js 伺服器端功能 |
@@ -57,6 +57,8 @@ sidebar_label: 9–10. 決策與技術債
 
 ### 10.1 版本歷史
 
+2026-11-15：新增可選的 PostgreSQL 支援（預設仍為 SQLite）：加入 PostgreSQL JDBC driver 與 Flyway PostgreSQL 模組，`application.yml` 的方言與 Flyway 位置改由 `app.database.*` 決定，新增 `db.postgresql/V1.2__create_tables.sql`；尚未在實際 PostgreSQL 環境驗證。
+
 2026-10-30：修正 Docker Compose 部署設定：改用正確的後端 JAR、受維護的 Java 17 執行環境、Spring Boot 命令列屬性與三個具名 volume，並補上 Linux 測試專用 SQLite 設定；相關容器部署技術債已從清單移除。
 
 2026-10-27：RESTful 路由註冊器改以 `@Qualifier` 明確指定 Spring MVC Bean，修正未保留建構子參數名稱時的啟動歧義；新增雙 Bean 注入回歸測試，並同步修正舊 DAO 測試缺少服務類型參數的編譯錯誤。
@@ -74,6 +76,6 @@ sidebar_label: 9–10. 決策與技術債
 | RESTful 註冊 | `backend/src/main/java/com/dynamicapi/service/impl/DynamicControllerServiceImpl.java` |
 | 啟動恢復 | `backend/src/main/java/com/dynamicapi/setup/` |
 | Mock 查詢 | `backend/src/main/java/com/dynamicapi/dao/MockResponseDao.java` |
-| 資料表 | `backend/src/main/resources/db.migration/` |
+| 資料表 | `backend/src/main/resources/db.migration/`（SQLite）、`db.postgresql/`（PostgreSQL） |
 | 前端 API | `nextjs-dynamic-api-manager/src/services/` |
 | 建置整合 | `backend/build.gradle` |
