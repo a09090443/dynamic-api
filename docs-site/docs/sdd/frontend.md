@@ -79,7 +79,7 @@ flowchart LR
 | 設定 | `playwright.config.ts`：只有 chromium；`webServer` 以 `DYNAMIC_API_E2E=1` 執行 `npm run build && npm run start -- --hostname 127.0.0.1 --port 3100`，`reuseExistingServer: false`；`baseURL` 為 `http://127.0.0.1:3100/dynamic-api/` |
 | 目錄 | `e2e/pages.spec.ts`（首頁、Endpoint、RESTful、Mock 回應的開啟與列表）、`e2e/restful-form.spec.ts`（RESTful 新增表單成功與驗證失敗）、`e2e/fixtures/`（假資料與攔截夾具） |
 | 隔離 | `e2e/fixtures/mock-api.ts` 是自動套用的夾具，在任何 `page.goto` 前以 `page.route` 註冊：`/dynamic-api/ws`、`/dynamic-api/api`、`/dynamic-api/common` 一律回傳固定的 `{code, message, data}`，未定義的 API 回 `code=500` 且不轉送；非 `127.0.0.1:3100` 的請求（例如 Google Fonts）一律中止。測試不會連到真的後端或外部網站 |
-| 輸出 | `test-results/`（trace 等）、`playwright-report/`（HTML 報告），兩者都不進版控、不受 ESLint 檢查 |
+| 輸出 | `test-results/`（每個測試的 PNG 截圖、失敗時保留的 trace）、`playwright-report/`（HTML 報告），兩者都不進版控、不受 ESLint 檢查 |
 
 固定埠不用 3000：`config/config.ts` 在網址含 `:3000` 時改用 `NEXT_PUBLIC_API_URL`，API 就不會走同源路徑而無法攔截。
 

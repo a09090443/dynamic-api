@@ -22,6 +22,7 @@ export default defineConfig({
     locale: 'zh-TW',
     serviceWorkers: 'block',
     trace: 'retain-on-failure',
+    screenshot: 'on',
   },
   projects: [
     {
