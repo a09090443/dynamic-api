@@ -63,9 +63,30 @@ flowchart LR
 |---|---|---|
 | 開發（`npm run dev`） | 無 `basePath`、無 `trailingSlash` | Next.js 開發伺服器 :3000 |
 | 生產（`NODE_ENV=production npm run build`） | `output: 'export'`、`basePath: '/dynamic-api'`、`trailingSlash: true`、`images.unoptimized` | 靜態檔案於 `out/` |
+| E2E（`DYNAMIC_API_E2E=1`，由 Playwright 自動帶入） | 同生產，但**不做** `output: 'export'`；`basePath`、`trailingSlash` 不變 | `.next/`，以 `next start` 在 `127.0.0.1:3100` 提供 |
 
 生產建置由 Gradle 觸發，輸出複製到 `backend/src/main/resources/static/`，並把 `endpoint/index.html` 等複製為 `endpoint.html` 供 `SpaController` 讀取（見 [8. 部署](./deployment.md)）。
 
 :::note 兩份 next.config
-專案同時存在 `next.config.ts` 與 `next.config.js`，內容相近。Next.js 會優先使用其中一份（依版本規則），維護時請兩份同步或刪除其中一份（TD-10）。
+專案同時存在 `next.config.ts` 與 `next.config.js`，內容相近。Next.js 會優先使用其中一份（依版本規則），維護時請兩份同步或刪除其中一份（TD-10）。`DYNAMIC_API_E2E` 開關兩份都有實作。
+:::
+
+## E2E 測試（Playwright）
+
+| 項目 | 內容 |
+|---|---|
+| 執行 | `cd nextjs-dynamic-api-manager && npm exec playwright install chromium`（第一次；Linux 可能需加 `--with-deps`），之後 `npm run test:e2e` |
+| 設定 | `playwright.config.ts`：只有 chromium；`webServer` 以 `DYNAMIC_API_E2E=1` 執行 `npm run build && npm run start -- --hostname 127.0.0.1 --port 3100`，`reuseExistingServer: false`；`baseURL` 為 `http://127.0.0.1:3100/dynamic-api/` |
+| 目錄 | `e2e/pages.spec.ts`（首頁、Endpoint、RESTful、Mock 回應的開啟與列表）、`e2e/restful-form.spec.ts`（RESTful 新增表單成功與驗證失敗）、`e2e/fixtures/`（假資料與攔截夾具） |
+| 隔離 | `e2e/fixtures/mock-api.ts` 是自動套用的夾具，在任何 `page.goto` 前以 `page.route` 註冊：`/dynamic-api/ws`、`/dynamic-api/api`、`/dynamic-api/common` 一律回傳固定的 `{code, message, data}`，未定義的 API 回 `code=500` 且不轉送；非 `127.0.0.1:3100` 的請求（例如 Google Fonts）一律中止。測試不會連到真的後端或外部網站 |
+| 輸出 | `test-results/`（trace 等）、`playwright-report/`（HTML 報告），兩者都不進版控、不受 ESLint 檢查 |
+
+固定埠不用 3000：`config/config.ts` 在網址含 `:3000` 時改用 `NEXT_PUBLIC_API_URL`，API 就不會走同源路徑而無法攔截。
+
+:::warning 與出貨形式的差異
+正式出貨是靜態匯出（`out/`）由 Spring Boot 提供；E2E 為了能用 `next start` 啟動，跑的是非靜態匯出版本（`.next/`），路由與 `basePath` 相同，但伺服器行為略有差異。E2E 建置不會產生或改動 `out/`。
+:::
+
+:::note 表單驗證的實際行為
+`RestfulForm`、`EndpointForm` 的必填欄位帶原生 `required` 且 `form` 沒有 `noValidate`，空白送出時由瀏覽器原生提示先擋下，yup 的錯誤文字（例如「發布名稱為必填」）不會出現。E2E 驗證失敗案例先斷言原生擋下，再以程式派送 `submit` 事件檢查 yup 規則。
 :::

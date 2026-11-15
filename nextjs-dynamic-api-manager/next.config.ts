@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
+// Playwright E2E 專用開關：設為 '1' 時不做靜態匯出，讓 next start 可以啟動（basePath、trailingSlash 不變）
+const isE2E = process.env.DYNAMIC_API_E2E === '1';
 
 const nextConfig: NextConfig = {
   // 環境變數配置
@@ -23,8 +25,8 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
   
-  // 只在生產建置時使用靜態導出
-  ...(isProduction && { output: 'export' }),
+  // 只在生產建置時使用靜態導出（E2E 建置除外）
+  ...(isProduction && !isE2E && { output: 'export' }),
   
   // 圖片優化配置
   images: {

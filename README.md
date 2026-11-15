@@ -161,6 +161,7 @@ public class CompanyController extends RestfulBase {
 | 只改後端、略過前端建置 | `.\gradlew.bat bootRun -x buildFrontend` |
 | 後端測試 | `cd backend && .\gradlew.bat test` |
 | 前端檢查 | `cd nextjs-dynamic-api-manager && npm run type-check && npm run lint` |
+| 前端 E2E（Playwright） | `cd nextjs-dynamic-api-manager && npm exec playwright install chromium`（第一次；Linux 可能需加 `--with-deps`），再 `npm run test:e2e`。測試以 `DYNAMIC_API_E2E=1` 關閉靜態匯出、在 `127.0.0.1:3100` 用 `next start` 啟動，後端 API 全部以假資料攔截；說明見 [管理介面設計](https://a09090443.github.io/dynamic-api/docs/sdd/frontend) |
 | 文件網站 | `cd docs-site && npm start`（<http://localhost:3000/dynamic-api/>；與 Next.js 同時啟動時加 `-- --port 3001`） |
 | 文件網站建置驗證 | `cd docs-site && npm run build` |
 | 範例 JAR | `.\gradlew.bat jar`，上傳 `build/libs/*-plain.jar` |
