@@ -1,10 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Container } from '@mui/material';
-import { techTheme } from '@/theme/tech';
-import Header from '@/components/Header';
+import Providers from '@/components/Providers';
+import AppShell from '@/components/shell/AppShell';
 import "./globals.css";
 
 export default function RootLayout({
@@ -15,21 +13,13 @@ export default function RootLayout({
   return (
     <html lang="zh-TW" suppressHydrationWarning>
       <head>
-        <title>Dynamic API Tech Manager</title>
-        <meta name="description" content="科技風格的動態API管理系統" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+        <title>Dynamic API 管理</title>
+        <meta name="description" content="Dynamic API Mock 伺服器管理介面" />
       </head>
       <body suppressHydrationWarning>
-        <ThemeProvider theme={techTheme}>
-          <CssBaseline />
-          <Header />
-          <Container maxWidth="xl" sx={{ mt: 2, mb: 4, position: 'relative', zIndex: 1 }}>
-            {children}
-          </Container>
-        </ThemeProvider>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );

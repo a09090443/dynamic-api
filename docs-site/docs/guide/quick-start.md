@@ -58,7 +58,7 @@ cd restfuls\company-restful
 
 ## 步驟 2：在管理介面建立 RESTful
 
-1. 開啟 `http://localhost:8080/dynamic-api/`，進入 **RESTful** 頁面，按 **新增**。
+1. 開啟 `http://localhost:8080/dynamic-api/`，從左側側欄進入 **RESTful API** 頁面，按 **新增 Restful**。
 2. 填寫：
 
    | 欄位 | 值 |
@@ -68,20 +68,20 @@ cd restfuls\company-restful
    | JAR 檔案 | 選擇 `company-restful-1.0-plain.jar` |
 
 3. 儲存。系統會先上傳 JAR，再建立 RESTful 設定（此時為停用）。
-4. 在清單中把這一列的 **啟用開關** 打開，確認對話框選「確定」。
+4. 在清單中把這一列的 **啟用開關** 打開，確認框選「啟用」。
 
 ## 步驟 3：新增 Mock 回應
 
-1. 在 `company` 這一列按 **回應清單** 圖示，進入 Response 頁面（會自動帶入 `publishUri=company`、`serviceType=RESTFUL`）。
-2. 按 **新增**，填寫：
+1. 在 `company` 這一列按 **回應清單 ›**，進入 Mock 回應頁面（會自動帶入 `publishUri=company`、`serviceType=RESTFUL`）。
+2. 按 **新增回應**，在右側編輯面板填寫：
 
    | 欄位 | 值 |
    |---|---|
-   | 呼叫方法名稱 | `getResponseData` |
-   | Response 條件 | `{"name":"Acme","address":null,"phone":null,"email":null,"website":null,"description":null}` |
+   | 方法名稱 | `getResponseData` |
+   | 條件 | `{"name":"Acme","address":null,"phone":null,"email":null,"website":null,"description":null}` |
    | 回應內容 | `{"name":"Acme","address":"台北市信義區","phone":"02-1234-5678","email":"contact@acme.example","website":"https://acme.example","description":"Mock 公司資料"}` |
 
-3. 儲存後，把這筆回應的 **啟用開關** 打開（新回應預設停用）。
+3. 儲存後，把這筆回應的 **啟用開關** 打開並在確認框選「啟用」（新回應預設停用）。
 
 :::tip 條件字串要一字不差
 `ObjectMapper` 會把沒給值的欄位輸出成 `null`，欄位順序依類別宣告順序。最保險的做法是先呼叫一次 API，從後端日誌的 `request json:` 那一行複製實際字串貼進條件。詳見 [Condition 設計指南](../jar-dev/condition-design.md)。

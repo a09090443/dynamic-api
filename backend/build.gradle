@@ -97,7 +97,7 @@ tasks.register('copyNextjsBuild', Copy) {
     doLast {
         // 重命名子目錄中的 index.html 為對應的頁面名稱
         def staticDir = file('src/main/resources/static')
-        def pages = ['endpoint', 'restful', 'response', 'test-api', 'about']
+        def pages = ['endpoint', 'restful', 'response', 'test-api', 'about', 'wsdl']
         
         pages.each { page ->
             def pageDir = new File(staticDir, page)

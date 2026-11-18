@@ -1,7 +1,7 @@
 ---
 id: wsdl-tool
 title: WSDL 轉 Java 工具
-description: '使用內建 Apache CXF wsdl2java 把 WSDL 轉成 Java 原始碼 ZIP，包含管理介面操作、API 呼叫與轉換參數。'
+description: '使用內建 Apache CXF wsdl2java 把 WSDL 轉成 Java 原始碼 ZIP：管理介面 WSDL 轉換頁的操作、失敗處理、API 呼叫與轉換參數。'
 sidebar_label: WSDL 轉 Java 工具
 ---
 
@@ -11,15 +11,18 @@ sidebar_label: WSDL 轉 Java 工具
 
 ## 在管理介面使用
 
-1. 進入 **Endpoint** 頁面，按工具列的 **轉換 WSDL 物件**。
-2. 選擇輸入方式：
-   - **檔案上傳**：選擇 `.wsdl` 或 `.xml` 檔案。
-   - **WSDL URL**：輸入 WSDL 網址。
-3. 送出後瀏覽器會下載 `wsdl-objects-{時間戳}.zip`。
+1. 從左側側欄「工具 › WSDL 轉換」，或 SOAP Endpoint 頁首的 **WSDL 轉換** 按鈕，進入 **WSDL 轉換** 頁（`/dynamic-api/wsdl`）。
+2. 在「WSDL 來源」選擇來源類型（兩者擇一）：
+   - **WSDL 網址**：輸入 WSDL 網址。網址是由後端去讀取，所以要填後端主機連得到的位址。
+   - **上傳檔案**：選擇或拖曳一個 `.wsdl` 或 `.xml` 檔案。
+3. 視需要填 **Package 名稱（選填）**；留空則依 WSDL 的 targetNamespace 決定。
+4. 按 **轉換並下載**。轉換中按鈕會停用；成功後右側「轉換結果」顯示「已產生並開始下載」，瀏覽器下載 `generated_wsdl_object.zip`，可再按 **重新下載**。
 
-:::warning 已知問題：URL 模式目前無法使用
-管理介面送出的欄位名稱是 `wsdlPath`，但後端讀取的是 `wsdlUrl`，因此 URL 模式會得到「請提供 WSDL URL 或上傳 WSDL 文件」錯誤。請先把 WSDL 存成檔案後用 **檔案上傳** 模式，或直接呼叫 API（見下方）。
-:::
+沒有填網址、沒有選檔案或副檔名不符時，欄位下方會顯示原因，不會送出。轉換不會新增或變更任何 Endpoint。
+
+### 轉換失敗時
+
+後端回傳 HTTP 204（沒有產出任何檔案）、HTTP 錯誤或連線失敗時，「轉換結果」會顯示「無法轉換：讀不到這個 WSDL」與後端訊息（有的話），並提供 **再試一次**。已輸入的網址、檔案與 Package 名稱都會保留。常見原因是網址打錯或後端主機連不到該網址，可改用上傳檔案。
 
 ## 直接呼叫 API
 
@@ -40,9 +43,9 @@ curl -X POST http://localhost:8080/dynamic-api/ws/genWsdlObj \
 |---|---|---|
 | `file` | 與 `wsdlUrl` 擇一 | WSDL 檔案 |
 | `wsdlUrl` | 與 `file` 擇一 | WSDL 網址（後端主機需能連到） |
-| `packageName` | 否 | 產出類別的套件名稱；不填則依 WSDL 的 namespace 推導。管理介面目前沒有此欄位。 |
+| `packageName` | 否 | 產出類別的套件名稱；不填則依 WSDL 的 namespace 推導。管理介面的「Package 名稱」欄位即送出此參數。 |
 
-成功時回傳 `application/octet-stream`，檔名 `generated_wsdl_object.zip`；若沒有產出任何檔案則回傳 HTTP 204。
+成功時回傳 `application/octet-stream`，檔名 `generated_wsdl_object.zip`；若沒有產出任何檔案則回傳 HTTP 204；轉換過程發生例外時回傳 HTTP 500 與純文字錯誤訊息。
 
 ## 轉換參數與注意事項
 

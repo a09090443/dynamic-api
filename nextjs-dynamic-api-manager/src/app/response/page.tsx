@@ -1,552 +1,459 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Box,
-  Typography,
   Button,
-  TextField,
+  Drawer,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Checkbox,
-  Switch,
-  IconButton,
-  Chip,
-  TablePagination,
-  Snackbar,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Collapse,
-  CircularProgress,
+  useMediaQuery,
 } from '@mui/material';
-import { 
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  ArrowBack as ArrowBackIcon,
-} from '@mui/icons-material';
-import { Response, ResponseListParams } from '@/types/response';
-import { ServiceType } from '@/types/models';
+import { useTheme } from '@mui/material/styles';
+import { Add as AddIcon, ContentCopy as CopyIcon } from '@mui/icons-material';
 import { responseService } from '@/services/response.service';
+import { Response, ServiceType } from '@/types/models';
+import PageHeader from '@/components/service-list/PageHeader';
+import { Card } from '@/components/service-list/ListParts';
+import { EmptyState, ErrorState, LoadingState } from '@/components/feedback/DataState';
+import { useConfirm } from '@/components/feedback/ConfirmProvider';
+import { useToast } from '@/components/feedback/ToastProvider';
+import { useServiceSummary } from '@/components/ServiceSummaryProvider';
+import StatusSwitch from '@/components/StatusSwitch';
+import { ServiceTypeChip } from '@/components/StatusBadge';
+import ResponseEditorPanel, { ResponseFormValues } from '@/components/response/ResponseEditorPanel';
+import { serviceCallUrl } from '@/utils/serviceUrl';
+import { monoSx, tokens } from '@/theme/tokens';
 
-// 將使用 searchParams 的邏輯抽離到單獨組件
-function ResponsePageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const publishUri = searchParams.get('publishUri') || '';
-  const serviceType = (searchParams.get('serviceType') || 'ENDPOINT') as ServiceType;
+const c = tokens.color;
 
-  const [responses, setResponses] = useState<Response[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [searchText, setSearchText] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [message, setMessage] = useState('');
-  const [severity, setSeverity] = useState<'success' | 'error'>('success');
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
-  const [responseFormOpen, setResponseFormOpen] = useState(false);
-  const [editingResponse, setEditingResponse] = useState<Response | null>(null);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [countdown, setCountdown] = useState<number | null>(null);
+type Editor = { mode: 'new' } | { mode: 'edit'; response: Response };
 
-  // 表單狀態
-  const [formData, setFormData] = useState({
-    method: '',
-    condition: '',
-    responseContent: '',
-  });
+const errMsg = (e: unknown) => (e instanceof Error && e.message ? e.message : '未知錯誤');
+
+/** 沒有指定服務時的引導；不呼叫任何查詢 API */
+function NoServiceGuide() {
+  return (
+    <>
+      <PageHeader title="Mock 回應" description="呼叫時以 方法 + 條件 完全相同且啟用的那一筆回應。" />
+      <Card>
+        <EmptyState
+          testId="no-service-guide"
+          title="請先選擇服務"
+          description="Mock 回應依服務管理。請從 SOAP Endpoint 或 RESTful API 清單點選服務的 Mock 回應。"
+          action={
+            <>
+              <Button variant="outlined" component={Link} href="/endpoint">
+                前往 SOAP Endpoint
+              </Button>
+              <Button variant="outlined" component={Link} href="/restful">
+                前往 RESTful API
+              </Button>
+            </>
+          }
+        />
+      </Card>
+    </>
+  );
+}
+
+function ServiceInfoCard({ publishUri, serviceType }: { publishUri: string; serviceType: 'ENDPOINT' | 'RESTFUL' }) {
+  const toast = useToast();
+  const { endpoints, controllers, connection } = useServiceSummary();
+  const [url, setUrl] = useState('');
+  const urlRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (publishUri) {
-      loadResponses();
-    }
+    setUrl(serviceCallUrl(publishUri, serviceType));
   }, [publishUri, serviceType]);
 
-  // 成功後倒數關閉對話框
-  useEffect(() => {
-    if (countdown && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0) {
-      setResponseFormOpen(false);
-      setEditingResponse(null);
-      setFormData({ method: '', condition: '', responseContent: '' });
-      setCountdown(null);
-    }
-  }, [countdown]);
+  const list = serviceType === 'RESTFUL' ? controllers : endpoints;
+  const service = list?.find((s) => s.publishUri === publishUri);
+  let status: React.ReactNode;
+  if (service) {
+    status = (
+      <Box component="span" sx={{ fontWeight: 600, color: service.isActive ? c.successText : c.textMuted }}>
+        ● {service.isActive ? '啟用' : '停用'}
+      </Box>
+    );
+  } else if (!list && connection === 'checking') {
+    status = <Box component="span" sx={{ color: c.textSubtle }}>…</Box>;
+  } else {
+    status = <Box component="span" sx={{ color: c.warningText }}>找不到此服務</Box>;
+  }
 
-  const loadResponses = async () => {
+  const copy = async () => {
     try {
-      setLoading(true);
-      const params: ResponseListParams = {
-        publishUri,
-        serviceType,
-      };
-      const data = await responseService.getResponseList(params);
-      setResponses(data);
-    } catch (error) {
-      console.error('Failed to load responses:', error);
-      showMessage('載入回應清單失敗', 'error');
+      if (!navigator.clipboard) throw new Error('unsupported');
+      await navigator.clipboard.writeText(url);
+      toast({ message: '已複製呼叫位址', severity: 'success' });
+    } catch {
+      const el = urlRef.current;
+      if (el) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+      toast({ message: '無法自動複製，已選取位址，請手動複製', severity: 'warning' });
+    }
+  };
+
+  return (
+    <Card
+      data-testid="service-info"
+      sx={{ p: '16px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px 24px' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box component="span" sx={{ fontSize: 12, color: c.textSubtle }}>類型</Box>
+        <ServiceTypeChip type={serviceType} />
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} data-testid="service-status">
+        <Box component="span" sx={{ fontSize: 12, color: c.textSubtle }}>服務狀態</Box>
+        {status}
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: '1 1 320px', minWidth: 0 }}>
+        <Box component="span" sx={{ fontSize: 12, color: c.textSubtle, whiteSpace: 'nowrap' }}>呼叫位址</Box>
+        <Box
+          component="code"
+          ref={urlRef}
+          data-testid="call-url"
+          title={url}
+          sx={{
+            ...monoSx,
+            fontSize: 13,
+            minWidth: 0,
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            px: 1,
+            py: 0.5,
+            borderRadius: '6px',
+            backgroundColor: c.surfaceSunken,
+          }}
+        >
+          {url}
+        </Box>
+        <Button size="small" variant="outlined" startIcon={<CopyIcon fontSize="small" />} onClick={() => void copy()}>
+          複製
+        </Button>
+      </Box>
+    </Card>
+  );
+}
+
+function ResponsePageContent() {
+  const searchParams = useSearchParams();
+  const publishUri = searchParams.get('publishUri') || '';
+  const serviceType: 'ENDPOINT' | 'RESTFUL' = searchParams.get('serviceType') === 'RESTFUL' ? 'RESTFUL' : 'ENDPOINT';
+
+  if (!publishUri) return <NoServiceGuide />;
+  return <ResponseManager key={`${serviceType}:${publishUri}`} publishUri={publishUri} serviceType={serviceType} />;
+}
+
+function ResponseManager({ publishUri, serviceType }: { publishUri: string; serviceType: 'ENDPOINT' | 'RESTFUL' }) {
+  const theme = useTheme();
+  const wide = useMediaQuery(theme.breakpoints.up('lg'));
+  const confirm = useConfirm();
+  const toast = useToast();
+  const [responses, setResponses] = useState<Response[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const [busy, setBusy] = useState<Set<string>>(new Set());
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setResponses(await responseService.getResponseList({ publishUri, serviceType }));
+      setError(null);
+    } catch (e) {
+      setError(errMsg(e));
     } finally {
       setLoading(false);
     }
+  }, [publishUri, serviceType]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const openEditor = (next: Editor, trigger: HTMLElement | null) => {
+    triggerRef.current = trigger;
+    setEditor(next);
+  };
+  const closeEditor = () => {
+    setEditor(null);
+    const el = triggerRef.current;
+    if (el) setTimeout(() => el.focus(), 0);
   };
 
-  const showMessage = (msg: string, sev: 'success' | 'error') => {
-    setMessage(msg);
-    setSeverity(sev);
-    setShowSnackbar(true);
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(filteredResponses.map(r => r.id));
+  const save = async (values: ResponseFormValues) => {
+    const payload = {
+      publishUri,
+      serviceType: serviceType as ServiceType,
+      method: values.method,
+      condition: values.condition ?? '',
+      responseContent: values.responseContent ?? '',
+      isActive: false,
+    };
+    if (editor?.mode === 'edit') {
+      await responseService.updateResponse({ ...payload, id: editor.response.id });
     } else {
-      setSelectedIds([]);
+      await responseService.saveMockResponse(payload);
     }
+    closeEditor();
+    toast({ message: '已儲存，此回應目前為停用', severity: 'success' });
+    void load();
   };
 
-  const handleSelect = (id: string, checked: boolean) => {
-    if (checked) {
-      setSelectedIds([...selectedIds, id]);
-    } else {
-      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
-    }
-  };
-
-  const handleSwitchStatus = async (response: Response) => {
-    const confirmed = window.confirm('你確定要變更此設定嗎？');
-    if (confirmed) {
-      try {
-        // 先更新API
-        await responseService.switchResponse(response.id, !response.isActive);
-        
-        // 只更新本地狀態，不重新載入整個列表
-        setResponses(prevResponses => 
-          prevResponses.map(resp => 
-            resp.id === response.id 
-              ? { ...resp, isActive: !resp.isActive }
-              : resp
-          )
-        );
-        
-        showMessage('狀態更新成功', 'success');
-        console.log(`狀態切換成功: ${response.id} -> ${!response.isActive}`);
-      } catch (error) {
-        console.error('狀態切換失敗:', error);
-        showMessage('狀態更新失敗', 'error');
-      }
-    }
-  };
-
-  const handleEdit = (response: Response) => {
-    setEditingResponse(response);
-    setFormData({
-      method: response.method,
-      condition: response.condition,
-      responseContent: response.responseContent,
+  const remove = async (response: Response) => {
+    const ok = await confirm({
+      title: '刪除此回應？',
+      content: `方法 ${response.method} 的這筆回應會被刪除，無法復原。`,
+      confirmLabel: '刪除',
+      tone: 'danger',
     });
-    setResponseFormOpen(true);
-  };
-
-  const handleAdd = () => {
-    setEditingResponse(null);
-    setFormData({
-      method: '',
-      condition: '',
-      responseContent: '',
-    });
-    setResponseFormOpen(true);
-  };
-
-  const handleSave = async () => {
+    if (!ok) return;
     try {
-      const responseData = {
-        publishUri,
-        serviceType,
-        ...formData,
-        isActive: editingResponse ? editingResponse.isActive : true, // 新增時預設啟用，編輯時保持原狀態
-      };
+      await responseService.deleteResponse([response.id]);
+      closeEditor();
+      toast({ message: '已刪除回應', severity: 'success' });
+      void load();
+    } catch (e) {
+      toast({ message: `刪除失敗：${errMsg(e)}`, severity: 'error' });
+    }
+  };
 
-      if (editingResponse) {
-        await responseService.updateResponse({
-          ...responseData,
-          id: editingResponse.id,
-        });
-        showMessage('回應更新成功', 'success');
+  const applySwitch = async (id: string, method: string, target: boolean, isUndo: boolean) => {
+    const verb = target ? '啟用' : '停用';
+    setBusy((p) => new Set(p).add(id));
+    try {
+      await responseService.switchResponse(id, target);
+      setResponses((prev) => prev?.map((r) => (r.id === id ? { ...r, isActive: target } : r)) ?? prev);
+      if (isUndo) {
+        toast({ message: `已復原：${method} 回應目前為${verb}`, severity: 'success' });
       } else {
-        await responseService.saveMockResponse(responseData);
-        showMessage('回應新增成功', 'success');
+        toast({
+          message: `已${verb} ${method} 回應`,
+          severity: 'success',
+          action: { label: '復原', onClick: () => void applySwitch(id, method, !target, true) },
+        });
       }
-
-      // 立即重新載入數據
-      await loadResponses();
-      
-      // 啟動倒數關閉對話框
-      setCountdown(3);
-    } catch (error) {
-      console.error('Failed to save response:', error);
-      showMessage('儲存失敗', 'error');
+    } catch (e) {
+      toast({ message: `無法${verb} ${method} 回應：${errMsg(e)}`, severity: 'error' });
+    } finally {
+      setBusy((p) => {
+        const n = new Set(p);
+        n.delete(id);
+        return n;
+      });
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      if (deletingItemId) {
-        // 刪除單筆
-        console.log('Deleting response:', deletingItemId);
-        await responseService.deleteResponse([deletingItemId]);
-        showMessage('刪除成功', 'success');
-      } else if (selectedIds.length > 0) {
-        // 批量刪除
-        console.log('Batch deleting responses:', selectedIds);
-        await responseService.batchDeleteResponses(selectedIds);
-        showMessage(`已刪除 ${selectedIds.length} 筆回應`, 'success');
-        setSelectedIds([]);
+  const toggle = async (r: Response) => {
+    const target = !r.isActive;
+    const verb = target ? '啟用' : '停用';
+    const ok = await confirm({
+      title: `${verb} ${r.method} 回應？`,
+      content: target
+        ? '啟用後，方法與條件完全相同的呼叫會回傳這筆內容。'
+        : '停用後，呼叫不會再命中這筆回應。',
+      confirmLabel: verb,
+      tone: 'primary',
+    });
+    if (!ok) return;
+    await applySwitch(r.id, r.method, target, false);
+  };
+
+  const editingId = editor?.mode === 'edit' ? editor.response.id : null;
+
+  let body: React.ReactNode;
+  if (loading && !responses) {
+    body = <LoadingState />;
+  } else if (error && !responses) {
+    body = <ErrorState message={error} onRetry={() => void load()} />;
+  } else if (!responses || responses.length === 0) {
+    body = (
+      <EmptyState
+        title="這個服務還沒有 Mock 回應"
+        description="新增回應後，呼叫時會依方法與條件找出要回傳的內容。"
+        action={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={(e) => openEditor({ mode: 'new' }, e.currentTarget)}>
+            新增回應
+          </Button>
+        }
+      />
+    );
+  } else {
+    body = (
+      <TableContainer sx={{ overflowX: 'auto' }}>
+        <Table sx={{ minWidth: 640 }} aria-label="Mock 回應清單">
+          <TableHead>
+            <TableRow>
+              <TableCell>方法</TableCell>
+              <TableCell>條件</TableCell>
+              <TableCell>回應內容</TableCell>
+              <TableCell>狀態</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {responses.map((r) => {
+              const editing = editingId === r.id;
+              return (
+                <TableRow
+                  key={r.id}
+                  hover
+                  tabIndex={0}
+                  aria-selected={editing}
+                  aria-label={`編輯 ${r.method} 回應`}
+                  data-testid={`response-row-${r.id}`}
+                  onClick={(e) => openEditor({ mode: 'edit', response: r }, e.currentTarget)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openEditor({ mode: 'edit', response: r }, e.currentTarget);
+                    }
+                  }}
+                  sx={{
+                    cursor: 'pointer',
+                    backgroundColor: editing ? c.primarySoftRow : undefined,
+                    boxShadow: editing ? tokens.shadow.editingRow : undefined,
+                    '&:focus-visible': { outline: `2px solid ${c.primary}`, outlineOffset: -2 },
+                  }}
+                >
+                  <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{r.method}</TableCell>
+                  <TableCell>
+                    {r.condition ? (
+                      <Box
+                        component="code"
+                        sx={{ ...monoSx, px: 0.75, py: 0.25, borderRadius: '4px', backgroundColor: c.surfaceSunken, wordBreak: 'break-all' }}
+                      >
+                        {r.condition}
+                      </Box>
+                    ) : (
+                      <Box component="span" sx={{ color: c.textSubtle }}>（無條件）</Box>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Box
+                      component="span"
+                      title={r.responseContent}
+                      data-testid="response-content-cell"
+                      sx={{
+                        ...monoSx,
+                        display: 'block',
+                        maxWidth: 280,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        color: c.textSecondary,
+                      }}
+                    >
+                      {r.responseContent}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    <StatusSwitch
+                      checked={r.isActive}
+                      name={`${r.method} 回應`}
+                      disabled={busy.has(r.id)}
+                      onToggle={() => void toggle(r)}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
+
+  const panel = editor && (
+    <ResponseEditorPanel
+      key={editor.mode === 'edit' ? editor.response.id : 'new'}
+      mode={editor.mode}
+      initial={
+        editor.mode === 'edit'
+          ? {
+              method: editor.response.method,
+              condition: editor.response.condition ?? '',
+              responseContent: editor.response.responseContent ?? '',
+            }
+          : { method: '', condition: '', responseContent: '' }
       }
-      console.log('Delete success, reloading...');
-      await loadResponses();
-      setDeleteDialogOpen(false);
-      setDeletingItemId(null);
-    } catch (error) {
-      console.error('Delete error:', error);
-      const errorMsg = error instanceof Error ? error.message : '刪除失敗';
-      showMessage(`刪除失敗: ${errorMsg}`, 'error');
-    }
-  };
-
-  const openDeleteDialog = (id?: string) => {
-    if (id) {
-      setDeletingItemId(id);
-    } else {
-      setDeletingItemId(null);
-    }
-    setDeleteDialogOpen(true);
-  };
-
-  const handleGoBack = () => {
-    const targetPath = serviceType === 'ENDPOINT' ? '/endpoint' : '/restful';
-    router.push(targetPath);
-  };
-
-  const toggleExpanded = (id: string) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  const filteredResponses = responses.filter(response =>
-    Object.values(response).some(value =>
-      value.toString().toLowerCase().includes(searchText.toLowerCase())
-    )
-  );
-
-  const paginatedResponses = filteredResponses.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+      onClose={closeEditor}
+      onSave={save}
+      onDelete={editor.mode === 'edit' ? () => void remove(editor.response) : undefined}
+    />
   );
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <IconButton
-          onClick={handleGoBack}
-          sx={{ p: 1 }}
-          title="返回"
-        >
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h4" sx={{ flex: 1 }}>
-          回應清單設定
-        </Typography>
-      </Box>
-        
-        {publishUri && (
-          <Chip 
-            label={`${serviceType}: ${publishUri}`} 
-            color="primary" 
-            sx={{ mb: 2 }} 
-          />
-        )}
-
-        <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-          >
-            新增 RESPONSE
-          </Button>
-          
-          <Button
-            variant="outlined"
-            color="error"
-            startIcon={<DeleteIcon />}
-            disabled={selectedIds.length === 0}
-            onClick={() => openDeleteDialog()}
-          >
-            移除 RESPONSE ({selectedIds.length})
-          </Button>
-
-          <TextField
-            label="搜尋"
-            variant="outlined"
-            size="small"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            sx={{ ml: 'auto', width: 250 }}
-          />
-        </Box>
-
-      <Paper elevation={8}>
-        <TableContainer>
-          <Table sx={{ minWidth: 1200 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox" sx={{ width: '40px' }}>
-                  <Checkbox
-                    checked={selectedIds.length === filteredResponses.length && filteredResponses.length > 0}
-                    indeterminate={selectedIds.length > 0 && selectedIds.length < filteredResponses.length}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                </TableCell>
-                <TableCell sx={{ width: '120px', whiteSpace: 'nowrap' }}>發布名稱</TableCell>
-                <TableCell sx={{ width: '140px', whiteSpace: 'nowrap' }}>呼叫方法名稱</TableCell>
-                <TableCell sx={{ width: '200px' }}>Response條件</TableCell>
-                <TableCell sx={{ width: '300px' }}>回應內容</TableCell>
-                <TableCell sx={{ width: '80px', whiteSpace: 'nowrap' }}>狀態</TableCell>
-                <TableCell sx={{ width: '120px', whiteSpace: 'nowrap' }}>操作</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedResponses.map((response) => (
-                <React.Fragment key={response.id}>
-                  <TableRow>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedIds.includes(response.id)}
-                        onChange={(e) => handleSelect(response.id, e.target.checked)}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {response.publishUri}
-                    </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {response.method}
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: '200px' }}>
-                      <Box sx={{ 
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: expandedRows.has(response.id) ? 'none' : 2,
-                        WebkitBoxOrient: 'vertical',
-                        wordBreak: 'break-word'
-                      }}>
-                        {response.condition}
-                      </Box>
-                      {response.condition.length > 100 && (
-                        <Button
-                          size="small"
-                          onClick={() => toggleExpanded(response.id)}
-                          sx={{ minWidth: 'auto', p: 0.5, fontSize: '0.75rem' }}
-                        >
-                          {expandedRows.has(response.id) ? '收起' : '顯示更多'}
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: '300px' }}>
-                      <Box sx={{ 
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: expandedRows.has(`${response.id}-content`) ? 'none' : 3,
-                        WebkitBoxOrient: 'vertical',
-                        wordBreak: 'break-word'
-                      }}>
-                        {response.responseContent}
-                      </Box>
-                      {response.responseContent.length > 200 && (
-                        <Button
-                          size="small"
-                          onClick={() => toggleExpanded(`${response.id}-content`)}
-                          sx={{ minWidth: 'auto', p: 0.5, fontSize: '0.75rem' }}
-                        >
-                          {expandedRows.has(`${response.id}-content`) ? '收起' : '顯示更多'}
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={response.isActive}
-                        onChange={() => handleSwitchStatus(response)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEdit(response)}
-                          title="編輯"
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => openDeleteDialog(response.id)}
-                          title="刪除"
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <TablePagination
-          component="div"
-          count={filteredResponses.length}
-          page={page}
-          onPageChange={(_, newPage) => setPage(newPage)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[10, 50, 100]}
-          labelRowsPerPage="每頁筆數:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} 共 ${count} 筆`}
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: '20px', minWidth: 0 }}>
+      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <PageHeader
+          title={`${publishUri} 的 Mock 回應`}
+          description="呼叫時以 方法 + 條件 完全相同且啟用的那一筆回應。"
+          actions={
+            <Button variant="contained" startIcon={<AddIcon />} onClick={(e) => openEditor({ mode: 'new' }, e.currentTarget)}>
+              新增回應
+            </Button>
+          }
         />
-      </Paper>
+        <ServiceInfoCard publishUri={publishUri} serviceType={serviceType} />
+        <Card>{body}</Card>
+      </Box>
 
-      {/* 回應表單對話框 */}
-      <Dialog open={responseFormOpen} onClose={() => setResponseFormOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
-          {editingResponse ? '編輯 Response' : '新增 Response'}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* 成功訊息 */}
-            {countdown !== null && (
-              <Alert severity="success">
-                {editingResponse ? '回應更新成功' : '回應新增成功'}
-                {countdown > 0 && ` - 視窗將在 ${countdown} 秒後關閉`}
-              </Alert>
-            )}
-            
-            <TextField
-              label="呼叫方法名稱"
-              value={formData.method}
-              onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-              required
-              fullWidth
-              disabled={countdown !== null}
-            />
-            <TextField
-              label="Response條件"
-              value={formData.condition}
-              onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-              multiline
-              rows={4}
-              fullWidth
-              helperText={'JSON格式的條件，例如: {"employees":null,"name":"Jen","taxId":"123456789"}'}
-              disabled={countdown !== null}
-            />
-            <TextField
-              label="回應內容"
-              value={formData.responseContent}
-              onChange={(e) => setFormData({ ...formData, responseContent: e.target.value })}
-              multiline
-              rows={8}
-              fullWidth
-              helperText="回應的內容，可以是XML、JSON等格式"
-              disabled={countdown !== null}
-            />
+      {wide ? (
+        editor && (
+          <Box
+            component="aside"
+            aria-label="回應編輯面板"
+            sx={{
+              flex: `0 0 ${tokens.size.drawerWidth}px`,
+              width: tokens.size.drawerWidth,
+              position: 'sticky',
+              top: 16,
+              maxHeight: 'calc(100vh - 32px)',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: c.surface,
+              border: `1px solid ${c.border}`,
+              borderRadius: `${tokens.radius.card}px`,
+              boxShadow: tokens.shadow.drawer,
+              overflow: 'hidden',
+            }}
+          >
+            {panel}
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setResponseFormOpen(false)} disabled={countdown !== null}>取消</Button>
-          <Button onClick={handleSave} variant="contained" disabled={countdown !== null}>
-            {editingResponse ? '更新' : '新增'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* 刪除確認對話框 */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>確認刪除</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {deletingItemId 
-              ? '確定要刪除此筆回應嗎？此操作無法復原。'
-              : `確定要刪除選中的 ${selectedIds.length} 筆回應嗎？此操作無法復原。`
-            }
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
-            setDeleteDialogOpen(false);
-            setDeletingItemId(null);
-          }}>取消</Button>
-          <Button onClick={() => handleDelete()} color="error" variant="contained">
-            刪除
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* 消息提示 */}
-      <Snackbar
-        open={showSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setShowSnackbar(false)}
-      >
-        <Alert severity={severity} onClose={() => setShowSnackbar(false)}>
-          {message}
-        </Alert>
-      </Snackbar>
+        )
+      ) : (
+        <Drawer
+          anchor="right"
+          open={!!editor}
+          onClose={closeEditor}
+          slotProps={{ paper: { sx: { width: `min(${tokens.size.drawerWidth}px, 100vw)`, boxShadow: tokens.shadow.drawer } } }}
+        >
+          {panel}
+        </Drawer>
+      )}
     </Box>
   );
 }
 
-// 使用 Suspense 包裹的主組件
 export default function ResponsePage() {
   return (
-    <Suspense fallback={
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    }>
+    <Suspense fallback={<LoadingState />}>
       <ResponsePageContent />
     </Suspense>
   );

@@ -991,7 +991,7 @@
 				{
 					"name": "Ws_genWsdlObj",
 					"request": {
-						"description": "以 WSDL 產生 Java 類別，回應是 ZIP 檔，請用 Send and Download 下載。參數名稱為 wsdlUrl／packageName（也可改用 file 上傳 WSDL 檔），不是前端使用的 wsdlPath。",
+						"description": "以 WSDL 產生 Java 類別，回應是 ZIP 檔，請用 Send and Download 下載。參數名稱為 wsdlUrl／packageName（也可改用 file 上傳 WSDL 檔），與管理介面 WSDL 轉換頁送出的欄位相同。",
 						"method": "POST",
 						"header": [],
 						"body": {

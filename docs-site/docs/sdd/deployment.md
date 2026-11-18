@@ -26,7 +26,7 @@ flowchart LR
 | 任務 | 說明 |
 |---|---|
 | `installNextjs`、`buildNextjs` | 使用 `tools/node-v22.20.0-win-x64/npm.cmd`，把該目錄加到 `PATH` |
-| `copyNextjsBuild` | 複製後把 `endpoint`、`restful`、`response`、`test-api`、`about` 的 `index.html` 另存為 `{page}.html` |
+| `copyNextjsBuild` | 複製後把 `endpoint`、`restful`、`response`、`test-api`、`about`、`wsdl` 的 `index.html` 另存為 `{page}.html` |
 | `forceUpdateProperties` | 依 `-Penv`（預設 `dev`）把 `resources_{env}.properties`、`data-source_{env}.properties` 寫到 `build/resources/main/` 的正式檔名，並刪除其他環境檔 |
 | `bootJar` | `duplicatesStrategy = INCLUDE` |
 

@@ -7,19 +7,24 @@ sidebar_label: 管理 Endpoint
 
 # 管理 Endpoint（SOAP Web Service）
 
-**Endpoint** 頁面（`/dynamic-api/endpoint`）用來管理從 JAR 載入的 JAX-WS 服務。
+**SOAP Endpoint** 頁面（`/dynamic-api/endpoint`，左側側欄「服務 › SOAP Endpoint」）用來管理從 JAR 載入的 JAX-WS 服務。
 
 ## 畫面功能
 
 | 位置 | 功能 |
 |---|---|
-| 工具列 **新增 Endpoint** | 上傳 JAR 並建立新的 Endpoint |
-| 工具列 **移除 Endpoint (n)** | 刪除勾選的 Endpoint |
-| 工具列 **轉換 WSDL 物件** | 開啟 [WSDL 轉 Java 工具](./wsdl-tool.md) |
-| 工具列 **搜尋** | 在目前清單中篩選 |
-| 每列 **開關** | 啟用／停用服務 |
-| 每列 **編輯 / 刪除** | 修改或刪除單筆 |
-| 每列 **回應清單** | 前往該 Publish URI 的 [Mock 回應](./mock-response.md) 頁面 |
+| 頁首 **WSDL 轉換** | 前往 [WSDL 轉換](./wsdl-tool.md) 頁（`/wsdl`） |
+| 頁首 **新增 Endpoint** | 上傳 JAR 並建立新的 Endpoint |
+| 統計卡 | 全部服務、啟用中、尚未上傳 JAR 的筆數 |
+| 搜尋框 | 以發布名稱、Bean、Class 路徑篩選 |
+| 狀態篩選 **全部／啟用／停用** | 只顯示對應狀態的服務 |
+| 每列 **發布名稱**、**N 筆 ›** | 前往該服務的 [Mock 回應](./mock-response.md) 頁面；筆數是該服務目前的 Mock 回應數，查不到時顯示「—」 |
+| 每列 **開關** | 啟用／停用服務，先跳出確認框；成功後右下角提示可按 **復原** 改回原狀態 |
+| 每列 **編輯**、**⋯ › 刪除** | 修改或刪除單筆 |
+| 勾選後出現的批次操作列 | **批次啟用**、**批次停用**（逐筆執行，完成後顯示成功與失敗筆數）、**刪除**、**取消選取** |
+| 分頁列 | 每頁 10／50／100 筆 |
+
+清單載入失敗時會顯示錯誤訊息與 **重新載入** 按鈕；沒有任何 Endpoint、或搜尋與篩選沒有結果時也會分別提示。刪除與批次操作不提供復原。
 
 ## 新增 Endpoint
 
@@ -70,6 +75,6 @@ http://localhost:8080/dynamic-api/webservice/{publishUri}?wsdl
 
 ## 刪除
 
-刪除會停用服務、移除設定，並把對應 JAR 標記為已刪除、刪除 `jar.file.dir` 中的實體檔案。
+刪除前會跳出確認框列出要刪除的服務名稱。刪除會停用服務、移除設定，並把對應 JAR 標記為已刪除、刪除 `jar.file.dir` 中的實體檔案。
 
 該 Publish URI 底下的 Mock 回應**不會**被刪除；若之後用同一個 Publish URI 重新建立，舊回應會直接沿用。

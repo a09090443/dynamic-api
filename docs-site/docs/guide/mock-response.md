@@ -7,7 +7,9 @@ sidebar_label: 管理 Mock 回應
 
 # 管理 Mock 回應
 
-Mock 回應決定「呼叫端打進來時要回什麼」。從 Endpoint 或 RESTful 清單按 **回應清單** 圖示，就會進入該服務的 Response 頁面（網址帶有 `?publishUri=...&serviceType=...`）。
+Mock 回應決定「呼叫端打進來時要回什麼」。從 SOAP Endpoint 清單點發布名稱或 **N 筆 ›**、從 RESTful 清單點 **回應清單 ›**，就會進入該服務的 Mock 回應頁面（網址帶有 `?publishUri=...&serviceType=...`）。直接從側欄「Mock 回應」進入而沒有指定服務時，頁面只顯示引導與前往兩個清單的連結。
+
+頁面上方的資訊卡顯示服務類型（SOAP／REST）、服務是否啟用，以及呼叫位址（SOAP：`/dynamic-api/webservice/{publishUri}`，RESTful：`/dynamic-api/{publishUri}`，主機取自目前瀏覽器網址），可按 **複製**。
 
 ## 回應是怎麼被找到的
 
@@ -34,19 +36,24 @@ WHERE PUBLISH_URI = :publishUri
 |---|---|---|
 | （自動帶入） | `publishUri` | 來自網址參數 |
 | （自動帶入） | `serviceType` | `ENDPOINT` 或 `RESTFUL`，來自網址參數 |
-| 呼叫方法名稱 | `method` | 例如 `getCompany`、`getResponseData` |
-| Response條件 | `condition` | 例如請求物件的 JSON 字串 |
-| 回應內容 | `responseContent` | JAR 會拿這段字串轉成回應：RESTful 範例是 JSON，SOAP 範例是完整 SOAP Envelope XML |
+| 方法名稱（必填） | `method` | 例如 `getCompany`、`getResponseData`；需與 JAR 程式傳入的 method 一致 |
+| 條件 | `condition` | 例如請求物件的 JSON 字串；留空代表 JAR 未帶條件，清單中顯示「（無條件）」 |
+| 回應內容 | `responseContent` | JAR 會拿這段字串轉成回應：RESTful 範例是 JSON，SOAP 範例是完整 SOAP Envelope XML。**格式化** 按鈕可排版 JSON 或 XML；內容不是有效的 JSON／XML 時不會改動，並提示原因 |
 
 ## 常用操作
 
+新增與編輯都在頁面右側的編輯面板進行（窄螢幕時面板會覆蓋在畫面上），清單中編輯中的那一列會以藍色左線標示。
+
 | 操作 | 說明 |
 |---|---|
-| 新增 | 建立後為**停用**，記得打開開關。 |
-| 展開列 | 查看完整的條件與回應內容。 |
-| 開關 | 啟用／停用單筆回應，立即生效，不需要重新啟用服務。 |
-| 編輯 | 系統以「刪除後重新新增」實作，因此編輯後**會產生新的 ID 並回到停用狀態**，需要重新打開開關。 |
-| 刪除 / 批次刪除 | 直接從資料庫刪除。 |
+| 新增 | 按 **新增回應** 開啟空白面板。建立後為**停用**，記得打開開關。 |
+| 編輯 | 點清單中的一列（或用鍵盤選取後按 Enter）開啟面板。系統以「刪除後重新新增」實作，因此編輯後**會產生新的 ID 並回到停用狀態**，需要重新打開開關。儲存失敗時面板會保留輸入並顯示錯誤。 |
+| 開關 | 每列的開關啟用／停用單筆回應，先跳出確認框；成功後提示可按 **復原**。立即生效，不需要重新啟用服務。 |
+| 刪除 | 在編輯面板按 **刪除**，確認後直接從資料庫刪除，無法復原。 |
+
+:::note 開關失敗的判斷
+後端的 `switchResponse` 會吞掉內部例外並一律回報成功，因此畫面只有在網路或 HTTP 錯誤時才會顯示切換失敗。
+:::
 
 :::warning 相同鍵值會直接覆蓋
 若新增的回應與既有回應的 `publishUri + method + condition + serviceType` 完全相同，資料庫會以新資料覆蓋舊的那筆，而不是報錯。

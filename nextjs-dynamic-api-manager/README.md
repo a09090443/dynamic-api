@@ -4,59 +4,50 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-Latest-blue)](https://www.typescriptlang.org/)
 [![Material-UI](https://img.shields.io/badge/Material--UI-Latest-0081CB)](https://mui.com/)
 
-一個基於 Next.js 的科技風格動態 API 管理系統，替代原版 Angular 應用程式。
+一個基於 Next.js 的動態 API 管理介面（明亮版），替代原版 Angular 應用程式。
 
 ## 🚀 專案概述
 
-本專案是一個現代化的 Web 應用程式，用於管理動態 API 服務，包括 Endpoint 和 Restful 服務的管理，以及相應的回應內容設定。採用科技風格的 UI 設計，提供直觀且高效的管理介面。
+本專案是一個 Web 應用程式，用於管理動態 API 服務，包括 SOAP Endpoint 和 RESTful 服務的管理，以及相應的 Mock 回應設定。版面為左側側欄＋頂列麵包屑，視覺規格見 `design/admin-light-redesign/`。
 
 ## ✨ 主要功能
 
-### 🔧 Endpoint 管理 (`/endpoint`)
-- ✅ 顯示 Endpoint 清單
-- ✅ 新增/編輯/刪除 Endpoint
-- ✅ 批量刪除功能
-- ✅ 啟用/停用狀態切換（含確認對話框）
-- ✅ JAR 檔案上傳功能
-- ✅ WSDL 物件轉換
-- ✅ 搜尋過濾與分頁顯示
+### 🔧 SOAP Endpoint (`/endpoint`)
+- ✅ 統計卡、搜尋（發布名稱、Bean、Class 路徑）、狀態篩選與分頁
+- ✅ 新增/編輯/刪除 Endpoint、JAR 檔案上傳
+- ✅ 啟用/停用（確認框，成功 toast 可復原）
+- ✅ 勾選後批次啟用、批次停用、刪除
+- ✅ 各服務 Mock 回應筆數與連結
 
-### 🌐 Restful 管理 (`/restful`)
-- ✅ 顯示 Restful Controller 清單
-- ✅ 新增/編輯/刪除 Restful Controller
-- ✅ 批量刪除功能
-- ✅ 啟用/停用狀態切換（含確認對話框）
-- ✅ JAR 檔案上傳功能
-- ✅ 搜尋過濾與分頁顯示
+### 🌐 RESTful API (`/restful`)
+- ✅ 新增/編輯/刪除 Restful Controller、JAR 檔案上傳
+- ✅ 啟用/停用（確認框，成功 toast 可復原）、批次刪除
+- ✅ 搜尋與分頁
 
-### 📝 回應管理 (`/response`)
-- ✅ 顯示 Response 清單
-- ✅ 新增/編輯/刪除 Response
-- ✅ 批量刪除功能（含確認對話框）
-- ✅ 啟用/停用狀態切換（含確認對話框）
-- ✅ 內容預覽（長文本展開功能）
-- ✅ 搜尋過濾與分頁顯示
+### 📝 Mock 回應 (`/response`)
+- ✅ 服務資訊卡與呼叫位址複製
+- ✅ 右側編輯面板新增/編輯/刪除、JSON／XML 格式化
+- ✅ 啟用/停用（確認框，成功 toast 可復原）
 
-### 🔄 WSDL 轉換工具
-- ✅ 支援 WSDL URL 輸入
-- ✅ 支援檔案上傳 (.wsdl, .xml)
-- ✅ 執行轉換並下載結果
+### 🔄 WSDL 轉換 (`/wsdl`)
+- ✅ 支援 WSDL 網址（送出 `wsdlUrl`）或檔案上傳 (.wsdl, .xml)
+- ✅ 選填 Package 名稱
+- ✅ 轉換並下載 `generated_wsdl_object.zip`，失敗時保留輸入並可再試一次
 
 ## 🛠 技術架構
 
 ### 核心技術棧
 - **框架**: Next.js 15.5.4 (with Turbopack)
-- **UI 元件庫**: Material-UI with 自定義科技風主題
+- **UI 元件庫**: Material-UI with 明亮版主題（`src/theme/light.ts`）
 - **語言**: TypeScript
-- **樣式**: CSS 模組化 + 科技風全局樣式
 - **狀態管理**: React Hooks
 - **HTTP 客戶端**: Axios
 - **路由**: Next.js App Router
 
-### 科技風設計特色
-- **主色調**: 螢光綠 (#00e676)、青藍色 (#00bcd4)、橙色 (#ff6d00)
-- **視覺效果**: 格網背景、螢光效果、動畫效果、毛玻璃透明度
-- **UI 組件**: 漸層背景、螢光邊框、懸停效果
+### 明亮版設計
+- **色彩**: 頁面底色 `#f5f7fa`、白底卡片、主色 `#2563eb`；狀態用綠（啟用）、灰（停用）、琥珀（未上傳）、紅（刪除）
+- **字型**: Inter、Noto Sans TC，等寬 JetBrains Mono；不載入外部字型，未安裝時退回 system-ui
+- **回饋**: 自訂確認框與右下角 toast，不使用瀏覽器 alert／confirm
 
 ## ⚙️ 環境設定
 
@@ -111,16 +102,22 @@ npm run dev
 ```
 src/
 ├── app/
-│   ├── endpoint/         # Endpoint 管理頁面
-│   ├── restful/          # Restful 管理頁面
-│   ├── response/         # 回應管理頁面
-│   ├── about/            # 關於頁面
-│   ├── api/              # API 代理路由
-│   ├── layout.tsx        # 主佈局
-│   ├── page.tsx          # 首頁
+│   ├── endpoint/         # SOAP Endpoint 清單
+│   ├── restful/          # RESTful API 清單
+│   ├── response/         # Mock 回應（右側編輯面板）
+│   ├── wsdl/             # WSDL 轉換
+│   ├── about/            # 系統資訊
+│   ├── test-api/         # 舊測試頁（不在側欄）
+│   ├── layout.tsx        # 根版面：Providers + 全站外框
+│   ├── page.tsx          # 首頁（導向 /endpoint）
 │   └── globals.css       # 全局樣式
 ├── components/
-│   └── Header.tsx        # 頂部導航元件
+│   ├── Providers.tsx     # 明亮版主題、確認框、toast、服務摘要
+│   ├── shell/            # 側欄、頂列麵包屑、導覽定義
+│   ├── feedback/         # 確認框、toast、載入中／無資料／錯誤狀態
+│   ├── service-list/     # 清單頁共用元件與啟停、刪除流程
+│   └── response/         # Mock 回應編輯面板
+├── utils/                # 呼叫位址組法、JSON／XML 格式化
 ├── services/
 │   ├── api.ts            # API 基礎配置
 │   ├── endpoint.service.ts  # Endpoint API 服務
@@ -129,11 +126,10 @@ src/
 ├── forms/
 │   ├── EndpointForm.tsx  # Endpoint 新增/編輯表單
 │   └── RestfulForm.tsx   # Restful 新增/編輯表單
-├── dialogs/
-│   └── WsdlGenObjDialog.tsx # WSDL 物件轉換對話框
 ├── theme/
-│   ├── tech.ts          # 科技風主題配置
-│   └── cyberpunk.ts     # 賽博朋克主題（備用）
+│   ├── tokens.ts        # 設計 token（design/admin-light-redesign/tokens.json）
+│   ├── light.ts         # 明亮版 MUI 主題
+│   └── cyberpunk.ts     # 舊深色主題（未使用）
 ├── types/
 │   ├── models.ts        # 資料模型定義
 │   └── response.ts      # 回應相關類型
@@ -205,7 +201,7 @@ npm run lint             # ESLint 程式碼檢查
 ### 現代化 UI/UX
 - Material Design 風格介面
 - 響應式佈局 (支援桌面與行動裝置)
-- 科技風視覺設計
+- 明亮版視覺設計（左側側欄、窄螢幕換到內容上方）
 - 即時回饋與狀態顯示
 
 ### 完整的表單處理

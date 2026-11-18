@@ -38,7 +38,6 @@ sidebar_label: 9–10. 決策與技術債
 | TD-01 | 無認證授權；可上傳任意 JAR | 安全風險 | 引入 Spring Security；限制部署網路 |
 | TD-02 | 變更 Publish URI 時刪除仍被引用的 JAR（KI-02） | 服務無法再啟用 | 刪檔前檢查是否仍被任何設定引用 |
 | TD-03 | 開發模式 API 代理路由被刪除（KI-01） | 前端開發不便 | 恢復 API Route，或在 `next.config` 加入 `rewrites` |
-| TD-04 | WSDL 工具欄位 `wsdlPath`／`wsdlUrl` 不一致（KI-03） | URL 模式失效 | 前端改送 `wsdlUrl`，並補上 `packageName` 欄位 |
 | TD-05 | RESTful 註冊中途失敗不回收已註冊的對應 | 殘留路由 | 註冊失敗時逐一 `unregisterMapping` |
 | TD-06 | `GlobalExceptionHandler` 參數型別錯誤；與 zipe Advice 重疊 | 錯誤格式不一致 | 統一為單一 Advice 與 `Result` 格式 |
 | TD-07 | 日誌串流可路徑穿越 | 任意檔案讀取 | 正規化並限制於 `log.base` |
@@ -56,6 +55,8 @@ sidebar_label: 9–10. 決策與技術債
 ## 10. 附錄
 
 ### 10.1 版本歷史
+
+2026-11-18：管理介面改為明亮版（依 `design/admin-light-redesign/`）：左側側欄＋頂列麵包屑取代 MENU 下拉，Endpoint 清單加入統計卡、狀態篩選、批次啟停與 Mock 回應筆數，Mock 回應改用右側編輯面板，操作改用自訂確認框與 toast；WSDL 轉換改為獨立頁 `/wsdl`，前端改送 `wsdlUrl` 並新增 `packageName` 欄位，修正 TD-04（KI-03），已從技術債清單移除。
 
 2026-11-15：新增可選的 PostgreSQL 支援（預設仍為 SQLite）：加入 PostgreSQL JDBC driver 與 Flyway PostgreSQL 模組，`application.yml` 的方言與 Flyway 位置改由 `app.database.*` 決定，新增 `db.postgresql/V1.2__create_tables.sql`；尚未在實際 PostgreSQL 環境驗證。
 

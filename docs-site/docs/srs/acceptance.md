@@ -34,7 +34,6 @@ sidebar_label: 7–8. 驗收與附錄
 |---|---|---|
 | KI-01 | 前端開發模式 API 代理路由已移除 | NFR-MNT-04 |
 | KI-02 | 變更 Publish URI 但沿用 JAR 時，JAR 檔被刪除 | FR-JAR-002、FR-EP-004、FR-RS-004 |
-| KI-03 | WSDL 工具 URL 模式欄位名稱不一致 | FR-TOOL-001 |
 | KI-04 | Actuator `show-mappings` 未開放 | FR-RS-008 |
 | KI-05 | 前端建置任務僅支援 Windows | NFR-MNT-04 |
 | KI-06 | `test-api` 頁面呼叫已不存在的代理路徑 | — |

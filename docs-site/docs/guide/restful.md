@@ -7,7 +7,7 @@ sidebar_label: 管理 RESTful
 
 # 管理 RESTful
 
-**RESTful** 頁面（`/dynamic-api/restful`）用來管理從 JAR 載入的 Spring `@RestController`。畫面操作與 [Endpoint 頁面](./endpoint.md) 相同（新增、批次移除、搜尋、開關、編輯、刪除、回應清單），差別在欄位與載入方式。
+**RESTful** 頁面（`/dynamic-api/restful`）用來管理從 JAR 載入的 Spring `@RestController`。畫面樣式與 [Endpoint 頁面](./endpoint.md) 相同，提供新增、搜尋、開關（確認後切換，成功提示可 **復原**）、編輯、刪除（確認後執行，無法復原）、勾選後批次刪除，以及每列 **回應清單 ›** 前往 Mock 回應；沒有統計卡與批次啟停。差別在欄位與載入方式。
 
 ## 新增 RESTful
 

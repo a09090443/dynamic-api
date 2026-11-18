@@ -12,12 +12,11 @@ sidebar_label: 3.5 輔助工具
 | 項目 | 內容 |
 |---|---|
 | 描述 | 系統應能由 WSDL 產生 JAX-WS / JAXB Java 原始碼並提供 ZIP 下載 |
-| 觸發者 | 管理介面「轉換 WSDL 物件」、`POST /ws/genWsdlObj`（multipart） |
+| 觸發者 | 管理介面「WSDL 轉換」頁（`/wsdl`）、`POST /ws/genWsdlObj`（multipart） |
 | 輸入 | `file`（WSDL 檔）或 `wsdlUrl` 擇一；`packageName` 選填 |
 | 輸出 | `application/octet-stream`，`generated_wsdl_object.zip`；無產出時 HTTP 204 |
-| 業務規則 | 1. 使用 CXF `WSDLToJava`，參數 `-autoNameResolution -client`<br/>2. 以 `wsdl.objects.tmp.dir` 為工作目錄，完成後刪除<br/>3. 同時間僅允許一個轉換執行 |
-| 驗收標準 | ✅ 上傳有效 WSDL 取得含 Java 檔的 ZIP<br/>❌ 兩者皆未提供時回報錯誤 |
-| 已知問題 | KI-03：管理介面 URL 模式送出 `wsdlPath` 欄位，後端無法辨識 |
+| 業務規則 | 1. 使用 CXF `WSDLToJava`，參數 `-autoNameResolution -client`<br/>2. 以 `wsdl.objects.tmp.dir` 為工作目錄，完成後刪除<br/>3. 同時間僅允許一個轉換執行<br/>4. 管理介面網址模式送 `wsdlUrl`、檔案模式送 `file`；HTTP 204、非 2xx 與網路錯誤都顯示轉換失敗並保留輸入 |
+| 驗收標準 | ✅ 上傳有效 WSDL 取得含 Java 檔的 ZIP<br/>✅ 以後端連得到的 WSDL 網址取得 ZIP<br/>❌ 兩者皆未提供時回報錯誤 |
 
 ## FR-TOOL-002 日誌即時串流
 

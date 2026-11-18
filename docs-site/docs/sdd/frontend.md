@@ -13,14 +13,27 @@ sidebar_label: 3.4 管理介面
 
 | 目錄 | 內容 |
 |---|---|
-| `app/` | App Router 頁面：`page.tsx`（首頁）、`endpoint/`、`restful/`、`response/`、`about/`、`test-api/`、`layout.tsx`、`not-found.tsx` |
-| `components/` | `Header`（導覽列）；`Providers`、`CyberpunkBackground`、`CyberpunkLoader` 目前未使用（MUI 主題由 `app/layout.tsx` 直接以 `techTheme` 設定） |
+| `app/` | App Router 頁面：`page.tsx`（首頁，導向 `/endpoint`）、`endpoint/`、`restful/`、`response/`、`wsdl/`、`about/`、`test-api/`、`layout.tsx`（經 `Providers` 套主題並包上 `AppShell`）、`not-found.tsx` |
+| `components/` | `Providers`（明亮版主題、`CssBaseline`、`ServiceSummaryProvider`、`ToastProvider`、`ConfirmProvider`）；`shell/`（`AppShell`、`Sidebar`、`Topbar`、`navigation.ts`：側欄項目與麵包屑規則）；`feedback/`（`ToastProvider`、`ConfirmProvider`、`DataState` 的載入中／無資料／錯誤元件）；`service-list/`（Endpoint 與 RESTful 共用的頁首、統計卡、狀態篩選、批次操作列、分頁列、啟停與刪除流程 `useServiceActions`、Mock 筆數查詢 `useMockCounts`）；`response/ResponseEditorPanel`（Mock 回應右側編輯面板）；`StatusSwitch`、`StatusBadge`、`ServiceSummaryProvider`。`CyberpunkBackground`、`CyberpunkLoader` 未使用 |
 | `forms/` | `EndpointForm`、`RestfulForm`（react-hook-form + yup） |
-| `dialogs/` | `WsdlGenObjDialog` |
+| `dialogs/` | 目前沒有檔案；WSDL 轉換已改為 `/wsdl` 頁 |
 | `services/` | `api.ts`（axios 實例）、`endpoint.service.ts`、`restful.service.ts`、`response.service.ts` |
 | `types/` | `models.ts`、`response.ts` |
 | `config/` | `config.ts`（環境設定） |
-| `theme/` | `cyberpunk.ts`、`tech.ts` |
+| `theme/` | `tokens.ts`（`design/admin-light-redesign/tokens.json` 的色碼與尺寸）、`light.ts`（`createTheme`，`palette.mode: 'light'`）；`cyberpunk.ts` 未使用 |
+| `utils/` | `serviceUrl.ts`（組呼叫位址與頂列主機）、`formatContent.ts`（JSON／XML 格式化） |
+
+## 外框與共用互動
+
+| 項目 | 實作 |
+|---|---|
+| 主題 | `theme/light.ts`：主色 `#2563eb`、頁面底色 `#f5f7fa`、按鈕文字不轉大寫。字型 `Inter, 'Noto Sans TC', system-ui, sans-serif`，等寬 `'JetBrains Mono', monospace`；不載入外部字型，未安裝時退回系統字型 |
+| 側欄 | 寬 232。分組「服務」：SOAP Endpoint、RESTful API、Mock 回應；「工具」：WSDL 轉換、系統資訊（`/about`）。目前頁帶 `aria-current="page"`。`/test-api` 不在側欄，但網址保留。SOAP Endpoint／RESTful API 右側數字是 `getEndpoints`、`getControllers` 的實際筆數 |
+| 頂列 | 高 56。左側麵包屑（例如 `SOAP Endpoint / company / Mock 回應`，上層清單可點）；右側連線狀態：`ServiceSummaryProvider` 在載入、換頁與操作後並行呼叫 `getEndpoints`、`getControllers`，兩者都成功顯示「後端連線正常」，任一失敗顯示「後端連線異常」與「重新檢查」。位址取自目前瀏覽器網址（後端沒有健康檢查端點） |
+| 窄螢幕 | 寬度小於 900 時側欄換到內容上方；寬表格只在自己的容器內橫向捲動 |
+| 確認框 | `useConfirm()`，取代 `window.confirm`；刪除類為紅色按鈕、預設焦點在「取消」 |
+| toast | `useToast()`，右下角、同時一則；啟停成功附「復原」（反向呼叫一次），刪除與批次操作不提供復原；錯誤 toast 不自動關閉 |
+| 資料狀態 | 清單頁都有載入中、無資料、搜尋無結果與載入失敗（含「重新載入」） |
 
 所有頁面皆為 Client Component（`'use client'`），資料在瀏覽器端以 axios 取得。
 
@@ -50,12 +63,12 @@ flowchart LR
 
 | 頁面 | 載入 | 操作 |
 |---|---|---|
-| Endpoint | `getEndpoints` | 新增／編輯：若有選檔先 `uploadJarFile` 取得 `jarFileId`，再 `saveWebService` / `updateWebService`；開關：`switchWebService`；刪除：`removeWebService`；回應清單：`router.push('/response?publishUri=&serviceType=ENDPOINT')` |
-| RESTful | `getControllers` | 同上，對應 `/api/*` |
-| Response | 讀取 query string 後 `getResponseList` | `saveMockResponse`、`updateResponse`、`switchResponse`、`deleteResponse` |
-| WSDL 對話框 | — | `genWsdlObj`（`responseType: 'blob'`），以 `file-saver` 下載 |
+| Endpoint | `getEndpoints`；再對每個服務呼叫 `getResponseList` 取 Mock 回應筆數（同時最多 4 筆，單筆失敗顯示「—」） | 新增／編輯（`EndpointForm` 對話框）：若有選檔先 `uploadJarFile` 取得 `jarFileId`，再 `saveWebService` / `updateWebService`；開關：確認後 `switchWebService`；批次啟停：依序逐筆 `switchWebService` 並彙總成功與失敗筆數；刪除（單筆或批次）：確認後 `removeWebService`；發布名稱與「N 筆 ›」連到 `/response?publishUri=&serviceType=ENDPOINT` |
+| RESTful | `getControllers` | 新增／編輯（`RestfulForm` 對話框）、開關（`switchController`）、刪除與批次刪除（`removeController`），同樣經確認框與 toast；不提供批次啟停 |
+| Response | 讀取 query string；有 `publishUri` 才 `getResponseList`，沒有時顯示「請先選擇服務」引導 | 右側編輯面板（寬 1200 以上與表格並排，以下以抽屜覆蓋）：新增 `saveMockResponse`、編輯 `updateResponse`、刪除（確認後）`deleteResponse`；表格每列開關：確認後 `switchResponse`。方法名稱必填；「格式化」只處理 JSON／XML，失敗時不改內容 |
+| WSDL 轉換（`/wsdl`） | — | `genWsdlObj`：自組 multipart，網址模式送 `wsdlUrl`、檔案模式送 `file`、有填才送 `packageName`；以 `responseType: 'blob'` 與 `validateStatus` 自行判斷，HTTP 200 且有內容才算成功，204、非 2xx 與網路錯誤都顯示「無法轉換」並保留輸入。成功後以 `<a download>` 下載 `generated_wsdl_object.zip` |
 
-搜尋與分頁皆在前端對已載入的清單處理。
+搜尋、狀態篩選與分頁皆在前端對已載入的清單處理。後端沒有各服務 Mock 筆數與批次啟停的端點，因此以既有 API 組合；`switchResponse` 會吞掉後端例外並回成功，所以回應啟停只有網路或 HTTP 錯誤會顯示失敗。
 
 ## 建置與整合
 
@@ -77,8 +90,8 @@ flowchart LR
 |---|---|
 | 執行 | `cd nextjs-dynamic-api-manager && npm exec playwright install chromium`（第一次；Linux 可能需加 `--with-deps`），之後 `npm run test:e2e` |
 | 設定 | `playwright.config.ts`：只有 chromium；`webServer` 以 `DYNAMIC_API_E2E=1` 執行 `npm run build && npm run start -- --hostname 127.0.0.1 --port 3100`，`reuseExistingServer: false`；`baseURL` 為 `http://127.0.0.1:3100/dynamic-api/` |
-| 目錄 | `e2e/pages.spec.ts`（首頁、Endpoint、RESTful、Mock 回應的開啟與列表）、`e2e/restful-form.spec.ts`（RESTful 新增表單成功與驗證失敗）、`e2e/fixtures/`（假資料與攔截夾具） |
-| 隔離 | `e2e/fixtures/mock-api.ts` 是自動套用的夾具，在任何 `page.goto` 前以 `page.route` 註冊：`/dynamic-api/ws`、`/dynamic-api/api`、`/dynamic-api/common` 一律回傳固定的 `{code, message, data}`，未定義的 API 回 `code=500` 且不轉送；非 `127.0.0.1:3100` 的請求（例如 Google Fonts）一律中止。測試不會連到真的後端或外部網站 |
+| 目錄 | `e2e/pages.spec.ts`（首頁、Endpoint、RESTful、Mock 回應的開啟與列表）、`e2e/restful-form.spec.ts`（RESTful 新增表單成功與驗證失敗）、`e2e/shell.spec.ts`（側欄、麵包屑、連線狀態、窄螢幕）、`e2e/endpoint.spec.ts`（統計、搜尋、篩選、分頁、資料狀態、啟停與復原、批次、刪除確認）、`e2e/response.spec.ts`（資訊卡、呼叫位址、編輯面板、驗證、格式化、儲存失敗、刪除、啟停）、`e2e/wsdl.spec.ts`（來源互斥、驗證、`wsdlUrl` multipart、下載、204／500／網路錯誤）、`e2e/restful.spec.ts`（樣式一致與啟停、刪除）、`e2e/fixtures/`（假資料、攔截夾具與共用輔助函式）。各規格以 `page.on('dialog')` 確認沒有瀏覽器原生對話框 |
+| 隔離 | `e2e/fixtures/mock-api.ts` 是自動套用的夾具，在任何 `page.goto` 前以 `page.route` 註冊：`/dynamic-api/ws`、`/dynamic-api/api`、`/dynamic-api/common` 一律回傳固定的 `{code, message, data}`，未定義的 API 回 `code=500` 且不轉送；個別測試可用 `mockApi.set` 改為自訂 HTTP 狀態、純文字或二進位本文、延遲或中斷連線，並由 `calls` 核對查詢字串與 multipart 原文；非 `127.0.0.1:3100` 的請求一律中止。測試不會連到真的後端或外部網站 |
 | 輸出 | `test-results/`（每個測試的 PNG 截圖、失敗時保留的 trace）、`playwright-report/`（HTML 報告），兩者都不進版控、不受 ESLint 檢查 |
 
 固定埠不用 3000：`config/config.ts` 在網址含 `:3000` 時改用 `NEXT_PUBLIC_API_URL`，API 就不會走同源路徑而無法攔截。

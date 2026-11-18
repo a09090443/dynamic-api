@@ -1,411 +1,316 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
-  Paper,
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
-  Checkbox,
-  IconButton,
-  Button,
-  Switch,
   TextField,
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Chip,
-  Alert,
-  CircularProgress
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  List as ListIcon,
-  Add as AddIcon,
-  DeleteSweep as DeleteSweepIcon
-} from '@mui/icons-material';
+import { Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { restfulService } from '@/services/restful.service';
 import { Restful } from '@/types/models';
 import RestfulForm from '@/forms/RestfulForm';
+import PageHeader from '@/components/service-list/PageHeader';
+import { BatchBar, Card, ListPagination, Toolbar } from '@/components/service-list/ListParts';
+import { useServiceActions } from '@/components/service-list/useServiceActions';
+import { EmptyState, ErrorState, LoadingState } from '@/components/feedback/DataState';
+import { useToast } from '@/components/feedback/ToastProvider';
+import { useServiceSummary } from '@/components/ServiceSummaryProvider';
+import StatusSwitch from '@/components/StatusSwitch';
+import { NotUploadedBadge } from '@/components/StatusBadge';
+import { monoSx, tokens } from '@/theme/tokens';
 
-const RestfulPage: React.FC = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [restfuls, setRestfuls] = useState<Restful[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchText, setSearchText] = useState('');
+const c = tokens.color;
+
+const responseHref = (publishUri: string) =>
+  `/response?${new URLSearchParams({ publishUri, serviceType: 'RESTFUL' }).toString()}`;
+
+export default function RestfulPage() {
+  const toast = useToast();
+  const { refresh } = useServiceSummary();
+  const [restfuls, setRestfuls] = useState<Restful[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selected, setSelected] = useState<string[]>([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editingRestful, setEditingRestful] = useState<Restful | null>(null);
+  const [editing, setEditing] = useState<Restful | null>(null);
 
-  // 載入 Restful Controllers
-  const loadRestfuls = async () => {
+  const load = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await restfulService.getControllers();
-      setRestfuls(data);
+      setRestfuls(await restfulService.getControllers());
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '載入資料失敗');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '載入資料失敗');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // 載入數據 - 當組件掛載時和路徑變化時
   useEffect(() => {
-    loadRestfuls();
-  }, [pathname]);
+    void load();
+  }, [load]);
 
-  // 過濾資料
-  const filteredRestfuls = restfuls.filter(restful =>
-    restful.publishUri.toLowerCase().includes(searchText.toLowerCase()) ||
-    restful.classPath.toLowerCase().includes(searchText.toLowerCase())
+  const onStatusChanged = useCallback((publishUri: string, isActive: boolean) => {
+    setRestfuls((prev) => prev?.map((r) => (r.publishUri === publishUri ? { ...r, isActive } : r)) ?? prev);
+  }, []);
+  const switchFn = useCallback((uri: string, active: boolean) => restfulService.switchController(uri, active), []);
+  const removeFn = useCallback((uris: string[]) => restfulService.removeController(uris), []);
+
+  const { busy, toggle, remove } = useServiceActions({
+    noun: 'RESTful 服務',
+    switchFn,
+    removeFn,
+    onStatusChanged,
+    reload: load,
+  });
+
+  const all = restfuls ?? [];
+  const keyword = search.trim().toLowerCase();
+  const filtered = all.filter(
+    (r) => !keyword || [r.publishUri, r.classPath].some((v) => (v ?? '').toLowerCase().includes(keyword)),
   );
+  const pageCount = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+  const safePage = Math.min(page, pageCount - 1);
+  const rows = filtered.slice(safePage * rowsPerPage, (safePage + 1) * rowsPerPage);
+  const selectedItems = all.filter((r) => selected.includes(r.id));
+  const allOnPage = rows.length > 0 && rows.every((r) => selected.includes(r.id));
+  const someOnPage = rows.some((r) => selected.includes(r.id));
 
-  // 分頁資料
-  const paginatedRestfuls = filteredRestfuls.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  // 全選處理 (改善：確保只針對當前頁面，但保持其他頁面的選擇)
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      // 將當前頁面的所有項目ID加入選擇
-      const currentPageIds = paginatedRestfuls.map(restful => restful.id);
-      const newSelected = [...new Set([...selected, ...currentPageIds])];
-      setSelected(newSelected);
-    } else {
-      // 從選擇中移除當前頁面的所有項目ID
-      const currentPageIds = paginatedRestfuls.map(restful => restful.id);
-      setSelected(selected.filter(id => !currentPageIds.includes(id)));
-    }
+  const toggleSelectPage = () => {
+    const ids = rows.map((r) => r.id);
+    setSelected((prev) => (allOnPage ? prev.filter((id) => !ids.includes(id)) : [...new Set([...prev, ...ids])]));
   };
+  const toggleSelect = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  // 單選處理
-  const handleSelectOne = (id: string) => {
-    setSelected(prev =>
-      prev.includes(id)
-        ? prev.filter(item => item !== id)
-        : [...prev, id]
-    );
-  };
-
-  // 切換狀態
-  const handleToggleStatus = async (restful: Restful) => {
-    const confirmed = window.confirm('你確定要變更此設定嗎？');
-    if (confirmed) {
-      try {
-        // 先更新API
-        await restfulService.switchController(restful.publishUri, !restful.isActive);
-        
-        // 只更新本地狀態，不重新載入整個列表
-        setRestfuls(prevRestfuls => 
-          prevRestfuls.map(rf => 
-            rf.id === restful.id 
-              ? { ...rf, isActive: !rf.isActive }
-              : rf
-          )
-        );
-        
-        console.log(`狀態切換成功: ${restful.publishUri} -> ${!restful.isActive}`);
-      } catch (err) {
-        console.error('狀態切換失敗:', err);
-        setError(err instanceof Error ? err.message : '狀態切換失敗');
-      }
-    }
-  };
-
-  // 刪除單筆
-  const handleDelete = async (restful: Restful) => {
-    const confirmed = window.confirm('確定要刪除此 Restful Controller？');
-    if (confirmed) {
-      try {
-        console.log('Deleting restful:', restful.publishUri);
-        await restfulService.removeController([restful.publishUri]);
-        console.log('Delete success, reloading...');
-        await loadRestfuls();
-        alert('刪除成功');
-      } catch (err) {
-        console.error('Delete error:', err);
-        const errorMsg = err instanceof Error ? err.message : '刪除失敗';
-        setError(errorMsg);
-        alert(`刪除失敗: ${errorMsg}`);
-      }
-    }
-  };
-
-  // 導航到回應清單
-  const handleResponseList = (publishUri: string, serviceType: 'ENDPOINT' | 'RESTFUL') => {
-    const params = new URLSearchParams({
-      publishUri,
-      serviceType,
-    });
-    router.push(`/response?${params.toString()}`);
-  };
-
-  // 批量刪除
-  const handleBatchDelete = async () => {
-    if (selected.length === 0) {
-      alert('請選擇要刪除的項目');
-      return;
-    }
-    
-    const confirmed = window.confirm(`確定要刪除選中的 ${selected.length} 個 Restful Controller？`);
-    if (confirmed) {
-      try {
-        const selectedRestfuls = restfuls.filter(restful => selected.includes(restful.id));
-        const publishUris = selectedRestfuls.map(restful => restful.publishUri);
-        console.log('Batch deleting restfuls:', publishUris);
-        
-        if (publishUris.length === 0) {
-          alert('找不到要刪除的項目');
-          return;
-        }
-        
-        await restfulService.removeController(publishUris);
-        console.log('Batch delete success, reloading...');
-        setSelected([]);
-        await loadRestfuls();
-        alert(`成功刪除 ${publishUris.length} 個 Restful Controller`);
-      } catch (err) {
-        console.error('Batch delete error:', err);
-        const errorMsg = err instanceof Error ? err.message : '批量刪除失敗';
-        setError(errorMsg);
-        alert(`批量刪除失敗: ${errorMsg}`);
-      }
-    }
-  };
-
-  // 開啟新增表單
-  const handleAdd = () => {
-    setEditingRestful(null);
+  const openAdd = () => {
+    setEditing(null);
     setFormOpen(true);
   };
-
-  // 開啟編輯表單
-  const handleEdit = (restful: Restful) => {
-    setEditingRestful(restful);
-    setFormOpen(true);
-  };
-
-  // 表單提交成功
-  const handleFormSuccess = () => {
+  // RestfulForm 的 effect 依賴 onSuccess，需固定參考避免重複觸發
+  const onFormSuccess = useCallback(() => {
     setFormOpen(false);
-    setEditingRestful(null);
-    loadRestfuls();
-  };
+    setEditing(null);
+    void load();
+    refresh();
+    toast({ message: '已儲存，服務目前為停用', severity: 'success' });
+  }, [load, refresh, toast]);
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+  let body: React.ReactNode;
+  if (loading && !restfuls) {
+    body = <LoadingState />;
+  } else if (error && !restfuls) {
+    body = <ErrorState message={error} onRetry={() => void load()} />;
+  } else if (all.length === 0) {
+    body = (
+      <EmptyState
+        title="還沒有任何 RESTful 服務"
+        description="上傳 JAR 並新增 RESTful 服務後，會列在這裡。"
+        action={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openAdd}>
+            新增 Restful
+          </Button>
+        }
+      />
+    );
+  } else if (filtered.length === 0) {
+    body = (
+      <EmptyState
+        testId="no-results-state"
+        title="找不到符合條件的 RESTful 服務"
+        description="請調整搜尋文字。"
+        action={
+          <Button variant="outlined" onClick={() => setSearch('')}>
+            清除條件
+          </Button>
+        }
+      />
+    );
+  } else {
+    body = (
+      <>
+        <TableContainer sx={{ overflowX: 'auto' }}>
+          <Table sx={{ minWidth: 860 }} aria-label="RESTful API 清單">
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    size="small"
+                    checked={allOnPage}
+                    indeterminate={someOnPage && !allOnPage}
+                    onChange={toggleSelectPage}
+                    slotProps={{ input: { 'aria-label': '選取本頁全部' } }}
+                  />
+                </TableCell>
+                <TableCell>服務</TableCell>
+                <TableCell>Class 路徑</TableCell>
+                <TableCell>JAR</TableCell>
+                <TableCell>Mock 回應</TableCell>
+                <TableCell>狀態</TableCell>
+                <TableCell>操作</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((r) => {
+                const isSelected = selected.includes(r.id);
+                const jar = r.jarFileName || r.jarFileId;
+                return (
+                  <TableRow
+                    key={r.id}
+                    data-testid={`row-${r.publishUri}`}
+                    aria-selected={isSelected}
+                    sx={{ backgroundColor: isSelected ? c.primarySoftRow : undefined }}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        size="small"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(r.id)}
+                        slotProps={{ input: { 'aria-label': `選取 ${r.publishUri}` } }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                        <Box component="span" sx={{ fontWeight: 600 }}>{r.publishUri}</Box>
+                        <Box component="span" sx={{ ...monoSx, color: c.textSubtle }}>/{r.publishUri}</Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box component="span" sx={{ ...monoSx, color: c.textSecondary, wordBreak: 'break-all' }}>
+                        {r.classPath}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {jar ? (
+                        <Box component="span" sx={{ ...monoSx, color: c.textSecondary, wordBreak: 'break-all' }}>{jar}</Box>
+                      ) : (
+                        <NotUploadedBadge />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <Link href={responseHref(r.publishUri)}>回應清單 ›</Link>
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <StatusSwitch
+                        checked={r.isActive}
+                        name={r.publishUri}
+                        disabled={busy.has(r.publishUri)}
+                        onToggle={() => void toggle(r)}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          aria-label={`編輯 ${r.publishUri}`}
+                          onClick={() => {
+                            setEditing(r);
+                            setFormOpen(true);
+                          }}
+                        >
+                          編輯
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          aria-label={`刪除 ${r.publishUri}`}
+                          onClick={() => void remove([r], () => setSelected((prev) => prev.filter((id) => id !== r.id)))}
+                        >
+                          刪除
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <ListPagination
+          total={filtered.length}
+          page={safePage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={(n) => {
+            setRowsPerPage(n);
+            setPage(0);
+          }}
+        />
+      </>
     );
   }
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Restful 管理
-      </Typography>
+    <>
+      <PageHeader
+        title="RESTful API"
+        description="從上傳的 JAR 動態註冊的 RESTful Controller。新建或編輯後預設為停用，確認 Mock 回應後再啟用。"
+        actions={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openAdd}>
+            新增 Restful
+          </Button>
+        }
+      />
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+      <Card>
+        <Toolbar>
+          <TextField
+            size="small"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="搜尋發布名稱、Class 路徑"
+            slotProps={{
+              htmlInput: { 'aria-label': '搜尋 RESTful 服務' },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ flex: '1 1 260px', maxWidth: 420 }}
+          />
+        </Toolbar>
 
-      {/* 工具列 */}
-      <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-        >
-          新增 Restful
-        </Button>
-        
-        <Button
-          variant="outlined"
-          startIcon={<DeleteSweepIcon />}
-          onClick={handleBatchDelete}
-          disabled={selected.length === 0}
-          color="error"
-        >
-          移除 Restful ({selected.length})
-        </Button>
+        <BatchBar count={selectedItems.length} onClear={() => setSelected([])}>
+          <Button variant="outlined" color="error" onClick={() => void remove(selectedItems, () => setSelected([]))}>
+            刪除
+          </Button>
+        </BatchBar>
 
-        <TextField
-          label="搜尋"
-          variant="outlined"
-          size="small"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          sx={{ ml: 'auto', minWidth: 250 }}
-        />
-      </Box>
+        {body}
+      </Card>
 
-      {/* 資料表格 */}
-      <Paper elevation={8}>
-        <TableContainer>
-          <Table sx={{ minWidth: 900 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox" sx={{ width: '40px' }}>
-                  <Checkbox
-                    indeterminate={
-                      paginatedRestfuls.some(restful => selected.includes(restful.id)) && 
-                      !paginatedRestfuls.every(restful => selected.includes(restful.id))
-                    }
-                    checked={
-                      paginatedRestfuls.length > 0 && 
-                      paginatedRestfuls.every(restful => selected.includes(restful.id))
-                    }
-                    onChange={handleSelectAll}
-                  />
-                </TableCell>
-                <TableCell sx={{ width: '180px', whiteSpace: 'nowrap' }}>發布名稱</TableCell>
-                <TableCell sx={{ width: '280px', whiteSpace: 'nowrap' }}>Class 路徑</TableCell>
-                <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>Jar 檔案編號</TableCell>
-                <TableCell sx={{ width: '80px', whiteSpace: 'nowrap' }}>狀態</TableCell>
-                <TableCell sx={{ width: '160px', whiteSpace: 'nowrap' }}>操作</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedRestfuls.map((restful) => (
-                <TableRow key={restful.id} hover>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={selected.includes(restful.id)}
-                      onChange={() => handleSelectOne(restful.id)}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {restful.publishUri}
-                  </TableCell>
-                  <TableCell sx={{ 
-                    whiteSpace: 'nowrap', 
-                    overflow: 'hidden', 
-                    textOverflow: 'ellipsis',
-                    fontFamily: 'monospace',
-                    fontSize: '0.8rem'
-                  }}>
-                    {restful.classPath}
-                  </TableCell>
-                  <TableCell>
-                    {restful.jarFileId ? (
-                      <Box
-                        component="a"
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                        sx={{
-                          color: 'primary.main',
-                          textDecoration: 'underline',
-                          fontFamily: 'monospace',
-                          fontSize: '0.8rem',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            textDecoration: 'none'
-                          }
-                        }}
-                      >
-                        {restful.jarFileId}
-                      </Box>
-                    ) : (
-                      <Box sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                        未上傳
-                      </Box>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={restful.isActive}
-                      onChange={() => handleToggleStatus(restful)}
-                      color="primary"
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(restful)}
-                        title="編輯"
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(restful)}
-                        title="刪除"
-                        color="error"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        title="回應清單"
-                        onClick={() => handleResponseList(restful.publishUri, 'RESTFUL')}
-                      >
-                        <ListIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        
-        <TablePagination
-          component="div"
-          count={filteredRestfuls.length}
-          page={page}
-          onPageChange={(_, newPage) => setPage(newPage)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[10, 50, 100]}
-          labelRowsPerPage="每頁筆數:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} 共 ${count} 筆`}
-        />
-      </Paper>
-
-      {/* Restful 表單對話框 */}
-      <Dialog
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          {editingRestful ? '編輯 Restful' : '新增 Restful'}
+      <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="md" fullWidth aria-labelledby="restful-form-title">
+        <DialogTitle id="restful-form-title" sx={{ fontSize: 16, fontWeight: 700 }}>
+          {editing ? '編輯 Restful' : '新增 Restful'}
         </DialogTitle>
         <DialogContent>
-          <RestfulForm
-            restful={editingRestful}
-            onSuccess={handleFormSuccess}
-            onCancel={() => setFormOpen(false)}
-          />
+          <RestfulForm restful={editing} onSuccess={onFormSuccess} onCancel={() => setFormOpen(false)} />
         </DialogContent>
       </Dialog>
-    </Box>
+    </>
   );
-};
-
-export default RestfulPage;
+}

@@ -31,13 +31,15 @@ public class SpaController {
      * - /response, /response/
      * - /test-api, /test-api/
      * - /about, /about/
+     * - /wsdl, /wsdl/
      */
     @GetMapping(value = {
             "/endpoint", "/endpoint/",
             "/restful", "/restful/",
             "/response", "/response/",
             "/test-api", "/test-api/",
-            "/about", "/about/"
+            "/about", "/about/",
+            "/wsdl", "/wsdl/"
     }, produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> handleSpaRoutes(HttpServletRequest request) {
         try {

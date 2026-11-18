@@ -8,30 +8,28 @@ const expectNoRealBackend = (mockApi: MockApi) => {
 };
 
 test.describe('主要頁面', () => {
-  test('首頁會導向 Endpoint 管理', async ({ page, mockApi }) => {
+  test('首頁會導向 SOAP Endpoint 清單', async ({ page, mockApi }) => {
     await page.goto('./');
     await expect(page).toHaveURL(/\/dynamic-api\/endpoint\/$/);
-    await expect(page.getByRole('heading', { name: 'Endpoint 管理' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SOAP Endpoint', level: 1 })).toBeVisible();
     expectNoRealBackend(mockApi);
   });
 
   test('Endpoint 列表顯示假資料', async ({ page, mockApi }) => {
     await page.goto('endpoint/');
-    await expect(page.getByRole('heading', { name: 'Endpoint 管理' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SOAP Endpoint', level: 1 })).toBeVisible();
     const table = page.getByRole('table');
-    await expect(table.getByRole('cell', { name: 'e2e-order-endpoint', exact: true })).toBeVisible();
-    await expect(table.getByRole('cell', { name: 'orderEndpoint', exact: true })).toBeVisible();
+    await expect(table.getByRole('link', { name: 'e2e-order-endpoint', exact: true })).toBeVisible();
+    await expect(table.getByText('orderEndpoint', { exact: true })).toBeVisible();
     expect(mockApi.callsOf('GET /dynamic-api/ws/getEndpoints').length).toBeGreaterThanOrEqual(1);
     expectNoRealBackend(mockApi);
   });
 
   test('Restful 列表顯示假資料', async ({ page, mockApi }) => {
     await page.goto('restful/');
-    await expect(page.getByRole('heading', { name: 'Restful 管理' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'RESTful API', level: 1 })).toBeVisible();
     const table = page.getByRole('table');
-    await expect(
-      table.getByRole('cell', { name: 'e2e-inventory-restful', exact: true }),
-    ).toBeVisible();
+    await expect(table.getByText('e2e-inventory-restful', { exact: true })).toBeVisible();
     await expect(
       table.getByRole('cell', { name: 'com.example.InventoryController', exact: true }),
     ).toBeVisible();
@@ -41,8 +39,9 @@ test.describe('主要頁面', () => {
 
   test('Mock 回應列表顯示假資料', async ({ page, mockApi }) => {
     await page.goto('response/?publishUri=e2e-order-endpoint&serviceType=ENDPOINT');
-    await expect(page.getByRole('heading', { name: '回應清單設定' })).toBeVisible();
-    await expect(page.getByText('ENDPOINT: e2e-order-endpoint', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'e2e-order-endpoint 的 Mock 回應', level: 1 }),
+    ).toBeVisible();
     await expect(page.getByRole('cell', { name: 'getOrder', exact: true })).toBeVisible();
 
     const listCalls = mockApi.callsOf('POST /dynamic-api/common/getResponseList');
