@@ -30,7 +30,7 @@ npm run test:e2e     # Playwright；先安裝 chromium，測試會自行在 127.
 ```
 nextjs-dynamic-api-manager/
 ├── package.json                 # scripts：dev / build（皆用 --turbopack）、type-check、lint、test:e2e
-├── playwright.config.ts         # chromium E2E；webServer 使用 127.0.0.1:3100
+├── playwright.config.ts         # chromium E2E；webServer 使用 127.0.0.1:3100（同源）
 ├── e2e/                         # Playwright 規格；fixtures/mock-api.ts（攔截管理 API）、fixtures/mock-data.ts（假資料）
 ├── next.config.ts               # 生產模式：output export、basePath /dynamic-api、trailingSlash；DYNAMIC_API_E2E=1 時停用 export
 ├── next.config.js               # 與 .ts 內容相近的舊設定（TD-10），修改時兩份一起改
@@ -52,7 +52,11 @@ nextjs-dynamic-api-manager/
     │   ├── test-api/page.tsx    # 舊測試頁，呼叫已不存在的 /api 代理；保留網址，不放進側欄
     │   ├── not-found.tsx
     │   └── globals.css
-    ├── components/              # Providers（主題）、全站外框（側欄、頂列）、共用確認框、toast 等共用元件
+    ├── components/              # Providers（主題）、ServiceSummaryProvider（側欄筆數與連線狀態）、StatusSwitch、StatusBadge
+    │   ├── shell/               # 全站外框（側欄、頂列麵包屑）
+    │   ├── feedback/            # 共用確認框（ConfirmProvider）與 toast（含啟停復原）
+    │   ├── service-list/        # Endpoint／RESTful 清單共用的表格、開關、啟停與刪除操作
+    │   ├── response/            # Mock 回應頁的資訊卡與右側編輯面板
     │   └── Cyberpunk*.tsx       # (未使用) 舊深色風格元件，若仍存在也不要再引用
     ├── forms/                   # react-hook-form + yup
     │   ├── EndpointForm.tsx
@@ -66,6 +70,7 @@ nextjs-dynamic-api-manager/
     ├── types/                   # 與後端 DTO 對應 [management-api.md]
     │   ├── models.ts
     │   └── response.ts
+    ├── utils/                   # serviceUrl.ts（畫面顯示的主機與服務呼叫位址）、formatContent.ts（JSON／XML 格式化）
     ├── config/config.ts         # appConfig：apiUrl 判斷、debugMode、timeout
     └── theme/                   # 明亮版 MUI 主題（palette.mode 'light'，色碼取自 tokens.json）；舊深色主題 tech.ts、cyberpunk.ts 不再使用
 ```
@@ -89,14 +94,23 @@ Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停
 2. `backend/build.gradle` 中 `copyNextjsBuild` 的 `pages` 清單（把 `<page>/index.html` 複製為 `<page>.html`）
 3. `backend/.../config/SpaController.java` 的 `@GetMapping` 路徑清單（含有、無結尾斜線兩種）
 
-漏掉 2 或 3，生產模式該頁會 404，但開發模式看不出來。需要出現在導覽時，在 `components/` 的側欄元件加入連結，並補上頂列麵包屑；側欄的目前頁要帶 `aria-current="page"`。只改 `pages` 清單加頁名，不要為了在其他環境建置而改寫 `buildFrontend` 等前端建置任務。
+漏掉 2 或 3，生產模式該頁會 404，但開發模式看不出來。需要出現在導覽時，在 `components/shell/` 的側欄元件加入連結，並補上頂列麵包屑；側欄的目前頁要帶 `aria-current="page"`。只改 `pages` 清單加頁名，不要為了在其他環境建置而改寫 `buildFrontend` 等前端建置任務。
 
 ## API 呼叫
 
 - 一律透過 `src/services/api.ts` 的 `apiClient`，不要在元件中直接用 `fetch`／新的 axios 實例（`test-api` 頁是舊的反例）。
-- `appConfig.apiUrl`（`src/config/config.ts`）在頁面不是從 `:3000` 開啟時會變成空字串（同源相對路徑）。不要改成固定網址；畫面上顯示的主機或呼叫位址也取自目前瀏覽器網址，不寫死 `localhost:8080`。
+- `appConfig.apiUrl`（`src/config/config.ts`）在頁面不是從 `:3000` 開啟時會變成空字串（同源相對路徑）。不要改成固定網址。
+- `appConfig.apiUrl` 只決定 API 請求送往哪裡，**不得**拿來組畫面上的位址。頂列顯示的主機一律取 `window.location.host`，Mock 回應頁的 SOAP（`<origin>/dynamic-api/webservice/<publishUri>`）與 REST（`<origin>/dynamic-api/<publishUri>`）呼叫位址及複製內容一律取 `window.location.origin`；即使 `NEXT_PUBLIC_API_URL` 指向不同來源的絕對網址（例如開發模式的 `http://localhost:8080`）也一樣，不寫死 `localhost:8080`。這類組法集中在 `src/utils/serviceUrl.ts`。連線狀態仍依實際管理 API 呼叫成敗判斷，與顯示的主機來源無關。
 - 開發模式的 API 代理路由已刪除（KI-01）；本機開發需在 `.env.local` 設 `NEXT_PUBLIC_API_URL=http://localhost:8080`。若要恢復代理，用 `next.config` 的 `rewrites`（只在開發模式生效），不要新增 API Route。
 - 介面需要的資料後端沒有提供時（例如各服務的 Mock 回應筆數、批次啟停），用既有 API 組合（逐服務查詢、逐筆呼叫並彙總成功與失敗），不要自行修改後端契約，也不要用假資料或寫死示意數字掩蓋。
+
+## 進行中的請求與表單狀態
+
+送出後到回應前，使用者仍可能關閉面板、開啟另一筆或修改輸入。會改變資料或觸發下載的請求（Mock 回應儲存、WSDL 轉換等）必須保證回應只作用在**原本送出的那一次**：
+
+- 擇一做法：請求進行中鎖定輸入、來源切換與關閉／切換面板（Esc、關閉鈕、點其他列）；或為每次送出標記識別（遞增序號、`AbortController`），回應回來時比對，已過期的回應不得關閉後來開的表單、不得改寫目前輸入、不得顯示結果或觸發下載。
+- 失敗時，原本送出的輸入要仍可在畫面上看到並可直接重試，同時顯示錯誤回饋；不要讓卸載的元件吞掉錯誤或遺失輸入。
+- WSDL 轉換的結果卡與下載必須對應同一次送出的來源（網址或檔案）與 Package 名稱；網址模式與檔案模式在 204、非 2xx、網路錯誤時都要保留已輸入的網址／所選檔案／Package 名稱。
 
 ## 設定檔
 
@@ -119,4 +133,8 @@ Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停
 
 ## 驗證
 
-`npm run type-check`、`npm run lint`；瀏覽器 E2E 使用 `npm run test:e2e`（API 以 `e2e/fixtures/mock-api.ts` 攔截，新增互動時在此補情境）。E2E 會把 `.next` 建成非匯出版本，不影響正式建置產生的 `out/`。涉及路由或建置設定時，執行 `cd backend && .\gradlew.bat bootRun`，從 `http://localhost:8080/dynamic-api/` 驗證生產模式。型別檢查、lint 與建置通過不代表畫面正確；未實際開啟畫面驗證的項目要在報告中註明。
+- 前端品質檢查依序執行：安裝依賴 → `npm run type-check` → `npm run lint` → 正式建置；任一步之後若再修改程式，從修改後的那一步重跑到正式建置，最終提交要有依此順序、對同一提交的完整紀錄，不要拿較早或分開執行的建置結果充當。
+- 瀏覽器 E2E 使用 `npm run test:e2e`（API 以 `e2e/fixtures/mock-api.ts` 攔截，新增互動時在此補情境）。E2E 會把 `.next` 建成非匯出版本，不影響正式建置產生的 `out/`。
+- E2E 在 `127.0.0.1:3100` 同源執行，API 來源與瀏覽器來源相同，無法區分兩者；修改主機或呼叫位址組法時，要補能區分「API 為不同來源絕對網址」與「瀏覽器網址」的斷言，做不到時在報告註明未驗證。
+- 進行中請求的保護要以延遲回應驗證：送出後在回應前關閉／切換表單或修改輸入，再讓舊請求成功與失敗，斷言不影響後來的表單、輸入與下載；失敗類測試要涵蓋每種輸入模式（例如 WSDL 的網址與檔案）。
+- 涉及路由或建置設定時，執行 `cd backend && .\gradlew.bat bootRun`，從 `http://localhost:8080/dynamic-api/` 驗證生產模式。型別檢查、lint 與建置通過不代表畫面正確；未實際開啟畫面驗證的項目要在報告中註明。
