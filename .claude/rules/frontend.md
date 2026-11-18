@@ -8,7 +8,7 @@ paths:
 
 # Next.js 管理介面與建置整合
 
-設計說明：`docs-site/docs/sdd/frontend.md`。
+設計說明：`docs-site/docs/sdd/frontend.md`。視覺與畫面規格：`design/admin-light-redesign/`（README、`tokens.json`、`screens/*.dc.html`，唯讀參考；畫面檔中的示意資料不可寫死）。
 
 ## 常用命令
 
@@ -31,7 +31,7 @@ npm run test:e2e     # Playwright；先安裝 chromium，測試會自行在 127.
 nextjs-dynamic-api-manager/
 ├── package.json                 # scripts：dev / build（皆用 --turbopack）、type-check、lint、test:e2e
 ├── playwright.config.ts         # chromium E2E；webServer 使用 127.0.0.1:3100
-├── e2e/                         # Playwright 規格、API 假資料與共用攔截夾具
+├── e2e/                         # Playwright 規格；fixtures/mock-api.ts（攔截管理 API）、fixtures/mock-data.ts（假資料）
 ├── next.config.ts               # 生產模式：output export、basePath /dynamic-api、trailingSlash；DYNAMIC_API_E2E=1 時停用 export
 ├── next.config.js               # 與 .ts 內容相近的舊設定（TD-10），修改時兩份一起改
 ├── tsconfig.json                # 路徑別名 @/* → src/*
@@ -42,39 +42,35 @@ nextjs-dynamic-api-manager/
 ├── public/                      # create-next-app 預設圖示
 └── src/
     ├── app/                     # App Router；每頁都是 'use client'
-    │   ├── layout.tsx           # 根版面（'use client'）：直接套用 ThemeProvider(techTheme)、Header、Container
+    │   ├── layout.tsx           # 根版面：透過 Providers 套用明亮版主題，並包上全站外框（左側側欄＋頂列麵包屑）
     │   ├── page.tsx             # 首頁
-    │   ├── endpoint/page.tsx    # Endpoint 清單、開關、WSDL 工具入口
-    │   ├── restful/page.tsx     # RESTful 清單、開關
-    │   ├── response/page.tsx    # Mock 回應（讀 ?publishUri=&serviceType=，以 Suspense 包住）
-    │   ├── about/page.tsx
-    │   ├── test-api/page.tsx    # 舊測試頁，呼叫已不存在的 /api 代理
+    │   ├── endpoint/page.tsx    # Endpoint 清單：統計卡、搜尋與狀態篩選、批次操作、分頁、Mock 回應筆數、確認框與 toast
+    │   ├── restful/page.tsx     # RESTful 清單（元件樣式比照 Endpoint 清單）、開關
+    │   ├── response/page.tsx    # Mock 回應（讀 ?publishUri=&serviceType=，以 Suspense 包住）；右側編輯面板新增／編輯
+    │   ├── wsdl/page.tsx        # WSDL 轉換獨立頁（取代原 WsdlGenObjDialog 彈窗）
+    │   ├── about/page.tsx       # 系統資訊
+    │   ├── test-api/page.tsx    # 舊測試頁，呼叫已不存在的 /api 代理；保留網址，不放進側欄
     │   ├── not-found.tsx
     │   └── globals.css
-    ├── components/
-    │   ├── Header.tsx           # 導覽列（新增頁面時加連結）
-    │   ├── Providers.tsx        # (未使用) 主題改由 layout.tsx 直接設定
-    │   ├── CyberpunkBackground.tsx   # (未使用)
-    │   └── CyberpunkLoader.tsx       # (未使用)
+    ├── components/              # Providers（主題）、全站外框（側欄、頂列）、共用確認框、toast 等共用元件
+    │   └── Cyberpunk*.tsx       # (未使用) 舊深色風格元件，若仍存在也不要再引用
     ├── forms/                   # react-hook-form + yup
     │   ├── EndpointForm.tsx
     │   └── RestfulForm.tsx
-    ├── dialogs/WsdlGenObjDialog.tsx   # WSDL 轉換（送出 wsdlPath，與後端 wsdlUrl 不符：KI-03）
+    ├── dialogs/                 # 對話框類元件；WSDL 轉換已改為 /wsdl 頁，不再使用彈窗
     ├── services/                # 所有 API 呼叫 [management-api.md]
     │   ├── api.ts               # axios 實例 apiClient、code ≠ 200 視為錯誤
-    │   ├── endpoint.service.ts  # /dynamic-api/ws、uploadJarFile
+    │   ├── endpoint.service.ts  # /dynamic-api/ws、uploadJarFile、genWsdlObj（multipart：wsdlUrl／file／packageName）
     │   ├── restful.service.ts   # /dynamic-api/api
     │   └── response.service.ts  # /dynamic-api/common
     ├── types/                   # 與後端 DTO 對應 [management-api.md]
     │   ├── models.ts
     │   └── response.ts
     ├── config/config.ts         # appConfig：apiUrl 判斷、debugMode、timeout
-    └── theme/
-        ├── tech.ts              # 目前使用的 MUI 主題
-        └── cyberpunk.ts         # (未使用)
+    └── theme/                   # 明亮版 MUI 主題（palette.mode 'light'，色碼取自 tokens.json）；舊深色主題 tech.ts、cyberpunk.ts 不再使用
 ```
 
-新元件依類型放入 `components/`、`forms/`、`dialogs/`；API 呼叫只放在 `services/`；型別放在 `types/`。
+新元件依類型放入 `components/`、`forms/`、`dialogs/`；API 呼叫只放在 `services/`；型別放在 `types/`。新增前先確認外框、確認框、toast、開關等共用元件是否可沿用。
 
 ## 生產模式是靜態匯出
 
@@ -93,13 +89,14 @@ Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停
 2. `backend/build.gradle` 中 `copyNextjsBuild` 的 `pages` 清單（把 `<page>/index.html` 複製為 `<page>.html`）
 3. `backend/.../config/SpaController.java` 的 `@GetMapping` 路徑清單（含有、無結尾斜線兩種）
 
-漏掉 2 或 3，生產模式該頁會 404，但開發模式看不出來。導覽列在 `src/components/Header.tsx`。
+漏掉 2 或 3，生產模式該頁會 404，但開發模式看不出來。需要出現在導覽時，在 `components/` 的側欄元件加入連結，並補上頂列麵包屑；側欄的目前頁要帶 `aria-current="page"`。只改 `pages` 清單加頁名，不要為了在其他環境建置而改寫 `buildFrontend` 等前端建置任務。
 
 ## API 呼叫
 
 - 一律透過 `src/services/api.ts` 的 `apiClient`，不要在元件中直接用 `fetch`／新的 axios 實例（`test-api` 頁是舊的反例）。
-- `appConfig.apiUrl`（`src/config/config.ts`）在頁面不是從 `:3000` 開啟時會變成空字串（同源相對路徑）。不要改成固定網址。
+- `appConfig.apiUrl`（`src/config/config.ts`）在頁面不是從 `:3000` 開啟時會變成空字串（同源相對路徑）。不要改成固定網址；畫面上顯示的主機或呼叫位址也取自目前瀏覽器網址，不寫死 `localhost:8080`。
 - 開發模式的 API 代理路由已刪除（KI-01）；本機開發需在 `.env.local` 設 `NEXT_PUBLIC_API_URL=http://localhost:8080`。若要恢復代理，用 `next.config` 的 `rewrites`（只在開發模式生效），不要新增 API Route。
+- 介面需要的資料後端沒有提供時（例如各服務的 Mock 回應筆數、批次啟停），用既有 API 組合（逐服務查詢、逐筆呼叫並彙總成功與失敗），不要自行修改後端契約，也不要用假資料或寫死示意數字掩蓋。
 
 ## 設定檔
 
@@ -109,8 +106,11 @@ Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停
 ## 慣例
 
 - UI 使用 MUI 7（`@mui/material`、`@mui/x-data-grid`）；表單使用 `react-hook-form` + `yup`（參考 `src/forms/`）。
+- 主題為明亮版（頁面底色 `#f5f7fa`、主色 `#2563eb`、按鈕文字不轉大寫），色碼與尺寸以 `design/admin-light-redesign/tokens.json` 為準。
+- 不載入 Google Fonts 等外部字型網址（系統部署在內部網路）；`font-family` 以 `system-ui`／`monospace` 作為後援。
 - 介面文字使用台灣繁體中文。
-- 會改變服務狀態的操作（開關、刪除）要有確認對話框。
+- 會改變服務狀態的操作（開關、刪除）要有自訂確認對話框，不使用瀏覽器 `window.alert`／`window.confirm`。成功後以 toast 回饋；啟停可提供「復原」（反向呼叫一次），刪除不提供復原。確認框文案要符合後端實際行為（例如刪除 Endpoint 不會刪除 Mock 回應）。
+- 資料畫面要呈現載入中、無資料、搜尋無結果與載入失敗（含重試）狀態；窄螢幕時側欄換到內容上方，不可出現整頁橫向捲動，寬表格只在自己的容器內捲動。
 
 ## 建置注意
 
@@ -119,4 +119,4 @@ Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停
 
 ## 驗證
 
-`npm run type-check`、`npm run lint`；瀏覽器 E2E 使用 `npm run test:e2e`。E2E 會把 `.next` 建成非匯出版本，不影響正式建置產生的 `out/`。涉及路由或建置設定時，執行 `cd backend && .\gradlew.bat bootRun`，從 `http://localhost:8080/dynamic-api/` 驗證生產模式。
+`npm run type-check`、`npm run lint`；瀏覽器 E2E 使用 `npm run test:e2e`（API 以 `e2e/fixtures/mock-api.ts` 攔截，新增互動時在此補情境）。E2E 會把 `.next` 建成非匯出版本，不影響正式建置產生的 `out/`。涉及路由或建置設定時，執行 `cd backend && .\gradlew.bat bootRun`，從 `http://localhost:8080/dynamic-api/` 驗證生產模式。型別檢查、lint 與建置通過不代表畫面正確；未實際開啟畫面驗證的項目要在報告中註明。

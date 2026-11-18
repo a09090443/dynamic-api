@@ -36,7 +36,9 @@ API 規格：`docs-site/docs/sdd/api/`。
 | `dto/MockResponseRequestDTO`、`MockResponseResponseDTO` | `src/types/response.ts`、`response.service.ts` |
 | 端點路徑、參數名稱 | 對應 service 的 URL 與參數 |
 
-`@RequestParam` 名稱與前端送出的欄位名稱必須一致。已知不一致：`genWsdlObj` 後端讀 `wsdlUrl`、前端送 `wsdlPath`（KI-03）。
+`@RequestParam` 名稱與前端送出的欄位名稱必須一致。
+
+`POST /ws/genWsdlObj`（`WebServiceController.genWsdlObj`）是 multipart 檔案下載端點：參數 `wsdlUrl`（網址模式）、`file`（上傳檔案模式）、`packageName` 皆選填；成功回 ZIP（`Content-Disposition` 檔名 `generated_wsdl_object.zip`），內容為空時回 HTTP 204。前端 `endpoint.service.ts` 送出的欄位必須是 `wsdlUrl`（不是 `wsdlPath`），並把 204、非 2xx 與網路錯誤都當成轉換失敗處理。
 
 ## Controller 層的編排
 
