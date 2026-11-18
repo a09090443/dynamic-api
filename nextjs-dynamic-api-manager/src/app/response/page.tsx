@@ -170,6 +170,10 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
   const [editor, setEditor] = useState<Editor | null>(null);
   const [busy, setBusy] = useState<Set<string>>(new Set());
   const triggerRef = useRef<HTMLElement | null>(null);
+  /** 儲存請求進行中：鎖定關閉、Esc、切換列與新增，確保回應只作用在送出的那次編輯 */
+  const [saving, setSaving] = useState(false);
+  /** 每次開啟／關閉面板遞增；儲存回應回來時比對，過期的不關閉後來開的面板 */
+  const editorSeq = useRef(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -188,16 +192,23 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
   }, [load]);
 
   const openEditor = (next: Editor, trigger: HTMLElement | null) => {
+    if (saving) return;
+    editorSeq.current += 1;
     triggerRef.current = trigger;
     setEditor(next);
   };
-  const closeEditor = () => {
+  const closeEditor = (force = false) => {
+    if (saving && !force) return;
+    editorSeq.current += 1;
     setEditor(null);
     const el = triggerRef.current;
     if (el) setTimeout(() => el.focus(), 0);
   };
 
   const save = async (values: ResponseFormValues) => {
+    if (!editor) return;
+    const seq = editorSeq.current;
+    const target = editor;
     const payload = {
       publishUri,
       serviceType: serviceType as ServiceType,
@@ -206,12 +217,18 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
       responseContent: values.responseContent ?? '',
       isActive: false,
     };
-    if (editor?.mode === 'edit') {
-      await responseService.updateResponse({ ...payload, id: editor.response.id });
-    } else {
-      await responseService.saveMockResponse(payload);
+    setSaving(true);
+    try {
+      if (target.mode === 'edit') {
+        await responseService.updateResponse({ ...payload, id: target.response.id });
+      } else {
+        await responseService.saveMockResponse(payload);
+      }
+    } finally {
+      setSaving(false);
     }
-    closeEditor();
+    // 失敗時上面會丟出例外，由面板保留輸入並顯示錯誤；成功時只關閉送出它的那次編輯
+    if (editorSeq.current === seq) closeEditor(true);
     toast({ message: '已儲存，此回應目前為停用', severity: 'success' });
     void load();
   };
@@ -315,6 +332,7 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
                   hover
                   tabIndex={0}
                   aria-selected={editing}
+                  aria-disabled={saving || undefined}
                   aria-label={`編輯 ${r.method} 回應`}
                   data-testid={`response-row-${r.id}`}
                   onClick={(e) => openEditor({ mode: 'edit', response: r }, e.currentTarget)}
@@ -325,7 +343,7 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
                     }
                   }}
                   sx={{
-                    cursor: 'pointer',
+                    cursor: saving ? 'not-allowed' : 'pointer',
                     backgroundColor: editing ? c.primarySoftRow : undefined,
                     boxShadow: editing ? tokens.shadow.editingRow : undefined,
                     '&:focus-visible': { outline: `2px solid ${c.primary}`, outlineOffset: -2 },
@@ -392,7 +410,8 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
             }
           : { method: '', condition: '', responseContent: '' }
       }
-      onClose={closeEditor}
+      locked={saving}
+      onClose={() => closeEditor()}
       onSave={save}
       onDelete={editor.mode === 'edit' ? () => void remove(editor.response) : undefined}
     />
@@ -405,7 +424,7 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
           title={`${publishUri} 的 Mock 回應`}
           description="呼叫時以 方法 + 條件 完全相同且啟用的那一筆回應。"
           actions={
-            <Button variant="contained" startIcon={<AddIcon />} onClick={(e) => openEditor({ mode: 'new' }, e.currentTarget)}>
+            <Button variant="contained" startIcon={<AddIcon />} disabled={saving} onClick={(e) => openEditor({ mode: 'new' }, e.currentTarget)}>
               新增回應
             </Button>
           }
@@ -441,7 +460,7 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
         <Drawer
           anchor="right"
           open={!!editor}
-          onClose={closeEditor}
+          onClose={() => closeEditor()}
           slotProps={{ paper: { sx: { width: `min(${tokens.size.drawerWidth}px, 100vw)`, boxShadow: tokens.shadow.drawer } } }}
         >
           {panel}

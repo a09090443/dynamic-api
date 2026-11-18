@@ -26,13 +26,16 @@ interface Props {
   /** 失敗時 reject，面板保留輸入並顯示錯誤 */
   onSave: (values: ResponseFormValues) => Promise<void>;
   onDelete?: () => void;
+  /** 外層的儲存請求進行中；鎖定關閉與 Esc */
+  locked?: boolean;
 }
 
 /** 右側編輯面板內容（外層決定並排或覆蓋顯示） */
-export default function ResponseEditorPanel({ mode, initial, onClose, onSave, onDelete }: Props) {
+export default function ResponseEditorPanel({ mode, initial, onClose, onSave, onDelete, locked = false }: Props) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [formatError, setFormatError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const saving = submitting || locked;
   const {
     control,
     handleSubmit,
@@ -42,14 +45,15 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
   } = useForm<ResponseFormValues>({ resolver: yupResolver(schema), defaultValues: initial });
 
   const submit = handleSubmit(async (values) => {
-    setSaving(true);
+    if (saving) return;
+    setSubmitting(true);
     setSaveError(null);
     try {
       await onSave({ ...values, method: values.method.trim() });
     } catch (e) {
       setSaveError(e instanceof Error && e.message ? e.message : '儲存失敗');
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   });
 
@@ -74,9 +78,11 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
       onKeyDown={(e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
           e.stopPropagation();
-          onClose();
+          // 儲存中不關閉，避免回應回來時作用在已卸載的表單
+          if (!saving) onClose();
         }
       }}
+      aria-busy={saving || undefined}
       aria-labelledby="response-panel-title"
       data-testid="response-panel"
       sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}
@@ -85,7 +91,7 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
         <Typography id="response-panel-title" variant="h2" component="h2" sx={{ flex: 1 }}>
           {title}
         </Typography>
-        <IconButton aria-label="關閉" onClick={onClose} size="small">
+        <IconButton aria-label="關閉" onClick={onClose} size="small" disabled={saving}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
@@ -109,6 +115,7 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
                 {...field}
                 id="resp-method"
                 size="small"
+                slotProps={{ htmlInput: { readOnly: saving } }}
                 autoFocus
                 required
                 error={!!errors.method}
@@ -129,7 +136,7 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
                 id="resp-condition"
                 size="small"
                 helperText="完全相等才會命中，留空代表 JAR 未帶條件"
-                slotProps={{ htmlInput: { style: { fontFamily: tokens.font.mono, fontSize: 13 } } }}
+                slotProps={{ htmlInput: { readOnly: saving, style: { fontFamily: tokens.font.mono, fontSize: 13 } } }}
               />
             </Box>
           )}
@@ -142,7 +149,7 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Box component="label" htmlFor="resp-content" sx={{ ...labelSx, flex: 1 }}>回應內容</Box>
-                <Button size="small" variant="text" onClick={format} sx={{ minHeight: 28 }}>
+                <Button size="small" variant="text" onClick={format} disabled={saving} sx={{ minHeight: 28 }}>
                   格式化
                 </Button>
               </Box>
@@ -158,7 +165,7 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
                 error={!!formatError}
                 helperText={formatError ?? undefined}
                 slotProps={{
-                  htmlInput: { style: { fontFamily: tokens.font.mono, fontSize: 13, lineHeight: 1.5 } },
+                  htmlInput: { readOnly: saving, style: { fontFamily: tokens.font.mono, fontSize: 13, lineHeight: 1.5 } },
                 }}
                 sx={{ '& .MuiOutlinedInput-root': { backgroundColor: c.surfaceMuted, alignItems: 'flex-start' }, '& textarea': { minHeight: 240 } }}
               />

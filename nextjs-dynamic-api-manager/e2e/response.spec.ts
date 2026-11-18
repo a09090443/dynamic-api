@@ -217,6 +217,75 @@ test.describe('SC-RESPONSE-02 Mock 回應：新增／編輯驗證、格式化、
     expect(mockApi.callsOf(RSP.save)).toHaveLength(0);
   });
 
+  // ISS-RESPONSE-PENDING-EDITOR：儲存請求只作用在送出它的那次編輯
+  test('RSP-04／RSP-06 儲存進行中：Esc、關閉、點其他列、新增都不會換掉表單；成功後只關閉原本那次編輯', async ({ page, mockApi }) => {
+    mockApi.set(RSP.update, () => ({ json: ok(null), delayMs: 1500 }));
+    await page.goto(COMPANY);
+    await page.getByTestId('response-row-101').click();
+    const p = panel(page);
+    await p.getByLabel('回應內容').fill('first-edit');
+    await p.getByRole('button', { name: '儲存' }).click();
+    await expect(p.getByRole('button', { name: '儲存中…' })).toBeDisabled();
+
+    // 請求進行中嘗試關閉或開啟另一筆
+    await p.getByLabel('回應內容').press('Escape');
+    await expect(p).toBeVisible();
+    await expect(p.getByRole('button', { name: '關閉' })).toBeDisabled();
+    await expect(p.getByRole('button', { name: '取消' })).toBeDisabled();
+    await expect(page.getByRole('main').getByRole('button', { name: '新增回應' }).first()).toBeDisabled();
+    await page.getByTestId('response-row-102').click({ force: true });
+    await expect(p.getByRole('heading', { name: '編輯回應' })).toBeVisible();
+    await expect(p.getByLabel('方法名稱')).toHaveValue('getCompany');
+    await expect(p.getByLabel('回應內容')).toHaveValue('first-edit');
+    // 輸入在儲存中為唯讀，送出的內容不會被改掉
+    await expect(p.getByLabel('回應內容')).toHaveAttribute('readonly', '');
+
+    // 回應回來後只關閉這次編輯
+    await expect(panel(page)).toHaveCount(0);
+    await expect(toast(page)).toContainText('已儲存，此回應目前為停用');
+    const updates = mockApi.callsOf(RSP.update);
+    expect(updates).toHaveLength(1);
+    expect(updates[0].body).toMatchObject({ id: '101', method: 'getCompany', responseContent: 'first-edit' });
+
+    // 之後開啟另一筆是正常、獨立的表單
+    await page.getByTestId('response-row-102').click();
+    await expect(panel(page).getByLabel('方法名稱')).not.toHaveValue('getCompany');
+    await expect(panel(page).getByLabel('回應內容')).not.toHaveValue('first-edit');
+    await expect(panel(page).getByLabel('回應內容')).not.toHaveAttribute('readonly', '');
+    await page.waitForTimeout(300);
+    await expect(panel(page)).toBeVisible();
+  });
+
+  test('RSP-06 儲存進行中失敗：關閉／切換被擋下，原輸入與錯誤仍在，可直接再送一次', async ({ page, mockApi }) => {
+    mockApi.set(RSP.update, () => ({ json: fail('寫入失敗'), delayMs: 1500 }));
+    await page.goto(COMPANY);
+    await page.getByTestId('response-row-101').click();
+    const p = panel(page);
+    await p.getByLabel('條件').fill('k=1');
+    await p.getByLabel('回應內容').fill('pending-body');
+    await p.getByRole('button', { name: '儲存' }).click();
+    await expect(p.getByRole('button', { name: '儲存中…' })).toBeDisabled();
+    await p.getByLabel('回應內容').press('Escape');
+    await page.getByTestId('response-row-102').click({ force: true });
+
+    await expect(p.getByRole('alert')).toContainText('寫入失敗');
+    await expect(p.getByRole('alert')).toContainText('輸入的內容已保留');
+    await expect(p.getByLabel('方法名稱')).toHaveValue('getCompany');
+    await expect(p.getByLabel('條件')).toHaveValue('k=1');
+    await expect(p.getByLabel('回應內容')).toHaveValue('pending-body');
+    await expect(p.getByRole('button', { name: '儲存' })).toBeEnabled();
+    await expect(p.getByRole('button', { name: '關閉' })).toBeEnabled();
+
+    mockApi.set(RSP.update, ok(null));
+    await p.getByRole('button', { name: '儲存' }).click();
+    await expect(panel(page)).toHaveCount(0);
+    const updates = mockApi.callsOf(RSP.update);
+    expect(updates).toHaveLength(2);
+    for (const u of updates) {
+      expect(u.body).toMatchObject({ id: '101', method: 'getCompany', condition: 'k=1', responseContent: 'pending-body' });
+    }
+  });
+
   test('RSP-06 刪除：先確認再呼叫 deleteResponse，不提供復原', async ({ page, mockApi }) => {
     const dialogs = trackNativeDialogs(page);
     await page.goto(COMPANY);

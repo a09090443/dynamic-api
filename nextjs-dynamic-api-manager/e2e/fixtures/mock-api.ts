@@ -138,6 +138,19 @@ export const test = base.extend<{ mockApi: MockApi }>({
         (url) => url.origin === origin && API_PATH.test(url.pathname),
         async (route) => {
           const request = route.request();
+          // 頁面來源與 API 來源不同時（見 e2e/origin.spec.ts）瀏覽器會套用 CORS：預檢直接放行、回應帶允許標頭
+          const cors = { 'access-control-allow-origin': '*' };
+          if (request.method() === 'OPTIONS') {
+            await route.fulfill({
+              status: 204,
+              headers: {
+                ...cors,
+                'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'access-control-allow-headers': '*',
+              },
+            });
+            return;
+          }
           const url = new URL(request.url());
           const path = url.pathname;
           const key = `${request.method()} ${path}`;
@@ -152,7 +165,7 @@ export const test = base.extend<{ mockApi: MockApi }>({
           const entry = table[key];
           if (!entry) {
             unhandled.push(key);
-            await route.fulfill({ json: { code: 500, message: `E2E 未定義假資料: ${key}`, data: null } });
+            await route.fulfill({ headers: cors, json: { code: 500, message: `E2E 未定義假資料: ${key}`, data: null } });
             return;
           }
           const reply: MockReply = typeof entry === 'function' ? await entry(call) : { json: entry };
@@ -164,14 +177,14 @@ export const test = base.extend<{ mockApi: MockApi }>({
             return;
           }
           if (reply.json) {
-            await route.fulfill({ status: reply.status ?? 200, json: reply.json });
+            await route.fulfill({ status: reply.status ?? 200, headers: cors, json: reply.json });
             return;
           }
           await route.fulfill({
             status: reply.status ?? 200,
             body: reply.body ?? '',
             contentType: reply.contentType,
-            headers: reply.headers,
+            headers: { ...cors, ...reply.headers },
           });
         },
       );

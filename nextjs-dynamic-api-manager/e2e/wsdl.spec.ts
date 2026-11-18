@@ -5,6 +5,7 @@ import { trackNativeDialogs } from './fixtures/helpers';
 const ZIP_BYTES = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x01, 0x02, 0x03, 0x04]);
 const WSDL_URL = 'https://example.test/service.wsdl';
 const PKG = 'com.example.generated';
+const WSDL_FILE_BODY = '<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" name="e2e-file"/>';
 
 const zipReply = (delayMs = 0): MockHandler => () => ({
   status: 200,
@@ -124,7 +125,7 @@ test.describe('SC-WSDL-01 WSDL 轉換頁', () => {
     expect(raw).not.toContain('wsdlPath');
   });
 
-  for (const c of [
+  const failures = [
     { name: 'HTTP 204', handler: (() => ({ status: 204 })) as MockHandler, detail: 'HTTP 204' },
     {
       name: 'HTTP 500 純文字錯誤',
@@ -132,8 +133,10 @@ test.describe('SC-WSDL-01 WSDL 轉換頁', () => {
       detail: 'WSDL 解析失敗：連線逾時',
     },
     { name: '網路錯誤', handler: (() => ({ abort: true })) as MockHandler, detail: '' },
-  ]) {
-    test(`WSDL-05 ${c.name}：顯示「無法轉換」與再試一次，輸入保留`, async ({ page, mockApi }) => {
+  ];
+
+  for (const c of failures) {
+    test(`WSDL-05 網址模式 ${c.name}：顯示「無法轉換」與再試一次，輸入保留`, async ({ page, mockApi }) => {
       mockApi.set(EP.wsdl, c.handler);
       let downloads = 0;
       page.on('download', () => downloads++);
@@ -164,4 +167,106 @@ test.describe('SC-WSDL-01 WSDL 轉換頁', () => {
       expect(calls[1].raw).toContain(WSDL_URL);
     });
   }
+
+  // ISS-WSDL-FILE-FAILURE-EVIDENCE：檔案模式失敗後保留所選檔案與 Package 名稱，再試一次送出原本的 file 與 packageName
+  for (const c of failures) {
+    test(`WSDL-05 檔案模式 ${c.name}：保留檔名與 Package 名稱，再試一次用原檔重送 multipart`, async ({ page, mockApi }) => {
+      mockApi.set(EP.wsdl, c.handler);
+      let downloads = 0;
+      page.on('download', () => downloads++);
+      await page.goto('wsdl/');
+      await page.getByRole('radio', { name: /上傳檔案/ }).check();
+      await page.getByTestId('wsdl-file-input').setInputFiles({
+        name: 'sample.wsdl',
+        mimeType: 'application/xml',
+        buffer: Buffer.from(WSDL_FILE_BODY),
+      });
+      await page.getByLabel('Package 名稱').fill(PKG);
+      await submit(page).click();
+
+      const error = page.getByTestId('wsdl-result-error');
+      await expect(error).toContainText('無法轉換：讀不到這個 WSDL');
+      if (c.detail) await expect(error).toContainText(c.detail);
+      await expect(page.getByTestId('wsdl-result-success')).toHaveCount(0);
+      await expect(page.getByRole('radio', { name: /上傳檔案/ })).toBeChecked();
+      await expect(page.getByTestId('wsdl-file-name')).toHaveText('已選擇：sample.wsdl');
+      await expect(page.getByLabel('Package 名稱')).toHaveValue(PKG);
+      expect(downloads).toBe(0);
+
+      mockApi.set(EP.wsdl, zipReply());
+      const download = page.waitForEvent('download');
+      await error.getByRole('button', { name: '再試一次' }).click();
+      await download;
+      await expect(page.getByTestId('wsdl-result-success')).toBeVisible();
+      const calls = mockApi.callsOf(EP.wsdl);
+      expect(calls).toHaveLength(2);
+      for (const call of calls) {
+        expect(hasField(call.raw, 'file')).toBe(true);
+        expect(call.raw).toContain('filename="sample.wsdl"');
+        expect(call.raw).toContain(WSDL_FILE_BODY);
+        expect(hasField(call.raw, 'packageName')).toBe(true);
+        expect(call.raw).toContain(PKG);
+        expect(hasField(call.raw, 'wsdlUrl')).toBe(false);
+      }
+    });
+  }
+
+  // ISS-WSDL-PENDING-INPUT：轉換中鎖定來源、網址／檔案與 Package 名稱，結果與下載只對應送出當下的輸入
+  test('WSDL-04 網址模式轉換中：輸入全部鎖定，完成卡與下載對應送出時的網址與 Package', async ({ page, mockApi }) => {
+    mockApi.set(EP.wsdl, zipReply(1500));
+    await page.goto('wsdl/');
+    await urlInput(page).fill(WSDL_URL);
+    await page.getByLabel('Package 名稱').fill(PKG);
+    const download = page.waitForEvent('download');
+    await submit(page).click();
+    await expect(page.getByTestId('wsdl-result-converting')).toBeVisible();
+
+    await expect(urlInput(page)).toBeDisabled();
+    await expect(page.getByLabel('Package 名稱')).toBeDisabled();
+    await expect(page.getByRole('radio', { name: /上傳檔案/ })).toBeDisabled();
+    await expect(page.getByRole('radio', { name: /WSDL 網址/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: '清除網址' })).toHaveCount(0);
+    // 嘗試切換來源也不會生效
+    await page.getByRole('radio', { name: /上傳檔案/ }).click({ force: true });
+    await expect(page.getByRole('radio', { name: /WSDL 網址/ })).toBeChecked();
+
+    await download;
+    await expect(page.getByTestId('wsdl-result-success')).toBeVisible();
+    await expect(urlInput(page)).toBeEnabled();
+    await expect(urlInput(page)).toHaveValue(WSDL_URL);
+    await expect(page.getByLabel('Package 名稱')).toHaveValue(PKG);
+    const calls = mockApi.callsOf(EP.wsdl);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].raw).toContain(WSDL_URL);
+    expect(calls[0].raw).toContain(PKG);
+
+    // 完成後改輸入：舊結果立即作廢，不會對到新輸入
+    await page.getByLabel('Package 名稱').fill('com.example.other');
+    await expect(page.getByTestId('wsdl-result-success')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '重新下載' })).toHaveCount(0);
+    await expect(page.getByTestId('wsdl-result-idle')).toBeVisible();
+  });
+
+  test('WSDL-04 檔案模式轉換中：檔案區與 Package 鎖定，延遲失敗後仍保留送出的檔案', async ({ page, mockApi }) => {
+    mockApi.set(EP.wsdl, () => ({ status: 500, body: '解析失敗', contentType: 'text/plain;charset=UTF-8', delayMs: 1500 }));
+    await page.goto('wsdl/');
+    await page.getByRole('radio', { name: /上傳檔案/ }).check();
+    await page.getByTestId('wsdl-file-input').setInputFiles({ name: 'first.wsdl', mimeType: 'application/xml', buffer: Buffer.from(WSDL_FILE_BODY) });
+    await page.getByLabel('Package 名稱').fill(PKG);
+    await submit(page).click();
+    await expect(page.getByTestId('wsdl-result-converting')).toBeVisible();
+
+    await expect(page.getByTestId('wsdl-dropzone')).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByTestId('wsdl-file-input')).toBeDisabled();
+    await expect(page.getByLabel('Package 名稱')).toBeDisabled();
+    await expect(page.getByRole('radio', { name: /WSDL 網址/ })).toBeDisabled();
+
+    await expect(page.getByTestId('wsdl-result-error')).toContainText('解析失敗');
+    await expect(page.getByTestId('wsdl-file-name')).toHaveText('已選擇：first.wsdl');
+    await expect(page.getByLabel('Package 名稱')).toHaveValue(PKG);
+    await expect(page.getByLabel('Package 名稱')).toBeEnabled();
+    const calls = mockApi.callsOf(EP.wsdl);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].raw).toContain('filename="first.wsdl"');
+  });
 });

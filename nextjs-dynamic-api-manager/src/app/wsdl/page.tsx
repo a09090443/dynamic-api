@@ -61,6 +61,8 @@ export default function WsdlPage() {
   const [dragOver, setDragOver] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const objectUrl = useRef<string | null>(null);
+  /** 每次送出遞增；回應回來時比對，過期的結果不顯示也不下載 */
+  const requestSeq = useRef(0);
 
   const revoke = () => {
     if (objectUrl.current) {
@@ -68,9 +70,17 @@ export default function WsdlPage() {
       objectUrl.current = null;
     }
   };
-  useEffect(() => revoke, []);
+  useEffect(
+    () => () => {
+      requestSeq.current += 1;
+      revoke();
+    },
+    [],
+  );
 
-  /** 修改輸入時回到尚未轉換的狀態（轉換中不打斷） */
+  const converting = phase.state === 'converting';
+
+  /** 修改輸入時回到尚未轉換的狀態；轉換中輸入已鎖定，不會走到這裡 */
   const resetResult = () => {
     setPhase((p) => {
       if (p.state === 'converting') return p;
@@ -80,7 +90,7 @@ export default function WsdlPage() {
   };
 
   const pickFile = (f: File | undefined | null) => {
-    if (!f) return;
+    if (!f || converting) return;
     const ok = ACCEPT.some((ext) => f.name.toLowerCase().endsWith(ext));
     if (!ok) {
       setFile(null);
@@ -101,9 +111,10 @@ export default function WsdlPage() {
   };
 
   const convert = async () => {
-    if (phase.state === 'converting') return;
+    if (converting) return;
     if (!validate()) return;
     revoke();
+    const seq = ++requestSeq.current;
     setPhase({ state: 'converting' });
     try {
       const blob = await endpointService.genWsdlObj({
@@ -111,16 +122,16 @@ export default function WsdlPage() {
         file: source === 'file' && file ? file : undefined,
         packageName: packageName.trim() || undefined,
       });
+      if (seq !== requestSeq.current) return;
       const url = URL.createObjectURL(blob);
       objectUrl.current = url;
       setPhase({ state: 'success', url });
       triggerDownload(url);
     } catch (e) {
+      if (seq !== requestSeq.current) return;
       setPhase({ state: 'error', detail: e instanceof Error ? e.message : '' });
     }
   };
-
-  const converting = phase.state === 'converting';
 
   const sourceOption = (value: Source, title: string, desc: string) => {
     const checked = source === value;
@@ -133,7 +144,8 @@ export default function WsdlPage() {
           gap: '10px',
           p: '12px 14px',
           borderRadius: '10px',
-          cursor: 'pointer',
+          cursor: converting ? 'not-allowed' : 'pointer',
+          opacity: converting && !checked ? 0.6 : 1,
           border: `1px solid ${checked ? c.primary : c.borderInput}`,
           backgroundColor: checked ? c.primarySoft : c.surface,
           '&:focus-within': { boxShadow: tokens.shadow.focusRing },
@@ -144,6 +156,7 @@ export default function WsdlPage() {
           name="wsdl-source"
           value={value}
           checked={checked}
+          disabled={converting}
           onChange={() => {
             setSource(value);
             setErrors({});
@@ -284,6 +297,7 @@ export default function WsdlPage() {
                   type="url"
                   size="small"
                   required
+                  disabled={converting}
                   value={wsdlUrl}
                   placeholder="http://主機:埠/服務?wsdl"
                   onChange={(e) => {
@@ -296,7 +310,7 @@ export default function WsdlPage() {
                   slotProps={{
                     htmlInput: { style: { fontFamily: tokens.font.mono, fontSize: 13 } },
                     input: {
-                      endAdornment: wsdlUrl ? (
+                      endAdornment: wsdlUrl && !converting ? (
                         <InputAdornment position="end">
                           <IconButton
                             size="small"
@@ -321,20 +335,23 @@ export default function WsdlPage() {
                 </Box>
                 <Box
                   role="button"
-                  tabIndex={0}
+                  tabIndex={converting ? -1 : 0}
+                  aria-disabled={converting || undefined}
                   aria-labelledby="wsdl-file-l"
                   aria-describedby="wsdl-file-hint"
                   data-testid="wsdl-dropzone"
-                  onClick={() => fileInput.current?.click()}
+                  onClick={() => {
+                    if (!converting) fileInput.current?.click();
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      fileInput.current?.click();
+                      if (!converting) fileInput.current?.click();
                     }
                   }}
                   onDragOver={(e) => {
                     e.preventDefault();
-                    setDragOver(true);
+                    if (!converting) setDragOver(true);
                   }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={(e) => {
@@ -353,7 +370,8 @@ export default function WsdlPage() {
                     backgroundColor: dragOver ? c.primarySoft : c.surfaceMuted,
                     border: `1.5px dashed ${errors.file ? c.danger : dragOver ? c.primary : c.textDisabled}`,
                     borderRadius: '10px',
-                    cursor: 'pointer',
+                    cursor: converting ? 'not-allowed' : 'pointer',
+                    opacity: converting ? 0.7 : 1,
                     '&:focus-visible': { outline: `2px solid ${c.primary}`, outlineOffset: 2 },
                   }}
                 >
@@ -373,6 +391,7 @@ export default function WsdlPage() {
                     type="file"
                     accept={ACCEPT.join(',')}
                     data-testid="wsdl-file-input"
+                    disabled={converting}
                     aria-labelledby="wsdl-file-l"
                     tabIndex={-1}
                     onChange={(e) => {
@@ -395,6 +414,7 @@ export default function WsdlPage() {
               <TextField
                 id="wsdl-pkg"
                 size="small"
+                disabled={converting}
                 value={packageName}
                 placeholder="com.example.endpoint"
                 onChange={(e) => {

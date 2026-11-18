@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Box, Button } from '@mui/material';
 import { tokens } from '@/theme/tokens';
 import { useServiceSummary } from '@/components/ServiceSummaryProvider';
-import { apiHost } from '@/utils/serviceUrl';
+import { browserHost } from '@/utils/serviceUrl';
 import { breadcrumbsFor } from './navigation';
 
 const c = tokens.color;
@@ -19,7 +19,7 @@ export default function Topbar() {
   const [host, setHost] = useState('');
 
   useEffect(() => {
-    setHost(apiHost());
+    setHost(browserHost());
   }, []);
 
   const dot = connection === 'ok' ? c.success : connection === 'error' ? c.danger : c.textDisabled;
