@@ -17,10 +17,23 @@ import java.nio.charset.StandardCharsets;
 /**
  * SPA (Single Page Application) 路由處理控制器
  * 
- * 處理 Next.js 靜態導出的頁面路由，支援帶和不帶尾隨斜線的 URL
+ * 處理 Next.js 靜態導出的頁面路由，支援帶和不帶尾隨斜線的 URL。
+ * 依序讀取 static/&lt;page&gt;.html、static/&lt;page&gt;/index.html，兩者都不存在才回 404。
  */
 @Controller
 public class SpaController {
+
+    /** 讀取靜態頁的 ClassLoader；null 表示使用預設（執行緒 context ClassLoader）。 */
+    private final ClassLoader classLoader;
+
+    public SpaController() {
+        this(null);
+    }
+
+    /** 測試用：指定讀取 static/ 資源的 ClassLoader。 */
+    SpaController(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
     /**
      * 處理所有 SPA 路由，返回對應的 HTML 頁面
@@ -52,11 +65,16 @@ public class SpaController {
             }
             
             // 構建 HTML 文件路徑（相對於 classpath:/static/）
+            // 先讀 copyNextjsBuild 產生的 <page>.html；沒有時改讀 Next.js 匯出的 <page>/index.html
             String htmlPath = "static" + path + ".html";
-            
+            String indexPath = "static" + path + "/index.html";
+
             // 載入資源
-            Resource resource = new ClassPathResource(htmlPath);
-            
+            Resource resource = new ClassPathResource(htmlPath, classLoader);
+            if (!(resource.exists() && resource.isReadable())) {
+                resource = new ClassPathResource(indexPath, classLoader);
+            }
+
             if (resource.exists() && resource.isReadable()) {
                 // 讀取 HTML 內容
                 try (InputStream inputStream = resource.getInputStream()) {
@@ -68,7 +86,8 @@ public class SpaController {
             } else {
                 // 資源不存在
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("<html><body><h1>404 - Page Not Found</h1><p>Resource: " + htmlPath + "</p></body></html>");
+                        .body("<html><body><h1>404 - Page Not Found</h1><p>Resource: " + htmlPath
+                                + " or " + indexPath + "</p></body></html>");
             }
             
         } catch (IOException e) {

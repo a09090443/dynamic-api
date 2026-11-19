@@ -92,7 +92,7 @@ flowchart TB
 
 | 類別 | 說明 |
 |---|---|
-| `SpaController` | 將 `/endpoint`、`/restful`、`/response`、`/test-api`、`/about`、`/wsdl`（含結尾斜線）對應到 `static/{page}.html` |
+| `SpaController` | 將 `/endpoint`、`/restful`、`/response`、`/test-api`、`/about`、`/wsdl`（含結尾斜線）對應到 `static/{page}.html`；不存在時改讀 `static/{page}/index.html`，兩者都沒有回 404 |
 | `WebConfig` | `/` 轉送 `index.html`；全域 CORS 允許 `http://localhost:3000` |
 | `CustomApiMappingsEndpoint` | Actuator `show-mappings`：列出已啟用 RESTful 對應的 `RequestMappingInfo` |
 | `DynamicClassLoader` | 繼承 `CustomClassLoader` 並公開 `addURL`，目前**未被使用** |

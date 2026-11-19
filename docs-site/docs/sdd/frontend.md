@@ -78,7 +78,7 @@ flowchart LR
 | 生產（`NODE_ENV=production npm run build`） | `output: 'export'`、`basePath: '/dynamic-api'`、`trailingSlash: true`、`images.unoptimized` | 靜態檔案於 `out/` |
 | E2E（`DYNAMIC_API_E2E=1`，由 Playwright 自動帶入） | 同生產，但**不做** `output: 'export'`；`basePath`、`trailingSlash` 不變 | `.next/`，以 `next start` 在 `127.0.0.1:3100` 提供 |
 
-生產建置由 Gradle 觸發，輸出複製到 `backend/src/main/resources/static/`，並把 `endpoint/index.html` 等複製為 `endpoint.html` 供 `SpaController` 讀取（見 [8. 部署](./deployment.md)）。
+生產建置由 Gradle 觸發，輸出複製到 `backend/src/main/resources/static/`，並把 `endpoint/index.html` 等複製為 `endpoint.html` 供 `SpaController` 讀取；`SpaController` 找不到 `{page}.html` 時會改讀 `{page}/index.html`（見 [8. 部署](./deployment.md)）。
 
 :::note 兩份 next.config
 專案同時存在 `next.config.ts` 與 `next.config.js`，內容相近。Next.js 會優先使用其中一份（依版本規則），維護時請兩份同步或刪除其中一份（TD-10）。`DYNAMIC_API_E2E` 開關兩份都有實作。

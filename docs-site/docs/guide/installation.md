@@ -147,7 +147,7 @@ Next.js 開發模式也使用 port 3000，兩者同時啟動時請改用 `npm st
 
 `backend/build.gradle` 的前端建置任務寫死使用 `tools/node-v22.20.0-win-x64/npm.cmd`，而 `processResources` 依賴這個任務，所以在 macOS / Linux 上執行 `./gradlew bootRun` 或 `bootJar` 會在前端建置步驟失敗。目前可行的做法：
 
-1. 手動在 `nextjs-dynamic-api-manager/` 執行 `NODE_ENV=production npm run build`，把 `out/` 內容複製到 `backend/src/main/resources/static/`。
+1. 手動在 `nextjs-dynamic-api-manager/` 執行 `NODE_ENV=production npm run build`，把 `out/` 內容複製到 `backend/src/main/resources/static/`。不需要再把各頁的 `<page>/index.html` 改名為 `<page>.html`：後端找不到 `<page>.html` 時會改讀 `<page>/index.html`（例如 `/dynamic-api/wsdl`、`/dynamic-api/wsdl/` 都能開啟）。
 2. 以 `./gradlew bootRun -x buildFrontend` 略過前端任務（Gradle 會一併略過它所依賴的 `installNextjs`、`buildNextjs` 等任務）。
 
 預設路徑已是 `/tmp`，macOS / Linux 不需要另外修改 `*.properties`；但 `/tmp` 不是持久目錄，正式使用時請改到持久目錄。
