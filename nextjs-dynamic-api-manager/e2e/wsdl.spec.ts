@@ -269,4 +269,61 @@ test.describe('SC-WSDL-01 WSDL 轉換頁', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0].raw).toContain('filename="first.wsdl"');
   });
+
+  // SC-WSDL-02／WSDL-06：請求等待時以側欄（用戶端導覽）離開 /wsdl，之後才釋放成功回應，
+  // 舊回應必須被捨棄：不得觸發下載，也不得在回到 /wsdl 時顯示完成。
+  for (const mode of ['url', 'file'] as const) {
+    test(`WSDL-06 ${mode === 'url' ? '網址' : '檔案'}模式：離開頁面後才回來的成功回應不下載、不顯示完成`, async ({ page, mockApi }) => {
+      let release!: () => void;
+      const gate = new Promise<void>((r) => {
+        release = r;
+      });
+      mockApi.set(EP.wsdl, async () => {
+        await gate;
+        return zipReply()({} as never);
+      });
+      const downloads: string[] = [];
+      page.on('download', (d) => downloads.push(d.suggestedFilename()));
+
+      await page.goto('wsdl/');
+      if (mode === 'url') {
+        await urlInput(page).fill(WSDL_URL);
+      } else {
+        await page.getByRole('radio', { name: /上傳檔案/ }).check();
+        await page.getByTestId('wsdl-file-input').setInputFiles({ name: 'late.wsdl', mimeType: 'application/xml', buffer: Buffer.from(WSDL_FILE_BODY) });
+      }
+      await page.getByLabel('Package 名稱').fill(PKG);
+      await submit(page).click();
+      await expect(page.getByTestId('wsdl-result-converting')).toBeVisible();
+      await expect.poll(() => mockApi.callsOf(EP.wsdl).length).toBe(1);
+
+      // 標記目前文件，用來證明之後是用戶端導覽（同一份文件），舊請求仍在頁面中等待
+      await page.evaluate(() => {
+        (window as unknown as { __wsdlStale?: boolean }).__wsdlStale = true;
+      });
+      const nav = page.getByRole('navigation', { name: '主選單' });
+      await nav.getByRole('group', { name: '服務' }).getByRole('link', { name: /^SOAP Endpoint/ }).click();
+      await expect(page).toHaveURL(/\/endpoint\/?$/);
+      await expect(page.getByRole('heading', { name: 'SOAP Endpoint', level: 1 })).toBeVisible();
+
+      const responded = page.waitForResponse((r) => r.url().includes('/dynamic-api/ws/genWsdlObj'));
+      release();
+      const res = await responded;
+      expect(res.status()).toBe(200);
+      // 給頁面足夠時間處理舊回應（若未使請求失效，會在此期間觸發下載）
+      await page.waitForTimeout(1000);
+      expect(await page.evaluate(() => (window as unknown as { __wsdlStale?: boolean }).__wsdlStale)).toBe(true);
+      expect(downloads).toEqual([]);
+      await expect(page.getByText('已產生並開始下載')).toHaveCount(0);
+
+      // 回到 /wsdl：是新的空白狀態，不顯示舊請求的完成結果
+      await nav.getByRole('group', { name: '工具' }).getByRole('link', { name: /^WSDL 轉換/ }).click();
+      await expect(page).toHaveURL(/\/wsdl\/?$/);
+      await expect(page.getByTestId('wsdl-result-idle')).toBeVisible();
+      await expect(page.getByTestId('wsdl-result-success')).toHaveCount(0);
+      await expect(page.getByText('已產生並開始下載')).toHaveCount(0);
+      expect(downloads).toEqual([]);
+      expect(mockApi.callsOf(EP.wsdl)).toHaveLength(1);
+    });
+  }
 });
