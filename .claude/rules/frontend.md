@@ -21,7 +21,7 @@ npm run lint
 npm run test:e2e     # Playwright；先安裝 chromium，測試會自行在 127.0.0.1:3100 建置並啟動前端
 ```
 
-非 Windows 環境要手動建置生產版本：`NODE_ENV=production npm run build`，再把 `out/` 複製到 `backend/src/main/resources/static/`，並把各頁 `<page>/index.html` 複製為 `<page>.html`。
+非 Windows 環境要手動建置生產版本：`NODE_ENV=production npm run build`，再把 `out/` 內容複製到 `backend/src/main/resources/static/`。不需要再把各頁的 `<page>/index.html` 改名為 `<page>.html`：後端 `SpaController` 找不到 `<page>.html` 時會改讀 `<page>/index.html`（例如 `/dynamic-api/wsdl`、`/dynamic-api/wsdl/` 都能開啟）。
 
 ## 目錄樹
 
@@ -91,10 +91,10 @@ Playwright 的 webServer 會設定 `DYNAMIC_API_E2E=1`，只在 E2E 建置時停
 ## 新增頁面要改三個地方
 
 1. `nextjs-dynamic-api-manager/src/app/<page>/page.tsx`
-2. `backend/build.gradle` 中 `copyNextjsBuild` 的 `pages` 清單（把 `<page>/index.html` 複製為 `<page>.html`）
+2. `backend/build.gradle` 中 `copyNextjsBuild` 的 `pages` 清單：Windows 建置時用這份清單把 `<page>/index.html` 複製為 `<page>.html`。新增頁面時仍要加入頁名，但漏加不會再造成 404（`SpaController` 會改讀 `<page>/index.html`）。
 3. `backend/.../config/SpaController.java` 的 `@GetMapping` 路徑清單（含有、無結尾斜線兩種）
 
-漏掉 2 或 3，生產模式該頁會 404，但開發模式看不出來。需要出現在導覽時，在 `components/shell/` 的側欄元件加入連結，並補上頂列麵包屑；側欄的目前頁要帶 `aria-current="page"`。只改 `pages` 清單加頁名，不要為了在其他環境建置而改寫 `buildFrontend` 等前端建置任務。
+漏掉 3（`SpaController` 路徑），生產模式該頁會 404，但開發模式看不出來；漏掉 2（`pages` 清單）時，`SpaController` 仍會改讀 `<page>/index.html`。需要出現在導覽時，在 `components/shell/` 的側欄元件加入連結，並補上頂列麵包屑；側欄的目前頁要帶 `aria-current="page"`。只改 `pages` 清單加頁名，不要為了在其他環境建置而改寫 `buildFrontend` 等前端建置任務。
 
 ## API 呼叫
 
