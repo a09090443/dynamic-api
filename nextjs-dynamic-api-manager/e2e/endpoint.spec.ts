@@ -166,6 +166,73 @@ test.describe('SC-ENDPOINT-01 Endpoint 清單：文案、統計、搜尋、篩�
     await expect(page.getByTestId('mock-count-order')).toHaveText('0 筆 ›');
   });
 
+  // ISS-ENDPOINT-MOCK-CONCURRENCY-EVIDENCE：攔住 getResponseList，量測同時進行的請求數
+  test('EP-04 Mock 筆數查詢同時最多 4 筆', async ({ page, mockApi }) => {
+    const total = 7;
+    const services = Array.from({ length: total }, (_, i) => {
+      const n = i + 1;
+      return {
+        ...endpoints[0],
+        id: `conc-${n}`,
+        publishUri: `conc-${n}`,
+        beanName: `concBean${n}`,
+        classPath: `com.conc.Svc${n}`,
+        isActive: false,
+      };
+    });
+    // conc-n 有 n-1 筆 Mock 回應，讓每列的顯示筆數都不同
+    const expectedCount = (uri: string) => Number(uri.replace('conc-', '')) - 1;
+
+    let inFlight = 0;
+    let peak = 0;
+    let completed = 0;
+    let autoRelease = false;
+    const held: Array<() => void> = [];
+
+    mockApi.set(EP.list, ok(services));
+    mockApi.set(RSP.list, async (call) => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      // 前幾筆先全部攔住，確認尖峰後再逐步放行；之後進來的請求延遲回應，仍會互相重疊
+      await new Promise<void>((resolve) => {
+        if (autoRelease) {
+          setTimeout(resolve, 200);
+        } else {
+          held.push(resolve);
+        }
+      });
+      const uri = (call.body as { publishUri: string }).publishUri;
+      inFlight--;
+      completed++;
+      return {
+        json: ok(Array.from({ length: expectedCount(uri) }, (_, i) => ({ id: `${uri}-${i}`, publishUri: uri }))),
+      };
+    });
+
+    await page.goto('endpoint/');
+    await expect(row(page, 'conc-7')).toBeVisible();
+
+    // 攔住期間同時進行的請求要剛好累積到 4 筆，且等待一段時間也不會有第 5 筆送出
+    await expect.poll(() => inFlight).toBe(4);
+    await page.waitForTimeout(500);
+    expect(inFlight).toBe(4);
+    expect(mockApi.callsOf(RSP.list)).toHaveLength(4);
+    await expect(page.getByTestId('mock-count-conc-1')).toHaveText('… ›');
+    await expect(page.getByTestId('mock-count-conc-7')).toHaveText('… ›');
+
+    // 逐步放行：每完成一筆，下一筆才會送出
+    autoRelease = true;
+    held.splice(0).forEach((resolve) => resolve());
+    await expect.poll(() => completed).toBe(total);
+
+    expect(peak).toBe(4);
+    const uris = mockApi.callsOf(RSP.list).map((c) => (c.body as { publishUri: string }).publishUri);
+    expect([...uris].sort()).toEqual(services.map((s) => s.publishUri).sort());
+    for (const s of services) {
+      await expect(page.getByTestId(`mock-count-${s.publishUri}`)).toHaveText(`${expectedCount(s.publishUri)} 筆 ›`);
+    }
+  });
+
   test('EP-09 載入中、完全空白、搜尋無結果、載入失敗與重試', async ({ page, mockApi }) => {
     mockApi.set(EP.list, () => ({ json: ok(endpoints), delayMs: 1500 }));
     await page.goto('endpoint/');
