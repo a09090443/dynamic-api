@@ -40,6 +40,13 @@ const stubClipboard = (page: Page) =>
   });
 
 test.describe('ISS-REDESIGN-BROWSER-ORIGIN 位址取自瀏覽器網址，不取 API 來源', () => {
+  // 斷言結束後頁面可能還在預先載入其他頁的靜態資源；serveFrontendFrom 的 route.fetch 跨越關閉 context 時，
+  // route.fulfill 會丟出「Fetch response has been disposed」並被記成測試失敗。
+  // 收尾時先移除所有 route 並忽略之後的 handler 錯誤；不影響測試本體內的任何斷言。
+  test.afterEach(async ({ page }) => {
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+  });
+
   test('前提：API 確實送往不同來源（127.0.0.1:3100），頁面在 localhost:3000', async ({ page, mockApi, baseURL }) => {
     const apiOrigin = originOf(baseURL);
     expect(apiOrigin).not.toBe(PAGE_ORIGIN);
