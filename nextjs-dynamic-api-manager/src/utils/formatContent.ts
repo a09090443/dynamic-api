@@ -1,13 +1,24 @@
 /**
- * 格式化 JSON 或 XML；兩者都無法安全處理時回傳 null（呼叫端不改動內容）。
+ * 格式化結果：
+ * - ok：格式化後的內容。
+ * - invalid：不是有效的 JSON 或 XML（含空白內容）。
+ * - unsafe：是合法 XML，但含 xml:space、DOCTYPE 內部子集等排版可能改變意義的結構。
+ * 失敗時呼叫端不改動內容，並依 reason 提示原因。
+ */
+export type FormatResult =
+  | { ok: true; text: string }
+  | { ok: false; reason: 'invalid' | 'unsafe' };
+
+/**
+ * 格式化 JSON 或 XML。
  *
  * 只調整結構之間的空白與縮排，不改變資料本身：
  * - JSON 不經過 JSON.stringify，數字字面值（大整數、1.10、1e400）與字串逐字保留。
  * - XML 的 CDATA、註解、處理指令、屬性值與文字節點維持原文；含文字或 CDATA 的元素整段原樣輸出。
  */
-export function formatContent(raw: string): string | null {
+export function formatContent(raw: string): FormatResult {
   const text = raw.trim();
-  if (!text) return null;
+  if (!text) return { ok: false, reason: 'invalid' };
 
   let isJson = true;
   try {
@@ -15,12 +26,14 @@ export function formatContent(raw: string): string | null {
   } catch {
     isJson = false;
   }
-  if (isJson) return reindentJson(text);
+  if (isJson) return { ok: true, text: reindentJson(text) };
 
-  if (typeof DOMParser === 'undefined' || !text.startsWith('<')) return null;
+  if (typeof DOMParser === 'undefined' || !text.startsWith('<')) return { ok: false, reason: 'invalid' };
   const doc = new DOMParser().parseFromString(text, 'application/xml');
-  if (doc.getElementsByTagName('parsererror').length > 0) return null;
-  return formatXml(text);
+  if (doc.getElementsByTagName('parsererror').length > 0) return { ok: false, reason: 'invalid' };
+  // 已確認是合法 XML，formatXml 回傳 null 代表結構無法安全排版
+  const formatted = formatXml(text);
+  return formatted === null ? { ok: false, reason: 'unsafe' } : { ok: true, text: formatted };
 }
 
 const isJsonSpace = (ch: string) => ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r';

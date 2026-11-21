@@ -33,7 +33,8 @@ interface Props {
 /** 右側編輯面板內容（外層決定並排或覆蓋顯示） */
 export default function ResponseEditorPanel({ mode, initial, onClose, onSave, onDelete, locked = false }: Props) {
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [formatError, setFormatError] = useState<string | null>(null);
+  // 格式化未執行時的提示；isError=false 表示內容合法，只是無法安全排版
+  const [formatError, setFormatError] = useState<{ message: string; isError: boolean } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const saving = submitting || locked;
   const {
@@ -58,13 +59,17 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
   });
 
   const format = () => {
-    const formatted = formatContent(getValues('responseContent') ?? '');
-    if (formatted === null) {
-      setFormatError('內容不是有效的 JSON 或 XML，未格式化');
+    const result = formatContent(getValues('responseContent') ?? '');
+    if (!result.ok) {
+      setFormatError(
+        result.reason === 'unsafe'
+          ? { message: '內容是有效的 XML，但含 xml:space 或 DOCTYPE 內部定義，重新排版可能改變資料，因此未格式化', isError: false }
+          : { message: '內容不是有效的 JSON 或 XML，未格式化', isError: true },
+      );
       return;
     }
     setFormatError(null);
-    setValue('responseContent', formatted, { shouldDirty: true });
+    setValue('responseContent', result.text, { shouldDirty: true });
   };
 
   const title = mode === 'new' ? '新增回應' : '編輯回應';
@@ -162,8 +167,8 @@ export default function ResponseEditorPanel({ mode, initial, onClose, onSave, on
                 id="resp-content"
                 multiline
                 minRows={10}
-                error={!!formatError}
-                helperText={formatError ?? undefined}
+                error={!!formatError?.isError}
+                helperText={formatError?.message}
                 slotProps={{
                   htmlInput: { readOnly: saving, style: { fontFamily: tokens.font.mono, fontSize: 13, lineHeight: 1.5 } },
                 }}

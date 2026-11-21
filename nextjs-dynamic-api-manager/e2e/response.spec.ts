@@ -365,6 +365,45 @@ test.describe('SC-RESPONSE-02 Mock 回應：新增／編輯驗證、格式化、
     await expect(content).toHaveValue('<a><b></a>');
   });
 
+  // ISS-RESPONSE-FORMAT-UNSAFE-HINT：合法但無法安全排版的 XML 不改內容，提示不得誤稱格式無效
+  test('RSP-08 合法但無法安全排版的 XML（xml:space、DOCTYPE 內部子集）：內容逐字不變，提示說明原因', async ({ page }) => {
+    await page.goto(COMPANY);
+    await page.getByRole('main').getByRole('button', { name: '新增回應' }).first().click();
+    const p = panel(page);
+    const content = p.getByLabel('回應內容');
+    const format = () => p.getByRole('button', { name: '格式化' }).click();
+    const invalidHint = p.getByText('內容不是有效的 JSON 或 XML，未格式化');
+    const unsafeHint = p.getByText('內容是有效的 XML，但含 xml:space 或 DOCTYPE 內部定義，重新排版可能改變資料，因此未格式化');
+
+    const spaceXml = '<root xml:space="preserve"><a>  x  </a>\n   <b>y</b></root>';
+    await content.fill(spaceXml);
+    await format();
+    await expect(content).toHaveValue(spaceXml);
+    await expect(unsafeHint).toBeVisible();
+    await expect(invalidHint).toHaveCount(0);
+    // 合法內容不以錯誤樣式標示
+    await expect(content).not.toHaveAttribute('aria-invalid', 'true');
+
+    // 修改內容後提示清除
+    await content.fill('<r/>');
+    await expect(unsafeHint).toHaveCount(0);
+
+    const doctypeXml = '<!DOCTYPE note [<!ENTITY who "Tove">]><note><to>&who;</to><from>Jani</from></note>';
+    await content.fill(doctypeXml);
+    await format();
+    await expect(content).toHaveValue(doctypeXml);
+    await expect(unsafeHint).toBeVisible();
+    await expect(invalidHint).toHaveCount(0);
+
+    // 無效內容仍顯示格式無效
+    await content.fill('not json <x');
+    await format();
+    await expect(content).toHaveValue('not json <x');
+    await expect(invalidHint).toBeVisible();
+    await expect(unsafeHint).toHaveCount(0);
+    await expect(content).toHaveAttribute('aria-invalid', 'true');
+  });
+
   test('RSP-06 儲存進行中失敗：關閉／切換被擋下，原輸入與錯誤仍在，可直接再送一次', async ({ page, mockApi }) => {
     mockApi.set(RSP.update, () => ({ json: fail('寫入失敗'), delayMs: 1500 }));
     await page.goto(COMPANY);
