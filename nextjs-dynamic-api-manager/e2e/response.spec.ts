@@ -256,6 +256,115 @@ test.describe('SC-RESPONSE-02 Mock 回應：新增／編輯驗證、格式化、
     await expect(panel(page)).toBeVisible();
   });
 
+  // ISS-RESPONSE-PENDING-EDITOR：舊儲存請求在離開 /response 後才成功，不得關閉或改寫回到頁面後新開的表單
+  test('RSP-06 離開頁面後才成功的舊儲存：回到 /response 新開的表單保持開啟，輸入不變', async ({ page, mockApi }) => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    mockApi.set(RSP.update, async () => {
+      await gate;
+      return { json: ok(null) };
+    });
+
+    await page.goto(COMPANY);
+    await page.getByTestId('response-row-101').click();
+    await panel(page).getByLabel('回應內容').fill('stale-edit');
+    await panel(page).getByRole('button', { name: '儲存' }).click();
+    await expect(panel(page).getByRole('button', { name: '儲存中…' })).toBeDisabled();
+    await expect.poll(() => mockApi.callsOf(RSP.update).length).toBe(1);
+
+    // 標記目前文件，用來證明之後都是用戶端導覽（同一份文件），舊請求仍在等待
+    await page.evaluate(() => {
+      (window as unknown as { __rspStale?: boolean }).__rspStale = true;
+    });
+    const nav = page.getByRole('navigation', { name: '主選單' });
+    await nav.getByRole('group', { name: '服務' }).getByRole('link', { name: /^SOAP Endpoint/ }).click();
+    await expect(page.getByRole('heading', { name: 'SOAP Endpoint', level: 1 })).toBeVisible();
+    await page.getByTestId('mock-count-company').click();
+    await expect(page.getByRole('heading', { name: 'company 的 Mock 回應', level: 1 })).toBeVisible();
+
+    // 回到頁面後開啟新表單並輸入
+    await expect(panel(page)).toHaveCount(0);
+    await page.getByRole('main').getByRole('button', { name: '新增回應' }).first().click();
+    const p = panel(page);
+    await expect(p.getByRole('heading', { name: '新增回應' })).toBeVisible();
+    await p.getByLabel('方法名稱').fill('freshMethod');
+    await p.getByLabel('條件').fill('fresh=1');
+    await p.getByLabel('回應內容').fill('fresh-body');
+
+    // 放行舊的成功回應
+    const responded = page.waitForResponse((r) => r.url().includes('/dynamic-api/common/updateResponse'));
+    release();
+    expect((await responded).status()).toBe(200);
+    await page.waitForTimeout(1000);
+
+    expect(await page.evaluate(() => (window as unknown as { __rspStale?: boolean }).__rspStale)).toBe(true);
+    await expect(p).toBeVisible();
+    await expect(p.getByRole('heading', { name: '新增回應' })).toBeVisible();
+    await expect(p.getByLabel('方法名稱')).toHaveValue('freshMethod');
+    await expect(p.getByLabel('條件')).toHaveValue('fresh=1');
+    await expect(p.getByLabel('回應內容')).toHaveValue('fresh-body');
+    await expect(p.getByLabel('回應內容')).not.toHaveAttribute('readonly', '');
+    await expect(p.getByRole('button', { name: '儲存' })).toBeEnabled();
+
+    // 新表單照常送出，用的是新輸入
+    await p.getByRole('button', { name: '儲存' }).click();
+    await expect(panel(page)).toHaveCount(0);
+    const saves = mockApi.callsOf(RSP.save);
+    expect(saves).toHaveLength(1);
+    expect(saves[0].body).toMatchObject({ method: 'freshMethod', condition: 'fresh=1', responseContent: 'fresh-body' });
+    expect(mockApi.callsOf(RSP.update)).toHaveLength(1);
+  });
+
+  // ISS-RESPONSE-FORMAT-PAYLOAD：格式化只調整結構之間的空白，資料逐字保留
+  test('RSP-08 格式化保留資料：JSON 大整數／小數字面值、XML CDATA／註解／屬性值／文字；不安全或無效的內容不變', async ({ page }) => {
+    await page.goto(COMPANY);
+    await page.getByRole('main').getByRole('button', { name: '新增回應' }).first().click();
+    const p = panel(page);
+    const content = p.getByLabel('回應內容');
+    const format = () => p.getByRole('button', { name: '格式化' }).click();
+
+    await content.fill('{"id":9007199254740993,"price":1.10,"big":1e400,"s":"a, b: {\\"c\\"} [1]","e":[],"o":{ }}');
+    await format();
+    await expect(content).toHaveValue(
+      [
+        '{',
+        '  "id": 9007199254740993,',
+        '  "price": 1.10,',
+        '  "big": 1e400,',
+        '  "s": "a, b: {\\"c\\"} [1]",',
+        '  "e": [],',
+        '  "o": {}',
+        '}',
+      ].join('\n'),
+    );
+    await expect(p.getByText('內容不是有效的 JSON 或 XML，未格式化')).toHaveCount(0);
+
+    await content.fill(
+      '<?xml version="1.0"?><root><data><![CDATA[x><y]]></data>\n<!-- a><b --><item code="a>b">  keep  me </item><p>Hi <b>x</b></p><empty/></root>',
+    );
+    await format();
+    await expect(content).toHaveValue(
+      [
+        '<?xml version="1.0"?>',
+        '<root>',
+        '  <data><![CDATA[x><y]]></data>',
+        '  <!-- a><b -->',
+        '  <item code="a>b">  keep  me </item>',
+        '  <p>Hi <b>x</b></p>',
+        '  <empty/>',
+        '</root>',
+      ].join('\n'),
+    );
+
+    // 格式錯誤的 XML：不改內容並提示
+    await content.fill('<a><b></a>');
+    await format();
+    await expect(p.getByText('內容不是有效的 JSON 或 XML，未格式化')).toBeVisible();
+    await expect(content).toHaveValue('<a><b></a>');
+  });
+
   test('RSP-06 儲存進行中失敗：關閉／切換被擋下，原輸入與錯誤仍在，可直接再送一次', async ({ page, mockApi }) => {
     mockApi.set(RSP.update, () => ({ json: fail('寫入失敗'), delayMs: 1500 }));
     await page.goto(COMPANY);

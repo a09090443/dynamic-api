@@ -168,6 +168,53 @@ test.describe('SC-WSDL-01 WSDL 轉換頁', () => {
     });
   }
 
+  // ISS-WSDL-INVALID-200-EVIDENCE：HTTP 200 但內容為空、純文字或 JSON，都不算成功
+  const invalid200 = [
+    {
+      name: '空內容',
+      handler: (() => ({ status: 200, body: '', contentType: 'application/octet-stream' })) as MockHandler,
+      detail: 'HTTP 200',
+    },
+    {
+      name: 'text/plain',
+      handler: (() => ({ status: 200, body: 'WSDL 來源無法讀取', contentType: 'text/plain;charset=UTF-8' })) as MockHandler,
+      detail: 'WSDL 來源無法讀取',
+    },
+    {
+      name: 'application/json',
+      handler: (() => ({
+        status: 200,
+        body: JSON.stringify({ code: 500, message: '找不到 WSDL 定義', data: null }),
+        contentType: 'application/json',
+      })) as MockHandler,
+      detail: '找不到 WSDL 定義',
+    },
+  ];
+
+  for (const c of invalid200) {
+    test(`WSDL-04 HTTP 200 ${c.name}：顯示失敗、不下載、輸入保留`, async ({ page, mockApi }) => {
+      mockApi.set(EP.wsdl, c.handler);
+      let downloads = 0;
+      page.on('download', () => downloads++);
+      await page.goto('wsdl/');
+      await urlInput(page).fill(WSDL_URL);
+      await page.getByLabel('Package 名稱').fill(PKG);
+      await submit(page).click();
+
+      const error = page.getByTestId('wsdl-result-error');
+      await expect(error).toContainText('無法轉換：讀不到這個 WSDL');
+      await expect(error).toContainText(c.detail);
+      await expect(error.getByRole('button', { name: '再試一次' })).toBeVisible();
+      await expect(page.getByTestId('wsdl-result-success')).toHaveCount(0);
+      await expect(page.getByText('已產生並開始下載')).toHaveCount(0);
+      await expect(urlInput(page)).toHaveValue(WSDL_URL);
+      await expect(page.getByLabel('Package 名稱')).toHaveValue(PKG);
+      await page.waitForTimeout(500);
+      expect(downloads).toBe(0);
+      expect(mockApi.callsOf(EP.wsdl)).toHaveLength(1);
+    });
+  }
+
   // ISS-WSDL-FILE-FAILURE-EVIDENCE：檔案模式失敗後保留所選檔案與 Package 名稱，再試一次送出原本的 file 與 packageName
   for (const c of failures) {
     test(`WSDL-05 檔案模式 ${c.name}：保留檔名與 Package 名稱，再試一次用原檔重送 multipart`, async ({ page, mockApi }) => {

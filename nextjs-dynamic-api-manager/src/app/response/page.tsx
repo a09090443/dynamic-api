@@ -191,6 +191,14 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
     void load();
   }, [load]);
 
+  // 離開頁面（卸載）時讓進行中的儲存失效：舊回應回來後不關閉、不重新載入任何表單
+  useEffect(() => {
+    const seqRef = editorSeq;
+    return () => {
+      seqRef.current += 1;
+    };
+  }, []);
+
   const openEditor = (next: Editor, trigger: HTMLElement | null) => {
     if (saving) return;
     editorSeq.current += 1;
@@ -228,9 +236,10 @@ function ResponseManager({ publishUri, serviceType }: { publishUri: string; serv
       setSaving(false);
     }
     // 失敗時上面會丟出例外，由面板保留輸入並顯示錯誤；成功時只關閉送出它的那次編輯
-    if (editorSeq.current === seq) closeEditor(true);
+    const current = editorSeq.current === seq;
+    if (current) closeEditor(true);
     toast({ message: '已儲存，此回應目前為停用', severity: 'success' });
-    void load();
+    if (current) void load();
   };
 
   const remove = async (response: Response) => {

@@ -38,7 +38,7 @@ WHERE PUBLISH_URI = :publishUri
 | （自動帶入） | `serviceType` | `ENDPOINT` 或 `RESTFUL`，來自網址參數 |
 | 方法名稱（必填） | `method` | 例如 `getCompany`、`getResponseData`；需與 JAR 程式傳入的 method 一致 |
 | 條件 | `condition` | 例如請求物件的 JSON 字串；留空代表 JAR 未帶條件，清單中顯示「（無條件）」 |
-| 回應內容 | `responseContent` | JAR 會拿這段字串轉成回應：RESTful 範例是 JSON，SOAP 範例是完整 SOAP Envelope XML。**格式化** 按鈕可排版 JSON 或 XML；內容不是有效的 JSON／XML 時不會改動，並提示原因 |
+| 回應內容 | `responseContent` | JAR 會拿這段字串轉成回應：RESTful 範例是 JSON，SOAP 範例是完整 SOAP Envelope XML。**格式化** 按鈕可排版 JSON 或 XML，只調整縮排與換行，數字（含大整數、`1.10`）、字串、CDATA、註解與屬性值都原樣保留；內容不是有效的 JSON／XML，或含無法安全排版的結構時不會改動，並提示原因 |
 
 ## 常用操作
 

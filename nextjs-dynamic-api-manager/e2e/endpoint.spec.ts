@@ -78,6 +78,47 @@ test.describe('SC-ENDPOINT-01 Endpoint 清單：文案、統計、搜尋、篩�
     await expect(page.getByTestId('pagination-summary')).toHaveText('顯示 1–9，共 9 筆');
   });
 
+  // ISS-ENDPOINT-STATS-DATASET-EVIDENCE：換一組 API 資料，統計卡與篩選數字都要跟著變
+  test('EP-02 換第二組資料：三張統計卡與全部／啟用／停用篩選數字跟著改變', async ({ page, mockApi }) => {
+    mockApi.set(EP.list, ok(manyEndpoints));
+    await page.goto('endpoint/');
+    const filter = page.getByRole('group', { name: '狀態篩選' });
+    await expect(page.getByTestId('stat-全部服務')).toHaveText('13');
+    await expect(page.getByTestId('stat-啟用中')).toHaveText('4');
+    await expect(page.getByTestId('stat-尚未上傳 JAR')).toHaveText('3');
+    await expect(filter.getByRole('button')).toHaveText(['全部 13', '啟用 4', '停用 9']);
+
+    // 第二組：7 筆，啟用 5（1～5）、停用 2、沒有 JAR 1（7）
+    const second = Array.from({ length: 7 }, (_, i) => {
+      const n = i + 1;
+      return {
+        ...manyEndpoints[0],
+        id: `second-${n}`,
+        publishUri: `second-${n}`,
+        beanName: `secondBean${n}`,
+        classPath: `com.second.Svc${n}`,
+        jarFileId: n === 7 ? '' : `jar-second-${n}`,
+        jarFileName: n === 7 ? '' : `second-${n}.jar`,
+        isActive: n <= 5,
+      };
+    });
+    mockApi.set(EP.list, ok(second));
+    await page.reload();
+
+    await expect(page.getByTestId('stat-全部服務')).toHaveText('7');
+    await expect(page.getByTestId('stat-啟用中')).toHaveText('5');
+    await expect(page.getByTestId('stat-尚未上傳 JAR')).toHaveText('1');
+    await expect(filter.getByRole('button')).toHaveText(['全部 7', '啟用 5', '停用 2']);
+    await expect(page.getByTestId('pagination-summary')).toHaveText('顯示 1–7，共 7 筆');
+
+    await filter.getByRole('button', { name: '啟用 5' }).click();
+    await expect(rows(page)).toHaveCount(5);
+    await filter.getByRole('button', { name: '停用 2' }).click();
+    await expect(rows(page)).toHaveCount(2);
+    await expect(row(page, 'second-6')).toBeVisible();
+    await expect(row(page, 'second-7')).toBeVisible();
+  });
+
   test('EP-04 表格欄位、服務網址、未上傳徽章、Mock 筆數連結與逐服務查詢', async ({ page, mockApi }) => {
     await page.goto('endpoint/');
     const headers = page.getByRole('table').locator('thead th');
