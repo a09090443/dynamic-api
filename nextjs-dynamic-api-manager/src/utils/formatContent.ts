@@ -126,11 +126,24 @@ function parseXml(xml: string): XmlNode[] | null {
       if (end < 0) return null;
       push({ kind: 'pi', raw: xml.slice(i, end) });
     } else if (xml.startsWith('<!', i)) {
-      // DOCTYPE：含內部子集（[...]）時不處理
-      const close = xml.indexOf('>', i);
-      const bracket = xml.indexOf('[', i);
-      if (close < 0 || (bracket >= 0 && bracket < close)) return null;
-      end = close + 1;
+      // DOCTYPE：略過引號內的 > 與 [（SYSTEM／PUBLIC 識別字）；含內部子集（[...]）時不處理
+      let j = i + 2;
+      let quote = '';
+      while (j < n) {
+        const ch = xml[j];
+        if (quote) {
+          if (ch === quote) quote = '';
+        } else if (ch === '"' || ch === "'") {
+          quote = ch;
+        } else if (ch === '[') {
+          return null;
+        } else if (ch === '>') {
+          break;
+        }
+        j++;
+      }
+      if (j >= n) return null;
+      end = j + 1;
       push({ kind: 'doctype', raw: xml.slice(i, end) });
     } else if (xml.startsWith('</', i)) {
       const close = xml.indexOf('>', i);
@@ -168,7 +181,8 @@ function parseXml(xml: string): XmlNode[] | null {
   return stack.length ? null : root;
 }
 
-const isBlank = (node: XmlNode) => node.kind === 'text' && node.raw.trim() === '';
+// 只有 XML 空白（space、tab、CR、LF）組成的文字才可重排；U+00A0 等其他字元都算內容
+const isBlank = (node: XmlNode) => node.kind === 'text' && /^[ \t\r\n]*$/.test(node.raw);
 
 function formatXml(xml: string): string | null {
   // xml:space="preserve" 的空白有意義，不重排

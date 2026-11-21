@@ -404,6 +404,37 @@ test.describe('SC-RESPONSE-02 Mock 回應：新增／編輯驗證、格式化、
     await expect(content).toHaveAttribute('aria-invalid', 'true');
   });
 
+  // ISS-RESPONSE-FORMAT-PAYLOAD：非 XML 空白（U+00A0）是資料，DOCTYPE 引號內的 > 與 [ 不是結構
+  test('RSP-08 格式化保留元素間的 U+00A0 文字與 DOCTYPE 引號內的 >、[', async ({ page }) => {
+    await page.goto(COMPANY);
+    await page.getByRole('main').getByRole('button', { name: '新增回應' }).first().click();
+    const p = panel(page);
+    const content = p.getByLabel('回應內容');
+    const format = () => p.getByRole('button', { name: '格式化' }).click();
+    const invalidHint = p.getByText('內容不是有效的 JSON 或 XML，未格式化');
+
+    // 元素間只有 U+00A0：不是可重排的空白，所在元素整段原文輸出
+    const nbspXml = '<r><b/> <c/></r>';
+    await content.fill(nbspXml);
+    await format();
+    await expect(content).toHaveValue(nbspXml);
+    const nbspValue = await content.inputValue();
+    expect(nbspValue.slice(nbspValue.indexOf('<b/>') + 4)).toBe(' <c/></r>');
+    await expect(invalidHint).toHaveCount(0);
+
+    // DOCTYPE SYSTEM 識別字含 >：引號內逐字不變，不插入換行
+    await content.fill('<!DOCTYPE r SYSTEM "data:abc>def"><r/>');
+    await format();
+    await expect(content).toHaveValue('<!DOCTYPE r SYSTEM "data:abc>def">\n<r/>');
+    expect(await content.inputValue()).toContain('"data:abc>def"');
+    await expect(invalidHint).toHaveCount(0);
+
+    // 引號內的 [ 不是內部子集，照常排版
+    await content.fill("<!DOCTYPE r SYSTEM 'a[b>c'><r><x/></r>");
+    await format();
+    await expect(content).toHaveValue("<!DOCTYPE r SYSTEM 'a[b>c'>\n<r>\n  <x/>\n</r>");
+  });
+
   test('RSP-06 儲存進行中失敗：關閉／切換被擋下，原輸入與錯誤仍在，可直接再送一次', async ({ page, mockApi }) => {
     mockApi.set(RSP.update, () => ({ json: fail('寫入失敗'), delayMs: 1500 }));
     await page.goto(COMPANY);
