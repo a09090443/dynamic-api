@@ -20,7 +20,7 @@ sidebar_label: 3.4 管理介面
 | `services/` | `api.ts`（axios 實例）、`endpoint.service.ts`、`restful.service.ts`、`response.service.ts` |
 | `types/` | `models.ts`、`response.ts` |
 | `config/` | `config.ts`（環境設定） |
-| `theme/` | `tokens.ts`（`design/admin-light-redesign/tokens.json` 的色碼與尺寸）、`light.ts`（`createTheme`，`palette.mode: 'light'`）；`cyberpunk.ts` 未使用 |
+| `theme/` | `tokens.ts`（`design/admin-light-redesign/tokens.json` 的色碼與尺寸；例外是不採用設計稿的內容區最大寬 1280，見下方「內容區」）、`light.ts`（`createTheme`，`palette.mode: 'light'`）；`cyberpunk.ts` 未使用 |
 | `utils/` | `serviceUrl.ts`（以 `window.location` 組呼叫位址與頂列主機，不使用 `appConfig.apiUrl`）、`formatContent.ts`（JSON／XML 格式化） |
 
 ## 外框與共用互動
@@ -30,6 +30,7 @@ sidebar_label: 3.4 管理介面
 | 主題 | `theme/light.ts`：主色 `#2563eb`、頁面底色 `#f5f7fa`、按鈕文字不轉大寫。字型 `Inter, 'Noto Sans TC', system-ui, sans-serif`，等寬 `'JetBrains Mono', monospace`；不載入外部字型，未安裝時退回系統字型 |
 | 側欄 | 寬 232。分組「服務」：SOAP Endpoint、RESTful API、Mock 回應；「工具」：WSDL 轉換、系統資訊（`/about`）。目前頁帶 `aria-current="page"`。`/test-api` 不在側欄，但網址保留。SOAP Endpoint／RESTful API 右側數字是 `getEndpoints`、`getControllers` 的實際筆數 |
 | 頂列 | 高 56。左側麵包屑（例如 `SOAP Endpoint / company / Mock 回應`，上層清單可點）；右側連線狀態：`ServiceSummaryProvider` 在載入、換頁與操作後並行呼叫 `getEndpoints`、`getControllers`，兩者都成功顯示「後端連線正常」，任一失敗顯示「後端連線異常」與「重新檢查」。顯示的主機一律取目前瀏覽器網址（`window.location.host`），即使 `NEXT_PUBLIC_API_URL` 指向不同來源也一樣；連線狀態仍依實際 API 成敗判斷（後端沒有健康檢查端點） |
+| 內容區 | 寬度 900 以上時，主內容（`AppShell` 的 `main`）填滿側欄右側的全部寬度，不設最大寬，只保留內距（上 28、左右 32、下 40）；頁首、統計卡、篩選列、表格、WSDL 卡片與 About 格線都跟著延伸。清單搜尋框（最大寬 420）、Mock 回應編輯面板（固定 400）、對話框與 toast 維持原本寬度。這點刻意偏離設計稿 `design/admin-light-redesign/` 的「內容區最大寬 1280」：在寬螢幕（例如 2538 px）上，1280 上限會讓右側留下約 1000 px 空白（GitHub issue #18）。設計稿是唯讀參考，未修改。版面不使用 CSS `zoom`、`transform: scale` 或 viewport 縮放限制，作業系統顯示比例與瀏覽器縮放照常生效，可用寬度變窄時內容一樣填滿 |
 | 窄螢幕 | 寬度小於 900 時側欄換到內容上方；寬表格只在自己的容器內橫向捲動 |
 | 確認框 | `useConfirm()`，取代 `window.confirm`；刪除類為紅色按鈕、預設焦點在「取消」 |
 | toast | `useToast()`，右下角、同時一則；啟停成功附「復原」（反向呼叫一次），刪除與批次操作不提供復原；錯誤 toast 不自動關閉 |

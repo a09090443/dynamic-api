@@ -1,4 +1,5 @@
 // 明亮版設計 token；數值與 design/admin-light-redesign/tokens.json 一致（執行期不讀取 design/ 目錄）
+// 例外：設計稿的「內容區最大寬 1280」刻意不採用，主內容區填滿側欄右側（issue #18，見 docs-site/docs/sdd/frontend.md）
 export const tokens = {
   color: {
     primary: '#2563eb',
@@ -51,7 +52,6 @@ export const tokens = {
     inputHeight: 40,
     chipHeight: 24,
     drawerWidth: 400,
-    contentMaxWidth: 1280,
   },
   shadow: {
     toast: '0 10px 30px rgba(17,24,39,0.25)',

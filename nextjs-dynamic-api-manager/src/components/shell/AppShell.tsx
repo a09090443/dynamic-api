@@ -32,8 +32,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             display: 'flex',
             flexDirection: 'column',
             gap: '20px',
+            // 不設最大寬：桌面填滿側欄右側，隨視窗寬度與系統顯示比例延伸（issue #18）
             width: '100%',
-            maxWidth: tokens.size.contentMaxWidth,
             boxSizing: 'border-box',
             minWidth: 0,
           }}
