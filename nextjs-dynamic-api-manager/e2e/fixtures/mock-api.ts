@@ -5,7 +5,11 @@ import { endpoints, responses, restfuls, savedRestful } from './mock-data';
 export interface ApiCall {
   method: string;
   path: string;
+  /** 查詢字串（GET 的 switchWebService 等以 query 傳參） */
+  query: Record<string, string>;
   body: unknown;
+  /** 原始本文（multipart 等非 JSON 本文用來核對欄位名稱） */
+  raw: string | null;
 }
 
 export interface ApiEnvelope {
@@ -14,6 +18,21 @@ export interface ApiEnvelope {
   data: unknown;
 }
 
+/** 非 envelope 的回覆：自訂 HTTP 狀態、本文、延遲或中斷連線 */
+export interface MockReply {
+  json?: ApiEnvelope;
+  status?: number;
+  body?: string | Buffer;
+  contentType?: string;
+  headers?: Record<string, string>;
+  /** 模擬網路錯誤 */
+  abort?: boolean;
+  /** 回覆前等待毫秒數（用來觀察載入中／轉換中狀態） */
+  delayMs?: number;
+}
+
+export type MockHandler = (call: ApiCall) => MockReply | Promise<MockReply>;
+
 export interface MockApi {
   /** 依呼叫順序記錄的管理 API 請求 */
   calls: ApiCall[];
@@ -21,21 +40,58 @@ export interface MockApi {
   blocked: string[];
   /** 沒有定義假資料、被回 code=500 的 API（`${METHOD} ${pathname}`） */
   unhandled: string[];
-  /** 覆寫某個 API 的回應，key 格式為 `${METHOD} ${pathname}` */
-  set: (key: string, body: ApiEnvelope) => void;
+  /** 覆寫某個 API 的回應，key 格式為 `${METHOD} ${pathname}`；可給 envelope 或自訂 handler */
+  set: (key: string, body: ApiEnvelope | MockHandler) => void;
   /** 取得特定 API 的呼叫紀錄 */
   callsOf: (key: string) => ApiCall[];
 }
 
 const API_PATH = /^\/dynamic-api\/(ws|api|common)(\/|$)/;
 
-const ok = (data: unknown): ApiEnvelope => ({ code: 200, message: 'OK', data });
+export const ok = (data: unknown): ApiEnvelope => ({ code: 200, message: 'OK', data });
+export const fail = (message = '後端錯誤', code = 500): ApiEnvelope => ({ code, message, data: null });
 
-const defaultResponses = (): Record<string, ApiEnvelope> => ({
-  'GET /dynamic-api/ws/getEndpoints': ok(endpoints),
-  'GET /dynamic-api/api/getControllers': ok(restfuls),
-  'POST /dynamic-api/common/getResponseList': ok(responses),
-  'POST /dynamic-api/api/saveController': ok(savedRestful),
+export const EP = {
+  list: 'GET /dynamic-api/ws/getEndpoints',
+  switch: 'GET /dynamic-api/ws/switchWebService',
+  remove: 'DELETE /dynamic-api/ws/removeWebService',
+  wsdl: 'POST /dynamic-api/ws/genWsdlObj',
+};
+export const RF = {
+  list: 'GET /dynamic-api/api/getControllers',
+  switch: 'GET /dynamic-api/api/switchController',
+  remove: 'DELETE /dynamic-api/api/removeController',
+  save: 'POST /dynamic-api/api/saveController',
+};
+export const RSP = {
+  list: 'POST /dynamic-api/common/getResponseList',
+  save: 'POST /dynamic-api/common/saveMockResponse',
+  update: 'POST /dynamic-api/common/updateResponse',
+  remove: 'DELETE /dynamic-api/common/deleteResponse',
+  switch: 'GET /dynamic-api/common/switchResponse',
+};
+
+/** getResponseList 預設依 publishUri＋serviceType 篩選假資料，讓各服務筆數不同 */
+const responseListHandler: MockHandler = (call) => {
+  const body = (call.body ?? {}) as { publishUri?: string; serviceType?: string };
+  return {
+    json: ok(responses.filter((r) => r.publishUri === body.publishUri && r.serviceType === body.serviceType)),
+  };
+};
+
+const defaultResponses = (): Record<string, ApiEnvelope | MockHandler> => ({
+  [EP.list]: ok(endpoints),
+  [EP.switch]: ok(null),
+  [EP.remove]: ok(null),
+  [RF.list]: ok(restfuls),
+  [RF.switch]: ok(null),
+  [RF.remove]: ok(null),
+  [RF.save]: ok(savedRestful),
+  [RSP.list]: responseListHandler,
+  [RSP.save]: ok(null),
+  [RSP.update]: ok(null),
+  [RSP.remove]: ok(null),
+  [RSP.switch]: ok(null),
 });
 
 const readBody = (request: Request): unknown => {
@@ -82,15 +138,54 @@ export const test = base.extend<{ mockApi: MockApi }>({
         (url) => url.origin === origin && API_PATH.test(url.pathname),
         async (route) => {
           const request = route.request();
-          const path = new URL(request.url()).pathname;
-          const key = `${request.method()} ${path}`;
-          calls.push({ method: request.method(), path, body: readBody(request) });
-          let json = table[key];
-          if (!json) {
-            unhandled.push(key);
-            json = { code: 500, message: `E2E 未定義假資料: ${key}`, data: null };
+          // 頁面來源與 API 來源不同時（見 e2e/origin.spec.ts）瀏覽器會套用 CORS：預檢直接放行、回應帶允許標頭
+          const cors = { 'access-control-allow-origin': '*' };
+          if (request.method() === 'OPTIONS') {
+            await route.fulfill({
+              status: 204,
+              headers: {
+                ...cors,
+                'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'access-control-allow-headers': '*',
+              },
+            });
+            return;
           }
-          await route.fulfill({ json });
+          const url = new URL(request.url());
+          const path = url.pathname;
+          const key = `${request.method()} ${path}`;
+          const call: ApiCall = {
+            method: request.method(),
+            path,
+            query: Object.fromEntries(url.searchParams.entries()),
+            body: readBody(request),
+            raw: request.postData(),
+          };
+          calls.push(call);
+          const entry = table[key];
+          if (!entry) {
+            unhandled.push(key);
+            await route.fulfill({ headers: cors, json: { code: 500, message: `E2E 未定義假資料: ${key}`, data: null } });
+            return;
+          }
+          const reply: MockReply = typeof entry === 'function' ? await entry(call) : { json: entry };
+          if (reply.delayMs) {
+            await new Promise((r) => setTimeout(r, reply.delayMs));
+          }
+          if (reply.abort) {
+            await route.abort('failed');
+            return;
+          }
+          if (reply.json) {
+            await route.fulfill({ status: reply.status ?? 200, headers: cors, json: reply.json });
+            return;
+          }
+          await route.fulfill({
+            status: reply.status ?? 200,
+            body: reply.body ?? '',
+            contentType: reply.contentType,
+            headers: { ...cors, ...reply.headers },
+          });
         },
       );
 

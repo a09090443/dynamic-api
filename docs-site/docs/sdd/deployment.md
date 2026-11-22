@@ -26,7 +26,7 @@ flowchart LR
 | 任務 | 說明 |
 |---|---|
 | `installNextjs`、`buildNextjs` | 使用 `tools/node-v22.20.0-win-x64/npm.cmd`，把該目錄加到 `PATH` |
-| `copyNextjsBuild` | 複製後把 `endpoint`、`restful`、`response`、`test-api`、`about` 的 `index.html` 另存為 `{page}.html` |
+| `copyNextjsBuild` | 複製後把 `endpoint`、`restful`、`response`、`test-api`、`about`、`wsdl` 的 `index.html` 另存為 `{page}.html`。`SpaController` 先讀 `static/{page}.html`，不存在時改讀 `static/{page}/index.html`，兩者都沒有才回 404；因此略過此任務、直接複製 Next.js `out/` 的部署方式也能開啟各頁 |
 | `forceUpdateProperties` | 依 `-Penv`（預設 `dev`）把 `resources_{env}.properties`、`data-source_{env}.properties` 寫到 `build/resources/main/` 的正式檔名，並刪除其他環境檔 |
 | `bootJar` | `duplicatesStrategy = INCLUDE` |
 

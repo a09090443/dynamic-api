@@ -61,17 +61,17 @@ const AboutPage: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        關於 Dynamic API Manager
+      <Typography variant="h1" gutterBottom>
+        系統資訊
       </Typography>
-      
-      <Typography variant="h6" color="textSecondary" paragraph>
+
+      <Typography color="textSecondary" paragraph>
         一個基於 Next.js 的動態 API 管理系統
       </Typography>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
         {/* 系統概述 */}
-        <Card elevation={3}>
+        <Card variant="outlined">
           <CardContent>
             <Typography variant="h6" gutterBottom>
               系統概述
@@ -88,7 +88,7 @@ const AboutPage: React.FC = () => {
         </Card>
 
         {/* 技術架構 */}
-        <Card elevation={3}>
+        <Card variant="outlined">
           <CardContent>
             <Typography variant="h6" gutterBottom>
               技術架構
@@ -112,7 +112,7 @@ const AboutPage: React.FC = () => {
 
         {/* 主要功能 */}
         <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
-          <Card elevation={3}>
+          <Card variant="outlined">
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 主要功能
@@ -136,7 +136,7 @@ const AboutPage: React.FC = () => {
         </Box>
 
         {/* 版本資訊 */}
-        <Card elevation={3}>
+        <Card variant="outlined">
           <CardContent>
             <Typography variant="h6" gutterBottom>
               版本資訊
@@ -157,7 +157,7 @@ const AboutPage: React.FC = () => {
         </Card>
 
         {/* 開發資訊 */}
-        <Card elevation={3}>
+        <Card variant="outlined">
           <CardContent>
             <Typography variant="h6" gutterBottom>
               開發資訊

@@ -29,8 +29,8 @@ export default function APITestPage() {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box>
+      <Typography variant="h1" gutterBottom>
         API 測試頁面
       </Typography>
       
@@ -43,12 +43,12 @@ export default function APITestPage() {
         測試 API
       </Button>
       
-      <Paper sx={{ p: 2, bgcolor: '#1e1e1e' }}>
-        <Typography 
-          component="pre" 
-          sx={{ 
-            color: '#00ff00', 
-            fontFamily: 'monospace',
+      <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9fafb' }}>
+        <Typography
+          component="pre"
+          sx={{
+            color: '#1f2937',
+            fontFamily: "'JetBrains Mono', monospace",
             fontSize: '12px',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word'

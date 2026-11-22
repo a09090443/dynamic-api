@@ -33,10 +33,6 @@ export interface Response {
   isActive: boolean;
 }
 
-export interface Wsdl {
-  wsdlPath: string;
-}
-
 export interface ApiResponse<T> {
   code: number;
   message: string;
@@ -48,8 +44,9 @@ export interface PaginationParams {
   pageSize: number;
 }
 
+/** POST /ws/genWsdlObj 的 multipart 欄位；網址模式送 wsdlUrl、檔案模式送 file，packageName 選填 */
 export interface WsdlGenerationRequest {
-  inputType: 'url' | 'file';
   wsdlUrl?: string;
   file?: File;
+  packageName?: string;
 }

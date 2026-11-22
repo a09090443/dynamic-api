@@ -1,5 +1,5 @@
-import { apiClient, createFormData } from './api';
-import { Endpoint, ApiResponse } from '@/types/models';
+import { apiClient } from './api';
+import { Endpoint, ApiResponse, WsdlGenerationRequest } from '@/types/models';
 
 const BASE_PATH = '/dynamic-api/ws';
 
@@ -83,16 +83,54 @@ export const endpointService = {
     return response.data;
   },
 
-  // 生成 WSDL 物件
-  async genWsdlObj(wsdlData: { wsdlPath?: string; file?: File }): Promise<Blob> {
-    const formData = createFormData(wsdlData as unknown as Record<string, unknown>, wsdlData.file);
-    
+  // 生成 WSDL 物件：後端讀 wsdlUrl／file／packageName；成功回 ZIP，內容為空回 204，例外回 HTTP 500 純文字
+  async genWsdlObj(req: WsdlGenerationRequest): Promise<Blob> {
+    const formData = new FormData();
+    if (req.file) {
+      formData.append('file', req.file);
+    } else if (req.wsdlUrl) {
+      formData.append('wsdlUrl', req.wsdlUrl);
+    }
+    if (req.packageName) {
+      formData.append('packageName', req.packageName);
+    }
+
+    // validateStatus 全收，避免攔截器把 Blob 錯誤內文轉成讀不到的訊息；由這裡判斷成功與否
     const response = await apiClient.post(`${BASE_PATH}/genWsdlObj`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
-      responseType: 'blob'
+      responseType: 'blob',
+      validateStatus: () => true
     });
-    return response.data;
+
+    const blob: Blob | undefined = response.data;
+    const contentType = String(response.headers?.['content-type'] ?? blob?.type ?? '');
+    const isTextual = /text\/|json/i.test(contentType);
+    if (response.status === 200 && blob && blob.size > 0 && !isTextual) {
+      return blob;
+    }
+
+    let detail = '';
+    if (blob && typeof blob.text === 'function') {
+      try {
+        detail = (await blob.text()).trim();
+      } catch {
+        detail = '';
+      }
+    }
+    if (response.status === 204 || !detail) {
+      detail = response.status === 204
+        ? '後端沒有產生任何檔案（HTTP 204）'
+        : `HTTP ${response.status}`;
+    } else if (detail.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(detail) as { message?: string };
+        if (parsed.message) detail = parsed.message;
+      } catch {
+        // 保留原文
+      }
+    }
+    throw new Error(detail.length > 300 ? `${detail.slice(0, 300)}…` : detail);
   }
 };

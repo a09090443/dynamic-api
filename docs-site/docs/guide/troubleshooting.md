@@ -78,7 +78,7 @@ sidebar_label: 疑難排解
 }
 ```
 
-`error=MOCK_RESPONSE_NOT_FOUND` 表示 JAR 正常執行、只是查不到回應。把 `publishUri`、`method`、`condition` 與 Response 頁面上的設定比對，依序檢查：
+`error=MOCK_RESPONSE_NOT_FOUND` 表示 JAR 正常執行、只是查不到回應。把 `publishUri`、`method`、`condition` 與 Mock 回應頁面上的設定比對，依序檢查：
 
 1. 回應的 **開關是否打開**（新增與編輯後都會變成停用）。
 2. `method` 是否與 JAR 程式碼裡寫的一致。
@@ -119,7 +119,6 @@ Next.js 開發模式與 Docusaurus 預設都用 3000，請以 `npm start -- --po
 |---|---|---|---|
 | 1 | Next.js API 代理路由已刪除 | 前端開發模式無法呼叫後端 | `.env.local` 設 `NEXT_PUBLIC_API_URL=http://localhost:8080` |
 | 2 | 修改 Publish URI 時會刪除舊 JAR 檔，即使新設定仍使用它 | 之後無法啟用 | 修改 Publish URI 時一併重新上傳 JAR |
-| 3 | WSDL 工具 URL 模式送出 `wsdlPath`，後端讀 `wsdlUrl` | URL 模式無法使用 | 改用檔案模式或直接呼叫 API |
 | 4 | Actuator 開放清單 `custom-api-mappings` 與端點 id `show-mappings` 不符 | 無法查詢動態路由 | 修改 `application.yml` |
 | 5 | 前端建置任務寫死 Windows 版 Node | macOS / Linux 無法直接 `bootRun` | 見 [非 Windows 環境](./installation.md#非-windows-環境) |
 | 6 | `test-api` 頁面呼叫 `/api/dynamic-api/ws/getEndpoints` | 該頁在兩種模式下都無法取得資料 | 不使用該頁 |

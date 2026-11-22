@@ -13,15 +13,16 @@ sidebar_label: 5. 外部介面需求
 |---|---|
 | 平台 | 桌面瀏覽器（Chrome、Edge 等現代瀏覽器） |
 | 技術 | Next.js 15、React 19、MUI 7 |
-| 主要畫面 | 首頁、Endpoint 管理、RESTful 管理、Response 管理、關於 |
-| 共通元件 | 頂部導覽列、清單（搜尋、勾選、分頁）、新增／編輯對話框、確認對話框、訊息提示 |
+| 主要畫面 | 首頁、SOAP Endpoint、RESTful API、Mock 回應、WSDL 轉換、系統資訊 |
+| 共通元件 | 左側側欄（窄螢幕換到內容上方）、頂列麵包屑與後端連線狀態、清單（搜尋、狀態篩選、勾選、批次操作、分頁）、新增／編輯對話框、Mock 回應右側編輯面板、確認對話框、toast 訊息（啟停可復原） |
 
 | 畫面 | 路徑 | 主要功能 |
 |---|---|---|
-| Endpoint | `/endpoint` | 清單、新增、編輯、刪除、開關、WSDL 工具、前往回應清單 |
-| RESTful | `/restful` | 清單、新增、編輯、刪除、開關、前往回應清單 |
-| Response | `/response?publishUri=&serviceType=` | 回應清單、新增、編輯、刪除、開關、展開檢視內容 |
-| 關於 | `/about` | 系統說明 |
+| SOAP Endpoint | `/endpoint` | 統計、清單、搜尋與狀態篩選、新增、編輯、刪除、開關、批次啟停與刪除、Mock 回應筆數、前往 WSDL 轉換與 Mock 回應 |
+| RESTful API | `/restful` | 清單、新增、編輯、刪除、開關、批次刪除、前往 Mock 回應 |
+| Mock 回應 | `/response?publishUri=&serviceType=` | 服務資訊與呼叫位址、回應清單、右側面板新增／編輯／刪除、開關；未指定服務時顯示引導 |
+| WSDL 轉換 | `/wsdl` | 以網址或上傳檔案把 WSDL 轉成 Java 原始碼 ZIP 並下載 |
+| 系統資訊 | `/about` | 系統說明 |
 
 ## 5.2 系統介面
 
