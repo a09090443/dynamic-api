@@ -11,13 +11,10 @@ import com.dynamicapi.repository.EndpointRepository;
 import com.dynamicapi.service.DynamicWebService;
 import com.dynamicapi.util.WebServiceHandler;
 import com.dynamicapi.util.Wsdl2JavaUtil;
-import com.zipe.enums.ResourceEnum;
-import com.zipe.jdbc.criteria.Conditions;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
-import org.apache.poi.util.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +58,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
     @Override
     public List<EndpointDTO> getEndpoints() {
 
-        ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.findAll();
 
         return webServiceModelList.stream().map(endpoint -> {
             EndpointDTO dto = new EndpointDTO();
@@ -80,15 +76,7 @@ public class DynamicWebServiceImpl extends BaseService implements DynamicWebServ
 
     @Override
     public EndpointDTO getEndpoint(String id, String publishUri) {
-        ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        Conditions conditions = new Conditions();
-        if (StringUtil.isNotBlank(id)) {
-            conditions.and().equal("e.ID", id);
-        }
-        if (StringUtil.isNotBlank(publishUri)) {
-            conditions.and().equal("e.PUBLISH_URI", publishUri);
-        }
-        WebServiceModel webServiceModel = endPointJDBC.queryForBean(resource, conditions, WebServiceModel.class);
+        WebServiceModel webServiceModel = endPointJDBC.findOne(id, publishUri);
         EndpointDTO dto = new EndpointDTO();
         BeanUtils.copyProperties(webServiceModel, dto);
         return dto;

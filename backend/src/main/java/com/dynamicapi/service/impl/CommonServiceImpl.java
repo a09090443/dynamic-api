@@ -8,10 +8,10 @@ import com.dynamicapi.entity.MockResponseEntity;
 import com.dynamicapi.enums.JarFileStatus;
 import com.dynamicapi.exception.WebserviceException;
 import com.dynamicapi.jdbc.MockResponseJDBC;
+import com.dynamicapi.jdbc.NamedSqlLoader;
 import com.dynamicapi.repository.JarFileRepository;
 import com.dynamicapi.repository.MockResponseRepository;
 import com.dynamicapi.service.CommonService;
-import com.zipe.enums.ResourceEnum;
 import com.zipe.util.time.DateTimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -58,6 +58,8 @@ public class CommonServiceImpl implements CommonService {
 
     private final MockResponseJDBC mockResponseJDBC;
 
+    private final NamedSqlLoader namedSqlLoader;
+
     private final String logFileDir;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -66,11 +68,13 @@ public class CommonServiceImpl implements CommonService {
                              JarFileRepository jarFileRepository,
                              MockResponseRepository mockResponseRepository,
                              MockResponseJDBC mockResponseJDBC,
+                             NamedSqlLoader namedSqlLoader,
                              @Value("${log.base}") String logFileDir) {
         this.jarFileDir = jarFileDir;
         this.jarFileRepository = jarFileRepository;
         this.mockResponseRepository = mockResponseRepository;
         this.mockResponseJDBC = mockResponseJDBC;
+        this.namedSqlLoader = namedSqlLoader;
         this.logFileDir = logFileDir;
     }
 
@@ -171,13 +175,13 @@ public class CommonServiceImpl implements CommonService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMockResponse(String oriPublishUri, String newPublishUri) {
-        ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_PUBLISH_URI_FOR_RESPONSE);
+        String sql = namedSqlLoader.get(MockResponseJDBC.SQL_UPDATE_PUBLISH_URI_FOR_RESPONSE);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("oriPublishUri", oriPublishUri);
         paramMap.put("newPublishUri", newPublishUri);
         paramMap.put("updatedAt", DateTimeUtils.getDateNow());
         try {
-            mockResponseJDBC.update(resource, paramMap);
+            mockResponseJDBC.update(sql, paramMap);
         } catch (IncorrectResultSizeDataAccessException e) {
             log.error("oriPublishUri:{}", oriPublishUri);
             log.error("newPublishUri:{}", newPublishUri);
@@ -189,11 +193,11 @@ public class CommonServiceImpl implements CommonService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteMockResponse(String id) {
-        ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_DEL_RESPONSE);
+        String sql = namedSqlLoader.get(MockResponseJDBC.SQL_DEL_RESPONSE);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("id", id);
         try {
-            mockResponseJDBC.update(resource, paramMap);
+            mockResponseJDBC.update(sql, paramMap);
         } catch (IncorrectResultSizeDataAccessException e) {
             log.error("id:{}", id);
             log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
