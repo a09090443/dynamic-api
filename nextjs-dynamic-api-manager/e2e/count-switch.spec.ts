@@ -77,6 +77,177 @@ async function expectRestfulPage(page: Page, endpointCount: number, restfulCount
 const clickEndpoint = (page: Page) => nav(page).getByRole('link', { name: /^SOAP Endpoint/ }).click();
 const clickRestful = (page: Page) => nav(page).getByRole('link', { name: /^RESTful API/ }).click();
 
+// ---- 過期回應晚到（ISSUE19-UI-STALE-RESPONSE-COVERAGE）----
+// 同一支清單 API 依送出時機回傳可分辨的資料：被扣住的舊請求回 Endpoint 2 筆（ep-old-*）／RESTful 1 筆（rf-old-*），
+// 之後送出的新請求立即回 Endpoint 3 筆／RESTful 4 筆。舊請求由測試手動放行，並以序號確認它們在新回應之後才完成。
+
+const EP_LIST_PATH = '/dynamic-api/ws/getEndpoints';
+const RF_LIST_PATH = '/dynamic-api/api/getControllers';
+const OLD_ENDPOINTS = ['old-1', 'old-2'].map((tag) => ({ ...ep(0), id: `ep-id-${tag}`, publishUri: `ep-${tag}` }));
+const OLD_RESTFULS = ['old-1'].map((tag) => ({ ...rf(0), id: `rf-id-${tag}`, publishUri: `rf-${tag}` }));
+
+interface ListCall {
+  api: 'ep' | 'rf';
+  kind: 'old' | 'new';
+  /** 請求抵達攔截器的順序 */
+  requestSeq: number;
+  /** route.fulfill 完成且瀏覽器收完回應後的順序；尚未完成為 undefined */
+  fulfillSeq?: number;
+}
+
+/**
+ * 在 spec 內以 page.route 攔截兩支清單 API（比 mockApi 晚註冊，優先處理）。
+ * hold 模式下抵達的請求一律扣住，release() 時才以舊資料回應；其餘請求立即以新資料回應。
+ */
+async function installStaleControl(page: Page) {
+  let mode: 'new' | 'hold' = 'new';
+  let requestSeq = 0;
+  let fulfillSeq = 0;
+  const calls: ListCall[] = [];
+  let held: { call: ListCall; open: () => void; done: Promise<void> }[] = [];
+
+  // 瀏覽器端：記錄兩支清單 API 的 XHR loadend 次數，用來確認回應已交給前端程式處理
+  await page.addInitScript(
+    ([epPath, rfPath]) => {
+      const w = window as unknown as { __listLoadEnd: number };
+      w.__listLoadEnd = 0;
+      const send = XMLHttpRequest.prototype.send;
+      const open = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function (this: XMLHttpRequest & { __url?: string }, ...args: unknown[]) {
+        this.__url = String(args[1]);
+        return (open as (...a: unknown[]) => void).apply(this, args);
+      } as typeof XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.send = function (this: XMLHttpRequest & { __url?: string }, body?: Document | XMLHttpRequestBodyInit | null) {
+        const url = this.__url ?? '';
+        if (url.includes(epPath) || url.includes(rfPath)) {
+          this.addEventListener('loadend', () => {
+            w.__listLoadEnd += 1;
+          });
+        }
+        return send.call(this, body);
+      };
+    },
+    [EP_LIST_PATH, RF_LIST_PATH],
+  );
+
+  await page.route(
+    (url) => url.pathname === EP_LIST_PATH || url.pathname === RF_LIST_PATH,
+    async (route) => {
+      const request = route.request();
+      const api = new URL(request.url()).pathname === EP_LIST_PATH ? 'ep' : 'rf';
+      const call: ListCall = { api, kind: mode === 'hold' ? 'old' : 'new', requestSeq: ++requestSeq };
+      calls.push(call);
+      const data =
+        api === 'ep' ? (call.kind === 'old' ? OLD_ENDPOINTS : ENDPOINTS) : call.kind === 'old' ? OLD_RESTFULS : RESTFULS;
+      const respond = async () => {
+        await route.fulfill({ json: ok(data) });
+        await (await request.response())?.finished();
+        call.fulfillSeq = ++fulfillSeq;
+      };
+      if (call.kind === 'new') {
+        await respond();
+        return;
+      }
+      let open = () => undefined as void;
+      const gate = new Promise<void>((resolve) => {
+        open = resolve;
+      });
+      const done = gate.then(respond);
+      held.push({ call, open, done });
+      await done;
+    },
+  );
+
+  return {
+    calls,
+    heldCount: (api: 'ep' | 'rf') => held.filter((h) => h.call.api === api).length,
+    hold: () => {
+      mode = 'hold';
+    },
+    immediate: () => {
+      mode = 'new';
+    },
+    /** 依抵達的相反順序放行全部扣住的舊請求，等到每一個都 fulfill 且瀏覽器收完，回傳這批舊請求 */
+    release: async () => {
+      const batch = held;
+      held = [];
+      for (const h of [...batch].reverse()) h.open();
+      await Promise.all(batch.map((h) => h.done));
+      return batch.map((h) => h.call);
+    },
+  };
+}
+
+type StaleControl = Awaited<ReturnType<typeof installStaleControl>>;
+
+/** 等瀏覽器端處理完所有清單回應，再多讓出兩個畫格與一個 task，讓 React 套用過期回應（若會套用） */
+async function waitBrowserProcessed(page: Page, ctl: StaleControl) {
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __listLoadEnd: number }).__listLoadEnd))
+    .toBe(ctl.calls.length);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0)));
+      }),
+  );
+}
+
+/**
+ * 一輪「舊回應晚到」：扣住 6 次快速切換期間的所有清單請求，最後一次切換的新請求立即回應；
+ * 新畫面穩定後才放行舊請求，並確認舊回應確實在新回應之後完成，再斷言畫面仍是最新資料。
+ */
+async function staleRound(page: Page, ctl: StaleControl, target: 'endpoint' | 'restful') {
+  const toTarget = target === 'restful' ? clickRestful : clickEndpoint;
+  const toOther = target === 'restful' ? clickEndpoint : clickRestful;
+  const roundStart = ctl.calls.length;
+
+  ctl.hold();
+  for (let i = 0; i < 6; i += 1) {
+    await (i % 2 === 0 ? toTarget(page) : toOther(page));
+  }
+  // 停在另一頁；確認該頁與側欄的請求已被扣住（兩支 API 都至少各有側欄 1 次＋其中之一的清單頁 1 次）
+  await expect(page).toHaveURL(target === 'restful' ? /\/endpoint\/?$/ : /\/restful\/?$/);
+  await expect.poll(() => ctl.heldCount('ep')).toBeGreaterThanOrEqual(target === 'restful' ? 2 : 1);
+  await expect.poll(() => ctl.heldCount('rf')).toBeGreaterThanOrEqual(target === 'restful' ? 1 : 2);
+
+  // 第 7 次切換：新請求立即以新資料回應
+  ctl.immediate();
+  await toTarget(page);
+  if (target === 'restful') {
+    await expectRestfulPage(page, 3, 4);
+  } else {
+    await expectEndpointPage(page, 3, 4);
+  }
+  const roundCalls = () => ctl.calls.slice(roundStart);
+  const newCalls = roundCalls().filter((c) => c.kind === 'new');
+  expect(newCalls.some((c) => c.api === 'ep')).toBe(true);
+  expect(newCalls.some((c) => c.api === 'rf')).toBe(true);
+  expect(newCalls.every((c) => c.fulfillSeq !== undefined)).toBe(true);
+
+  // 放行舊請求並等它們全部完成
+  const oldCalls = await ctl.release();
+  expect(oldCalls.filter((c) => c.api === 'ep').length).toBeGreaterThanOrEqual(1);
+  expect(oldCalls.filter((c) => c.api === 'rf').length).toBeGreaterThanOrEqual(1);
+
+  // 完成順序：舊請求先送出，卻在本輪所有新回應之後才完成
+  const lastNewFulfill = Math.max(...newCalls.map((c) => c.fulfillSeq as number));
+  const firstNewRequest = Math.min(...newCalls.map((c) => c.requestSeq));
+  for (const c of oldCalls) {
+    expect(c.requestSeq).toBeLessThan(firstNewRequest);
+    expect(c.fulfillSeq).toBeGreaterThan(lastNewFulfill);
+  }
+
+  // 舊回應已交給前端處理後，畫面仍是最新資料
+  await waitBrowserProcessed(page, ctl);
+  if (target === 'restful') {
+    await expectRestfulPage(page, 3, 4);
+  } else {
+    await expectEndpointPage(page, 3, 4);
+  }
+  await expect(page.locator('tbody tr[data-testid*="-old-"]')).toHaveCount(0);
+}
+
 test.describe('SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（issue #19）', () => {
   test('延遲且順序顛倒的回應下快速反覆切換，側欄、統計與表格都對應正確類型', async ({ page, mockApi }) => {
     installAlternatingDelays(mockApi, ENDPOINTS, RESTFULS);
@@ -103,6 +274,19 @@ test.describe('SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（i
     // 側欄與清單頁確實多次並行呼叫兩支 API
     expect(mockApi.callsOf(EP.list).length).toBeGreaterThanOrEqual(8);
     expect(mockApi.callsOf(RF.list).length).toBeGreaterThanOrEqual(8);
+    expect(mockApi.unhandled).toEqual([]);
+  });
+
+  test('舊請求的回應在新回應之後才完成時，側欄、統計與表格仍維持最新資料', async ({ page, mockApi }) => {
+    const ctl = await installStaleControl(page);
+    await page.goto('endpoint/');
+    await expectEndpointPage(page, 3, 4);
+
+    // 第 1 輪停在 RESTful、第 2 輪停在 Endpoint（含「全部服務」統計卡），各 7 次側欄點擊
+    await staleRound(page, ctl, 'restful');
+    await staleRound(page, ctl, 'endpoint');
+
+    expect(ctl.calls.filter((c) => c.kind === 'old').length).toBeGreaterThanOrEqual(6);
     expect(mockApi.unhandled).toEqual([]);
   });
 

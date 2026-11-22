@@ -166,14 +166,23 @@ class ServiceListConcurrencyTest extends TestBase {
             }));
         }
 
-        assertTrue(ready.await(30, TimeUnit.SECONDS), "執行緒沒有在時限內就緒");
-        start.countDown();
-        for (Future<?> f : futures) {
-            f.get(120, TimeUnit.SECONDS);
+        try {
+            assertTrue(ready.await(30, TimeUnit.SECONDS), "執行緒沒有在時限內就緒");
+            start.countDown();
+            for (Future<?> f : futures) {
+                f.get(120, TimeUnit.SECONDS);
+            }
+            stop.set(true);
+            interferer.get(30, TimeUnit.SECONDS);
+        } finally {
+            // 就緒逾時、Future 失敗或中斷時也要停止干擾、放開仍在等待起跑的執行緒並關閉執行緒池
+            stop.set(true);
+            start.countDown();
+            pool.shutdownNow();
+            if (!pool.awaitTermination(30, TimeUnit.SECONDS)) {
+                failures.add("執行緒池未在 30 秒內結束");
+            }
         }
-        stop.set(true);
-        interferer.get(30, TimeUnit.SECONDS);
-        pool.shutdownNow();
 
         if (!failures.isEmpty()) {
             fail("並行查詢共 " + failures.size() + " 次結果錯誤，前 5 筆：" +
