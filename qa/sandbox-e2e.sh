@@ -56,7 +56,7 @@ cleanup() {
   status=$?
   trap - EXIT
   if (( status != 0 )); then docker logs "$name-app" > "$output/fixture-app.log" 2>&1 || true; fi
-  docker rm -f "$name-app" "$name-pg" >/dev/null 2>&1 || true
+  docker rm -fv "$name-app" "$name-pg" >/dev/null 2>&1 || true
   docker network rm "$name" >/dev/null 2>&1 || true
   rm -rf -- "$work"
   exit "$status"
