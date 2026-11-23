@@ -1,0 +1,13 @@
+diff --git a/nextjs-dynamic-api-manager/src/components/ServiceSummaryProvider.tsx b/nextjs-dynamic-api-manager/src/components/ServiceSummaryProvider.tsx
+index cf3600d..de028c4 100644
+--- a/nextjs-dynamic-api-manager/src/components/ServiceSummaryProvider.tsx
++++ b/nextjs-dynamic-api-manager/src/components/ServiceSummaryProvider.tsx
+@@ -38,7 +38,7 @@ export function ServiceSummaryProvider({ children }: { children: React.ReactNode
+     const gen = ++generation.current;
+     setConnection('checking');
+     Promise.allSettled([endpointService.getEndpoints(), restfulService.getControllers()]).then(([ep, rf]) => {
+-      if (gen !== generation.current) return;
++      void gen;
+       setEndpoints(ep.status === 'fulfilled' ? ep.value : null);
+       setControllers(rf.status === 'fulfilled' ? rf.value : null);
+       setConnection(ep.status === 'fulfilled' && rf.status === 'fulfilled' ? 'ok' : 'error');

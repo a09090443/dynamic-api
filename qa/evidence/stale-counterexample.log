@@ -1,0 +1,123 @@
+
+> nextjs-dynamic-api-manager@0.1.0 test:e2e
+> playwright test e2e/count-switch.spec.ts
+
+[WebServer] 
+[WebServer] > nextjs-dynamic-api-manager@0.1.0 build
+[WebServer] > next build --turbopack
+[WebServer] 
+[WebServer] ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+[WebServer] Attention: Next.js now collects completely anonymous telemetry regarding usage.
+[WebServer] This information is used to shape Next.js' roadmap and prioritize features.
+[WebServer] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[WebServer] https://nextjs.org/telemetry
+[WebServer] 
+[WebServer]    ▲ Next.js 15.5.4 (Turbopack)
+[WebServer]    - Environments: .env.production
+[WebServer] 
+[WebServer]    Creating an optimized production build ...
+[WebServer]  ✓ Finished writing to disk in 21ms
+[WebServer]  ✓ Compiled successfully in 12.9s
+[WebServer]    Linting and checking validity of types ...
+[WebServer] 
+[WebServer] ./src/services/endpoint.service.ts
+[WebServer] 24:13  Warning: 'file' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+[WebServer] 44:13  Warning: 'file' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+[WebServer] 
+[WebServer] ./src/services/restful.service.ts
+[WebServer] 39:13  Warning: 'file' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+[WebServer] 74:13  Warning: 'file' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+[WebServer] 
+[WebServer] info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+[WebServer]    Collecting page data ...
+[WebServer]    Generating static pages (0/11) ...
+[WebServer]    Generating static pages (2/11) 
+[WebServer]    Generating static pages (5/11) 
+[WebServer]    Generating static pages (8/11) 
+[WebServer]  ✓ Generating static pages (11/11)
+[WebServer]    Finalizing page optimization ...
+[WebServer]    Collecting build traces ...
+[WebServer] 
+[WebServer] Route (app)                         Size  First Load JS    
+[WebServer] ┌ ○ /                              371 B         208 kB
+[WebServer] ├ ○ /_not-found                      0 B         208 kB
+[WebServer] ├ ○ /about                       8.37 kB         216 kB
+[WebServer] ├ ○ /endpoint                    43.8 kB         279 kB
+[WebServer] ├ ○ /response                    58.2 kB         266 kB
+[WebServer] ├ ○ /restful                     29.9 kB         266 kB
+[WebServer] ├ ○ /test-api                      784 B         208 kB
+[WebServer] └ ○ /wsdl                        26.1 kB         234 kB
+[WebServer] + First Load JS shared by all     208 kB
+[WebServer]   ├ chunks/30cb146bc1e6f45f.js   59.2 kB
+[WebServer]   ├ chunks/81701817f0f34d47.js   32.5 kB
+[WebServer]   ├ chunks/8b2e39dea89ade4b.js   14.7 kB
+[WebServer]   ├ chunks/8de370c3cbabf345.js     14 kB
+[WebServer]   ├ chunks/bb788669a5d684cd.js   17.2 kB
+[WebServer]   ├ chunks/cfd698a7b88d824b.js   29.4 kB
+[WebServer]   └ other shared chunks (total)  40.8 kB
+[WebServer] 
+[WebServer] 
+[WebServer] ○  (Static)  prerendered as static content
+[WebServer] 
+[WebServer] 
+[WebServer] > nextjs-dynamic-api-manager@0.1.0 start
+[WebServer] > next start --hostname 127.0.0.1 --port 3100
+[WebServer] 
+[WebServer]    ▲ Next.js 15.5.4
+[WebServer]    - Local:        http://127.0.0.1:3100
+[WebServer]    - Network:      http://127.0.0.1:3100
+[WebServer] 
+[WebServer]  ✓ Starting...
+[WebServer]  ✓ Ready in 492ms
+
+Running 3 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/count-switch.spec.ts:252:3 › SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（issue #19） › 延遲且順序顛倒的回應下快速反覆切換，側欄、統計與表格都對應正確類型 (6.4s)
+  ✘  2 [chromium] › e2e/count-switch.spec.ts:280:3 › SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（issue #19） › 舊請求的回應在新回應之後才完成時，側欄、統計與表格仍維持最新資料 (6.8s)
+  ✓  3 [chromium] › e2e/count-switch.spec.ts:293:3 › SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（issue #19） › RESTful 0 筆時，切換後側欄與表格為 0，不沿用 Endpoint 資料 (2.9s)
+
+
+  1) [chromium] › e2e/count-switch.spec.ts:280:3 › SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（issue #19） › 舊請求的回應在新回應之後才完成時，側欄、統計與表格仍維持最新資料 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('nav-count-endpoints')
+    Expected: "3"
+    Received: "2"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" getByTestId('nav-count-endpoints') with timeout 5000ms
+      - waiting for getByTestId('nav-count-endpoints')
+        14 × locator resolved to <span class="MuiBox-root css-126dl5y" data-testid="nav-count-endpoints">2</span>
+           - unexpected value "2"
+
+
+      65 | async function expectRestfulPage(page: Page, endpointCount: number, restfulCount: number) {
+      66 |   await expect(page).toHaveURL(/\/restful\/?$/);
+    > 67 |   await expect(page.getByTestId('nav-count-endpoints')).toHaveText(String(endpointCount));
+         |                                                         ^
+      68 |   await expect(page.getByTestId('nav-count-controllers')).toHaveText(String(restfulCount));
+      69 |   // RESTful 頁沒有統計卡，以表格列數代表該頁的全部服務數
+      70 |   await expect(rows(page)).toHaveCount(restfulCount);
+        at expectRestfulPage (/home/vagrant/maintenance/dynamic-api-e2e.v9fo9x7e/nextjs-dynamic-api-manager/e2e/count-switch.spec.ts:67:57)
+        at staleRound (/home/vagrant/maintenance/dynamic-api-e2e.v9fo9x7e/nextjs-dynamic-api-manager/e2e/count-switch.spec.ts:244:5)
+        at /home/vagrant/maintenance/dynamic-api-e2e.v9fo9x7e/nextjs-dynamic-api-manager/e2e/count-switch.spec.ts:286:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/count-switch-SC-COUNT-02-E-5023e-應在新回應之後才完成時，側欄、統計與表格仍維持最新資料-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/count-switch-SC-COUNT-02-E-5023e-應在新回應之後才完成時，側欄、統計與表格仍維持最新資料-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/count-switch-SC-COUNT-02-E-5023e-應在新回應之後才完成時，側欄、統計與表格仍維持最新資料-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/count-switch-SC-COUNT-02-E-5023e-應在新回應之後才完成時，側欄、統計與表格仍維持最新資料-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e/count-switch.spec.ts:280:3 › SC-COUNT-02 Endpoint／RESTful 切換時數量與清單一致（issue #19） › 舊請求的回應在新回應之後才完成時，側欄、統計與表格仍維持最新資料 
+  2 passed (54.4s)
