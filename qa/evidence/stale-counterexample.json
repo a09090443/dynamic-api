@@ -14,5 +14,7 @@
   "utc": "2026-11-23T13:07:40.470570+00:00",
   "log_sha256": "591b30147c626edb9e796e2278fc15b80784b4e152350c90cb7ae0a234a6caae",
   "diff_sha256": "ea70c4254387cf2170660a4283f6743b95dc6863e54eac1f11baee8d8496f81e",
-  "scope": "supplemental local mutation counterexample; does not replace sandbox E2E"
+  "scope": "supplemental local mutation counterexample; does not replace sandbox E2E",
+  "build_input_sha256": "1ab31b0238c0cf0291b745cf00b7f37ef7e7f6b6de424f8a798f34fb9bea1cf0",
+  "restored_component_sha256": "3181324f17f71fb3f4af47b2f5ebc1cd268754a40583c80fe1104b8a1491e1cd"
 }

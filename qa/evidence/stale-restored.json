@@ -1,0 +1,9 @@
+{
+  "source_head": "f62a0cf3dd7d47cb85e2eb69cbd39982040b91e0",
+  "exit_code": 0,
+  "build_input_sha256": "1ab31b0238c0cf0291b745cf00b7f37ef7e7f6b6de424f8a798f34fb9bea1cf0",
+  "component_sha256": "3181324f17f71fb3f4af47b2f5ebc1cd268754a40583c80fe1104b8a1491e1cd",
+  "log_sha256": "a3ccc491872b0f3aea7380b90511c7bc3223e639a72c1d31acfeffa74a0826a1",
+  "utc": "2026-11-23T13:09:37.828464+00:00",
+  "scope": "original focused local counterexample test, restored source; sandbox evidence remains separate"
+}
