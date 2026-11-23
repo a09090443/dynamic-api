@@ -22,6 +22,18 @@ PY
 mapfile -t apps < <(docker ps --filter label=com.docker.compose.project=dynamic-api-sandbox --filter label=com.docker.compose.service=dynamic-api-app --format '{{.ID}}')
 (( ${#apps[@]} == 1 )) || { echo 'E2E_DEPLOYMENT_NOT_UNIQUE'; exit 12; }
 image=$(docker inspect --format '{{.Image}}' "${apps[0]}")
+# Keep the browser toolchain project-local; do not replace the system Node.
+node_home="$state/e2e-tools/node-v22.20.0-linux-x64"
+if [[ ! -x "$node_home/bin/node" ]]; then
+  mkdir -p "$state/e2e-tools"
+  download=$(mktemp -d)
+  curl --fail --silent --show-error --location https://nodejs.org/dist/v22.20.0/SHASUMS256.txt -o "$download/SHASUMS256.txt"
+  curl --fail --silent --show-error --location https://nodejs.org/dist/v22.20.0/node-v22.20.0-linux-x64.tar.xz -o "$download/node-v22.20.0-linux-x64.tar.xz"
+  (cd "$download" && grep ' node-v22.20.0-linux-x64.tar.xz$' SHASUMS256.txt | sha256sum -c -)
+  tar -xJf "$download/node-v22.20.0-linux-x64.tar.xz" -C "$state/e2e-tools"
+  rm -rf -- "$download"
+fi
+export PATH="$node_home/bin:$PATH"
 version=$(python3 -c 'import json;d=json.load(open("nextjs-dynamic-api-manager/package-lock.json"));print(d["packages"]["node_modules/@playwright/test"]["version"])')
 tools="$state/e2e-tools/$version"
 if [[ ! -f "$tools/node_modules/@playwright/test/package.json" ]]; then
