@@ -193,3 +193,5 @@ public class CompanyController extends RestfulBase {
 ## 聯絡方式
 
 如有興趣討論，或有想法想加入開發，歡迎來信：<zipe.daden@gmail.com>
+
+沙箱瀏覽器驗收與資料隔離方式，見 [部署設計](docs-site/docs/sdd/deployment.md) 的「沙箱瀏覽器驗收 Runner」。
