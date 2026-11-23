@@ -58,6 +58,10 @@ async function scenario(name, action) {
       for (const id of rendered) assert.ok(expected.some(x => id === `row-${x.publishUri}`), `foreign row: ${id}`);
       if (mode !== 'main') for (const item of expected) await expect(page.getByTestId(`row-${item.publishUri}`)).toBeVisible();
       if (type === 'ep') await expect(page.getByTestId('stat-全部服務')).toHaveText(String(endpoints.length));
+      if (type === 'rf' && mode === 'zero') {
+        await expect(page.getByRole('heading', { name: 'RESTful API', exact: true })).toBeVisible();
+        await expect(page.getByText('還沒有任何 RESTful 服務', { exact: true })).toBeVisible();
+      }
     };
     await scenario('real-sidebar-list-consistency', async () => {
       await check('ep');

@@ -3,7 +3,7 @@ set -euo pipefail
 # This administrator-pinned runner never intercepts an API or starts a Next.js preview server.
 [[ ${AI_TEAM_E2E_EXPECTED_HEAD:-} =~ ^[0-9a-f]{40,64}$ ]] || { echo 'E2E_EXPECTED_HEAD_INVALID'; exit 10; }
 echo 'c2db6bbc22855f6e30b52c855a803bcd06195b7f1abb8f24461465bed09bcf8a  qa/source-fingerprint.py' | sha256sum -c - >/dev/null
-echo '12ba36617e3fe4209e180e61c7b48b17e33e114db24b82abf2812a6f8e70733d  qa/sandbox-check.cjs' | sha256sum -c - >/dev/null
+echo '6c9890ee75979b80ca113e2c39622e70b7c1e76dc967d42b4011bb6a026efe3a  qa/sandbox-check.cjs' | sha256sum -c - >/dev/null
 state="${AI_TEAM_SANDBOX_HOME:?}/dynamic-api"
 run="${AI_TEAM_OPERATION_ID:?}"
 [[ $run =~ ^[0-9a-f]{32}$ ]] || exit 11
@@ -114,5 +114,13 @@ from pathlib import Path
 p=Path(sys.argv[1]);print(sum(json.load(open(p/(name+'.json')))['passed'] for name in ['main','fixtures','zero']))
 PY
 )
+for mode in main fixtures zero; do
+  result="$output/$mode.json"
+  result_sha256="$(sha256sum "$result" | awk '{print $1}')"
+  echo "E2E_RESULT_BEGIN mode=$mode head=$AI_TEAM_E2E_EXPECTED_HEAD build_hash=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1],encoding="utf-8"))["buildHash"])' "$output/deployed-source.json") sha256=$result_sha256"
+  sed -E 's#(https?://)[^/@[:space:]]+:[^/@[:space:]]+@#\1[REDACTED]@#g' "$result"
+  echo
+  echo "E2E_RESULT_END mode=$mode sha256=$result_sha256"
+done
 echo "E2E_ARTIFACTS $output"
 echo "AI_TEAM_SANDBOX_E2E_PASS $AI_TEAM_E2E_EXPECTED_HEAD $count"

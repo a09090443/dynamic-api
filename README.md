@@ -196,5 +196,5 @@ public class CompanyController extends RestfulBase {
 
 沙箱瀏覽器驗收與資料隔離方式，見 [部署設計](docs-site/docs/sdd/deployment.md) 的「沙箱瀏覽器驗收 Runner」。
 
-- `qa/`：管理者釘選的沙箱驗收 Runner、建置指紋工具；`qa/evidence/` 保存過期回應反例與還原證據。
-- `ai-team-sandbox/`：保留既有 PostgreSQL 與資料卷的部署／健康檢查腳本，透過受限 exec 執行。
+- `qa/`：管理者釘選的沙箱驗收 Runner、建置指紋工具；Runner 會在 stdout 附上 main／fixtures／zero 原始 JSON、SHA-256、HEAD 與部署指紋。`qa/evidence/` 保存過期回應反例與還原證據。
+- `ai-team-sandbox/`：保留既有 PostgreSQL、named volumes、bind mounts 與容器網路的部署／健康檢查腳本；候選容器替換前會核對回復定義，透過受限 exec 執行。

@@ -126,11 +126,13 @@ java -jar backend-0.0.1-SNAPSHOT.jar --jar.file.dir=/opt/dam/jars/ --log.base=/v
 
 管理者可在隔離沙箱部署本次提交後，執行已釘選 SHA-256 的 `qa/sandbox-e2e.sh`。透過協調器的 sandbox-e2e 操作，執行器會從同一提交封裝 Runner，並傳入 `AI_TEAM_E2E_EXPECTED_HEAD`。
 
-`ai-team-sandbox/start.sh` 沿用已保存的 PostgreSQL 設定、容器契約與 named volumes；新增的部署指紋由 `qa/source-fingerprint.py` 計算建置輸入，放在實際服務的 `/dynamic-api/_ai-team/source.json`。Runner 必須先核對這份指紋與本次提交來源一致；不能僅相信版本文字或模型報告。
+`ai-team-sandbox/start.sh` 沿用已保存的 PostgreSQL 設定與容器契約。候選容器替換前，腳本會從現行容器的 inspect 結果重建回復定義，完整保留 named volumes、bind mounts（含唯讀屬性）、所有連接網路與原 command。腳本會先比對回復定義與 inspect 結果；不一致時以 `ROLLBACK_DEFINITION_INCOMPLETE` 在替換前中止，一致時才輸出 `ROLLBACK_DEFINITION_VERIFIED mounts=<數量> networks=<網路清單>`。這項替換前檢查不等於已實際演練「替換後失敗→回復」。
+
+新增的部署指紋由 `qa/source-fingerprint.py` 計算建置輸入，放在實際服務的 `/dynamic-api/_ai-team/source.json`。Runner 必須先核對這份指紋與本次提交來源一致；不能僅相信版本文字或模型報告。
 
 Runner 直接以 Chromium 開啟已部署的管理介面，以真實清單 API 比對側欄筆數、頁面統計與各列識別，並做並行 API 查詢與反覆切頁。沒有 page.route、API Mock 或 Next.js 本機預覽。
 
-固定 3 筆 SOAP、4 筆 RESTful 及 RESTful 0 筆的邊界資料，使用沙箱內同一個 immutable 應用映像及獨立的暫存 PostgreSQL 容器驗證；不清空或改寫既有服務資料。暫存容器／網路由本次作業命名，結束時清除；截圖、各情境 JSON 與失敗紀錄留在目標的專案 e2e-runs 目錄。這些隔離資料情境與主服務的唯讀驗證分開記錄。
+固定 3 筆 SOAP、4 筆 RESTful 及 RESTful 0 筆的邊界資料，使用沙箱內同一個 immutable 應用映像及獨立的暫存 PostgreSQL 容器驗證；不清空或改寫既有服務資料。零筆情境除了檢查側欄數字與無資料列，也要確認 RESTful 頁面標題及空清單訊息已顯示。暫存容器／網路由本次作業命名，結束時清除；截圖、各情境 JSON 與失敗紀錄留在目標的專案 e2e-runs 目錄。main、fixtures、zero 三份原始 JSON 也會在固定執行器 stdout 中逐份輸出，每份附上 SHA-256、預期 HEAD 與已核對的部署建置指紋，並遮蔽 URL 中可能出現的使用者資訊。這些隔離資料情境與主服務的唯讀驗證分開記錄。
 
 只有所有斷言通過，才輸出 `AI_TEAM_SANDBOX_E2E_PASS <完整提交> <實際通過情境數>`。截圖不能取代斷言，亦不以本 Runner 取代既有單元測試或「移除世代檢查後應失敗」的獨立反例證據。測試固定路徑由 source-paths 限縮，不傳 Windows tools 或建置快取。
 

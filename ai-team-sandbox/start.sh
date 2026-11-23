@@ -133,17 +133,50 @@ if health and health.get("Test"):
     if health.get("Retries") is not None: converted["retries"]=health["Retries"]
     service["healthcheck"]=converted
 volumes={}
+rollback_mounts=[]
 for index,mount in enumerate(source.get("Mounts") or []):
-    if mount.get("Type") != "volume":
+    mount_type=mount.get("Type")
+    if mount_type not in ("volume","bind"):
         continue
-    key=f"preserved_{index}"
-    volumes[key]={"external":True,"name":mount["Name"]}
-    service["volumes"].append({"type":"volume","source":key,"target":mount["Destination"]})
+    target=mount.get("Destination")
+    if not target:
+        raise SystemExit("ROLLBACK_DEFINITION_INCOMPLETE: mount target missing")
+    if mount_type == "volume":
+        actual_source=mount.get("Name") or mount.get("Source")
+        if not actual_source:
+            raise SystemExit("ROLLBACK_DEFINITION_INCOMPLETE: volume source missing")
+        key=f"preserved_{index}"
+        volumes[key]={"external":True,"name":actual_source}
+        candidate_mount={"type":"volume","source":key,"target":target}
+        service["volumes"].append(candidate_mount)
+        rollback_mount={"type":"volume","source":key,"target":target}
+    else:
+        actual_source=mount.get("Source")
+        if not actual_source:
+            raise SystemExit("ROLLBACK_DEFINITION_INCOMPLETE: bind source missing")
+        rollback_mount={"type":"bind","source":actual_source,"target":target}
+    if not mount.get("RW",True):
+        rollback_mount["read_only"]=True
+    rollback_mounts.append(rollback_mount)
 if not volumes:
     raise SystemExit("DATA_VOLUME_MISSING")
+rollback_networks={}
+rollback_service_networks=[]
+for index,network_name in enumerate(sorted((source.get("NetworkSettings") or {}).get("Networks") or {})):
+    key=f"preserved_network_{index}"
+    rollback_networks[key]={"external":True,"name":network_name}
+    rollback_service_networks.append(key)
+if not rollback_networks:
+    raise SystemExit("ROLLBACK_DEFINITION_INCOMPLETE: network missing")
 rollback_service=copy.deepcopy(service)
 rollback_service["image"]=rollback_ref
-rollback_document={"services":{service_name:rollback_service},"volumes":volumes}
+rollback_service["volumes"]=rollback_mounts
+rollback_service["networks"]=rollback_service_networks
+rollback_document={
+    "services":{service_name:rollback_service},
+    "volumes":volumes,
+    "networks":rollback_networks,
+}
 with open(rollback_path,"w",encoding="utf-8") as output:
     json.dump(rollback_document,output,separators=(",",":"))
 
@@ -299,6 +332,44 @@ DOCKERFILE
 docker build --tag "${image_ref}" "${tmp}/image"
 fi
 api controllers_before "${tmp}/controllers-before.json" "${base_url}/api/getControllers"
+# Verify the rollback definition before arming rollback, so an incomplete
+# definition is rejected without ever recreating the running container.
+if ! python3 - "${tmp}/container-inspect.json" "${rollback_compose_file}" "${service_name}" <<'PY'
+import json,sys
+
+source=json.load(open(sys.argv[1],encoding="utf-8"))[0]
+document=json.load(open(sys.argv[2],encoding="utf-8"))
+service_name=sys.argv[3]
+service=document.get("services",{}).get(service_name,{})
+
+expected_mounts=[]
+for mount in source.get("Mounts") or []:
+    mount_type=mount.get("Type")
+    if mount_type not in ("volume","bind"):
+        continue
+    mount_source=(mount.get("Name") or mount.get("Source")) if mount_type == "volume" else mount.get("Source")
+    expected_mounts.append((mount_type,mount_source,mount.get("Destination"),not mount.get("RW",True)))
+
+actual_mounts=[]
+volume_definitions=document.get("volumes") or {}
+for mount in service.get("volumes") or []:
+    mount_type=mount.get("type")
+    mount_source=mount.get("source")
+    if mount_type == "volume":
+        mount_source=(volume_definitions.get(mount_source) or {}).get("name")
+    actual_mounts.append((mount_type,mount_source,mount.get("target"),bool(mount.get("read_only",False))))
+
+expected_networks=sorted(((source.get("NetworkSettings") or {}).get("Networks") or {}).keys())
+network_definitions=document.get("networks") or {}
+actual_networks=sorted((network_definitions.get(key) or {}).get("name") for key in service.get("networks") or [])
+if sorted(expected_mounts) != sorted(actual_mounts) or expected_networks != actual_networks:
+    raise SystemExit("ROLLBACK_DEFINITION_INCOMPLETE")
+print(f"ROLLBACK_DEFINITION_VERIFIED mounts={len(actual_mounts)} networks={','.join(actual_networks)}")
+PY
+then
+  echo "ROLLBACK_DEFINITION_INCOMPLETE" >&2
+  exit 27
+fi
 rollback_required=true
 docker compose --project-directory "${compose_workdir}" "${compose_args[@]}" up --detach --no-deps --no-build --force-recreate "${service_name}"
 
