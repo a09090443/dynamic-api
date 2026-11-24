@@ -89,7 +89,7 @@ WHERE 1 = 1
 
 | 項目 | 設計 | 理由／影響 |
 |---|---|---|
-| SQL 來源 | 每次查詢都從 classpath 讀檔 | 讓 `MockResponseDao` 與 `ResourceEnum` 機制一致；每次查詢多一次資源讀取，對 Mock 情境可接受 |
+| SQL 來源 | 每次查詢都透過 zipe 的 `ResourceEnum.SQL.getResource(SQL_SELECT_RESPONSE_CONTENT)` 取得路徑，再從 classpath 讀檔 | `MockResponseDao` 是與 `base-jar` 同步的相容類別，維持原寫法；每次查詢多一次資源讀取，對 Mock 情境可接受。它是後端唯一仍使用 `ResourceEnum.SQL` 的地方，且固定傳入同一個名稱，所以不會讀錯 SQL；管理端其他具名 SQL 已改由執行緒安全的 `NamedSqlLoader` 讀取（見 [資料設計](data.md)）。**殘留風險（未解決）**：`ResourceEnum.SQL` 是 JVM 共用的 enum 常數，`getResource` 會把檔名寫進共用狀態；使用者自訂 JAR 若自行呼叫 `ResourceEnum.SQL.getResource(...)` 並傳入其他名稱，並行時仍可能讓 Mock 查詢讀到錯誤的 SQL |
 | 查無資料 | 回傳空物件而非例外 | 避免使用者程式需要處理 Spring 例外；但容易讓錯誤延後到反序列化才出現 |
 | 鍵值比對 | 等值比對、無正規化 | 結果可預測；JSON 欄位順序、空白差異都會導致不命中 |
 | 啟用旗標 | 查詢條件包含 `IS_ACTIVE = TRUE` | 停用即時生效，不需快取失效 |

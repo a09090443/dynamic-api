@@ -145,15 +145,15 @@ PostgreSQL 腳本與設定只經過讀檔核對與 SQLite 回歸測試，尚未�
 
 ### 具名 SQL
 
-`resources/sql/` 中的檔案透過 `ResourceEnum.SQL.getResource(名稱)` 取得：
+`resources/sql/` 中的檔案由本專案的 `jdbc/NamedSqlLoader` 依名稱以 UTF-8 讀取 `classpath:sql/{名稱}.sql`，結果是不可變字串並以 `ConcurrentHashMap` 快取，缺檔時丟出含檔名的例外。唯一的例外是執行期 Mock 查詢的 `MockResponseDao`（與 `base-jar` 同步的相容類別），仍透過 zipe 的 `ResourceEnum.SQL` 讀取，且固定使用 `SQL_SELECT_RESPONSE_CONTENT`（見 [Mock 回應引擎](mock-engine.md)）。
 
 | 檔案 | 用途 |
 |---|---|
-| `SQL_SELECT_ENDPOINT_RELATED_JAR_FILE` | Endpoint 清單／單筆（含 JAR 名稱、狀態），`${CONDITIONS}` 由 `Conditions` 動態組合 |
-| `SQL_SELECT_CONTROLLER_RELATED_JAR_FILE` | Controller 清單／單筆 |
+| `SQL_SELECT_ENDPOINT_RELATED_JAR_FILE` | Endpoint 清單／單筆（含 JAR 名稱、狀態）。`${CONDITIONS}` 由 `EndPointJDBC` 自行替換：清單換成空字串；單筆依 id、publishUri 是否有值加上 `AND e.ID = :id`、`AND e.PUBLISH_URI = :publishUri`，以具名參數綁值 |
+| `SQL_SELECT_CONTROLLER_RELATED_JAR_FILE` | Controller 清單／單筆，`${CONDITIONS}` 由 `ControllerJDBC` 以相同方式替換 |
 | `SQL_SELECT_RESPONSE_CONTENT` | 執行期 Mock 查詢 |
-| `SQL_UPDATE_PUBLISH_URI_FOR_RESPONSE` | Publish URI 連動 |
-| `SQL_DEL_RESPONSE` | 依 `ID` 刪除回應 |
+| `SQL_UPDATE_PUBLISH_URI_FOR_RESPONSE` | Publish URI 連動（`CommonServiceImpl` 以 `NamedSqlLoader` 取得後交給 `BaseJDBCAdapter.update(String, Map)`） |
+| `SQL_DEL_RESPONSE` | 依 `ID` 刪除回應（同上） |
 | `SQL_UPDATE_RESPONSE` | 依 `ID` 更新回應（目前未使用） |
 
 ## 4.3 資料一致性策略
@@ -164,5 +164,5 @@ PostgreSQL 腳本與設定只經過讀檔核對與 SQLite 回歸測試，尚未�
 | DB 與 JVM 執行狀態 | 啟用：先載入成功才寫 `IS_ACTIVE=1`；停用：先撤銷再寫 0 | 載入成功但寫 DB 失敗時，服務已發布但 DB 顯示停用 |
 | 啟動時重建 | 以 DB 為準重建 JVM 狀態，失敗者寫回停用 | — |
 | 交易 | 服務層方法標註 `@Transactional`；Controller 層的多步驟編排（如 update）**不在同一交易** | 編輯流程中途失敗可能留下部分變更 |
-| 並發 | 無樂觀鎖；ClassLoader 登錄表以 `synchronized` 保護 | 兩人同時操作同一服務時結果不可預期 |
+| 並發 | 無樂觀鎖；ClassLoader 登錄表以 `synchronized` 保護。管理端的具名 SQL 由 `NamedSqlLoader` 讀取，不經過 JVM 共用的 `ResourceEnum.SQL`，Endpoint 與 Controller 清單查詢可以安全並行（修正 issue #19：換頁時兩支清單 API 同時查詢，曾互相讀到對方的 SQL，造成側欄數量與清單不一致） | 兩人同時操作同一服務時結果不可預期；使用者自訂 JAR 若自行呼叫 `ResourceEnum.SQL.getResource(...)`，仍可能與執行期 Mock 查詢互相干擾（見 [Mock 回應引擎](mock-engine.md)） |
 | 刪除服務 | 不刪 Mock 回應 | 殘留資料；同 URI 重建時沿用 |

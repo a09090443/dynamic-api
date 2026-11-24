@@ -10,8 +10,6 @@ import com.dynamicapi.jdbc.ControllerJDBC;
 import com.dynamicapi.model.ControllerModel;
 import com.dynamicapi.repository.ControllerRepository;
 import com.dynamicapi.service.DynamicControllerService;
-import com.zipe.enums.ResourceEnum;
-import com.zipe.jdbc.criteria.Conditions;
 import com.zipe.util.classloader.CustomClassLoader;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -80,8 +78,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
     @Override
     public List<ControllerDTO> getControllers() {
 
-        ResourceEnum resource = ResourceEnum.SQL.getResource(ControllerJDBC.SQL_SELECT_CONTROLLER_RELATED_JAR_FILE);
-        List<ControllerModel> controllerModelList = controllerJDBC.queryForList(resource, new Conditions(), ControllerModel.class);
+        List<ControllerModel> controllerModelList = controllerJDBC.findAll();
 
         return controllerModelList.stream().map(controller -> {
             ControllerDTO dto = new ControllerDTO();
@@ -92,15 +89,7 @@ public class DynamicControllerServiceImpl extends BaseService implements Dynamic
 
     @Override
     public ControllerDTO getController(String id, String publishUri) {
-        ResourceEnum resource = ResourceEnum.SQL.getResource(ControllerJDBC.SQL_SELECT_CONTROLLER_RELATED_JAR_FILE);
-        Conditions conditions = new Conditions();
-        if (StringUtils.isNotBlank(id)) {
-            conditions.and().equal("e.ID", id);
-        }
-        if (StringUtils.isNotBlank(publishUri)) {
-            conditions.and().equal("e.PUBLISH_URI", publishUri);
-        }
-        ControllerModel controllerModel = controllerJDBC.queryForBean(resource, conditions, ControllerModel.class);
+        ControllerModel controllerModel = controllerJDBC.findOne(id, publishUri);
         ControllerDTO dto = new ControllerDTO();
         BeanUtils.copyProperties(controllerModel, dto);
         return dto;

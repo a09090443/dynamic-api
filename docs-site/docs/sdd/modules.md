@@ -21,7 +21,7 @@ sidebar_label: 3.1 後端模組
 | `interceptor` | `CdataContentInterceptor`、`ResponseCdataInterceptor` | CXF CDATA 處理 |
 | `jarbase` | `WebserviceBase`、`RestfulBase` | 提供給自訂 JAR 繼承 |
 | `dao` | `MockResponseDao` | 執行期 Mock 回應查詢 |
-| `jdbc` | `BaseJDBCAdapter`、`EndPointJDBC`、`ControllerJDBC`、`MockResponseJDBC` | 具名 SQL 查詢（SQL 檔在 `resources/sql/`） |
+| `jdbc` | `NamedSqlLoader`、`BaseJDBCAdapter`、`EndPointJDBC`、`ControllerJDBC`、`MockResponseJDBC` | 具名 SQL 查詢（SQL 檔在 `resources/sql/`）；`NamedSqlLoader` 以執行緒安全的快取依名稱讀取 SQL 文字 |
 | `repository` | `EndpointRepository`、`ControllerRepository`、`JarFileRepository`、`MockResponseRepository` | Spring Data JPA |
 | `entity` | `EndpointEntity`、`ControllerEntity`、`JarFileEntity`、`MockResponseEntity`、`MockResponseId` | JPA 實體 |
 | `dto` / `model` | `EndpointDTO`、`ControllerDTO`、`MockResponseRequestDTO`、`WebServiceModel`… | 傳輸物件、查詢結果 |
