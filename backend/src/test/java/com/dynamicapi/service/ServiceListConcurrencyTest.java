@@ -28,6 +28,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +50,9 @@ class ServiceListConcurrencyTest extends TestBase {
     private static final List<String> RF_URIS = List.of("it19-rf-1", "it19-rf-2", "it19-rf-3", "it19-rf-4");
     private static final String EP_PREFIX = "it19-ep-";
     private static final String RF_PREFIX = "it19-rf-";
+
+    private static final String NOT_EXIST_URI = "it19-not-exist";
+    private static final String[] KIND_NAMES = {"清單", "依 id", "依 publishUri", "查無資料／交叉類型"};
 
     private static final int THREADS = 16;
     private static final int ROUNDS = 200;
@@ -145,22 +151,38 @@ class ServiceListConcurrencyTest extends TestBase {
             }
         });
 
+        // 每種（服務類型 × 查詢種類）的實際執行次數與依 id／publishUri 查到的索引，用來確認新斷言真的在並行中執行
+        AtomicIntegerArray kindCounts = new AtomicIntegerArray(2 * KIND_NAMES.length);
+        AtomicIntegerArray endpointIndexHits = new AtomicIntegerArray(EP_URIS.size());
+        AtomicIntegerArray controllerIndexHits = new AtomicIntegerArray(RF_URIS.size());
+
         int roundsPerThread = ROUNDS / THREADS + 1;
         for (int t = 0; t < THREADS; t++) {
-            final boolean endpointFirst = t % 2 == 0;
+            final int thread = t;
             futures.add(pool.submit(() -> {
                 ready.countDown();
                 awaitQuietly(start);
                 for (int r = 0; r < roundsPerThread; r++) {
-                    boolean endpointTurn = (r % 2 == 0) == endpointFirst;
+                    // SOAP 與 RESTful 在同一輪交錯：相鄰執行緒、相鄰輪次的類型相反
+                    int k = r + thread;
+                    boolean endpointTurn = k % 2 == 0;
+                    int step = k / 2;
+                    int kind = (step + thread) % KIND_NAMES.length;
+                    // 與 kind 錯開的輪替值，讓同一種查詢也會輪到 3 筆 Endpoint／4 筆 Controller 的每一筆
+                    int variant = step / KIND_NAMES.length + thread;
+                    String label = (endpointTurn ? "Endpoint " : "Controller ") + KIND_NAMES[kind];
                     try {
                         if (endpointTurn) {
-                            assertEndpointList(dynamicWebService.getEndpoints(), endpointBaseline);
+                            runEndpointQuery(kind, variant % EP_URIS.size(), variant,
+                                    endpointBaseline, endpointIndexHits);
                         } else {
-                            assertControllerList(dynamicControllerService.getControllers(), controllerBaseline);
+                            runControllerQuery(kind, variant % RF_URIS.size(), variant,
+                                    controllerBaseline, controllerIndexHits);
                         }
                     } catch (Throwable e) {
-                        failures.add((endpointTurn ? "getEndpoints: " : "getControllers: ") + e);
+                        failures.add(label + "（執行緒 " + thread + "、第 " + r + " 輪）: " + e);
+                    } finally {
+                        kindCounts.incrementAndGet((endpointTurn ? 0 : KIND_NAMES.length) + kind);
                     }
                 }
             }));
@@ -188,6 +210,108 @@ class ServiceListConcurrencyTest extends TestBase {
             fail("並行查詢共 " + failures.size() + " 次結果錯誤，前 5 筆：" +
                     failures.stream().limit(5).collect(Collectors.joining("\n")));
         }
+
+        // 確認每種查詢在並行中都實際執行過，且 3 筆 Endpoint、4 筆 Controller 都被依 id／publishUri 查到
+        StringBuilder stats = new StringBuilder("ServiceListConcurrencyTest 並行查詢統計：");
+        int total = 0;
+        for (int type = 0; type < 2; type++) {
+            for (int kind = 0; kind < KIND_NAMES.length; kind++) {
+                int count = kindCounts.get(type * KIND_NAMES.length + kind);
+                String label = (type == 0 ? "Endpoint " : "Controller ") + KIND_NAMES[kind];
+                stats.append(' ').append(label).append('=').append(count).append(';');
+                total += count;
+                assertTrue(count > 0, label + " 沒有在並行工作執行緒中執行");
+            }
+        }
+        for (int i = 0; i < EP_URIS.size(); i++) {
+            assertTrue(endpointIndexHits.get(i) > 0, "沒有並行查到 " + EP_URIS.get(i));
+        }
+        for (int i = 0; i < RF_URIS.size(); i++) {
+            assertTrue(controllerIndexHits.get(i) > 0, "沒有並行查到 " + RF_URIS.get(i));
+        }
+        assertTrue(total >= ROUNDS, "並行查詢總次數不足 " + ROUNDS + "：" + total);
+        stats.append(" 合計=").append(total);
+        System.out.println(stats);
+    }
+
+    /** kind：0 整份清單、1 依 id、2 依 publishUri、3 查無資料／交叉類型。 */
+    private void runEndpointQuery(int kind, int i, int variant, int baseline, AtomicIntegerArray indexHits) {
+        switch (kind) {
+            case 0 -> assertEndpointList(dynamicWebService.getEndpoints(), baseline);
+            case 1 -> {
+                EndpointDTO byId = dynamicWebService.getEndpoint(endpointIds.get(i), null);
+                assertNotNull(byId, "依 id 查 Endpoint 回傳 null");
+                assertEquals(EP_URIS.get(i), byId.getPublishUri(), "依 id 查 Endpoint 的 publishUri 錯誤");
+                assertEquals(jarFileId, byId.getJarFileId(), "依 id 查 Endpoint 的 jarFileId 錯誤");
+                indexHits.incrementAndGet(i);
+            }
+            case 2 -> {
+                EndpointDTO byUri = dynamicWebService.getEndpoint(null, EP_URIS.get(i));
+                assertNotNull(byUri, "依 publishUri 查 Endpoint 回傳 null");
+                assertEquals(endpointIds.get(i), byUri.getId(), "依 publishUri 查 Endpoint 的 id 錯誤");
+                assertEquals(EP_URIS.get(i), byUri.getPublishUri(), "依 publishUri 查 Endpoint 的 publishUri 錯誤");
+                indexHits.incrementAndGet(i);
+            }
+            default -> {
+                switch (variant % 3) {
+                    case 0 -> expectNotFound("Endpoint 不存在的 id",
+                            () -> dynamicWebService.getEndpoint(UUID.randomUUID().toString(), null),
+                            dto -> ((EndpointDTO) dto).getPublishUri());
+                    case 1 -> expectNotFound("Endpoint publishUri=it19-not-exist",
+                            () -> dynamicWebService.getEndpoint(null, NOT_EXIST_URI),
+                            dto -> ((EndpointDTO) dto).getPublishUri());
+                    default -> expectNotFound("以 Controller 的 publishUri 查 Endpoint",
+                            () -> dynamicWebService.getEndpoint(null, RF_URIS.get(variant % RF_URIS.size())),
+                            dto -> ((EndpointDTO) dto).getPublishUri());
+                }
+            }
+        }
+    }
+
+    /** kind：0 整份清單、1 依 id、2 依 publishUri、3 查無資料／交叉類型。 */
+    private void runControllerQuery(int kind, int i, int variant, int baseline, AtomicIntegerArray indexHits) {
+        switch (kind) {
+            case 0 -> assertControllerList(dynamicControllerService.getControllers(), baseline);
+            case 1 -> {
+                ControllerDTO byId = dynamicControllerService.getController(controllerIds.get(i), null);
+                assertNotNull(byId, "依 id 查 Controller 回傳 null");
+                assertEquals(RF_URIS.get(i), byId.getPublishUri(), "依 id 查 Controller 的 publishUri 錯誤");
+                assertEquals(jarFileId, byId.getJarFileId(), "依 id 查 Controller 的 jarFileId 錯誤");
+                indexHits.incrementAndGet(i);
+            }
+            case 2 -> {
+                ControllerDTO byUri = dynamicControllerService.getController(null, RF_URIS.get(i));
+                assertNotNull(byUri, "依 publishUri 查 Controller 回傳 null");
+                assertEquals(controllerIds.get(i), byUri.getId(), "依 publishUri 查 Controller 的 id 錯誤");
+                assertEquals(RF_URIS.get(i), byUri.getPublishUri(), "依 publishUri 查 Controller 的 publishUri 錯誤");
+                indexHits.incrementAndGet(i);
+            }
+            default -> {
+                switch (variant % 3) {
+                    case 0 -> expectNotFound("Controller 不存在的 id",
+                            () -> dynamicControllerService.getController(UUID.randomUUID().toString(), null),
+                            dto -> ((ControllerDTO) dto).getPublishUri());
+                    case 1 -> expectNotFound("Controller publishUri=it19-not-exist",
+                            () -> dynamicControllerService.getController(null, NOT_EXIST_URI),
+                            dto -> ((ControllerDTO) dto).getPublishUri());
+                    default -> expectNotFound("以 Endpoint 的 publishUri 查 Controller",
+                            () -> dynamicControllerService.getController(null, EP_URIS.get(variant % EP_URIS.size())),
+                            dto -> ((ControllerDTO) dto).getPublishUri());
+                }
+            }
+        }
+    }
+
+    /** 既有行為：查無資料時丟出 IllegalArgumentException；若回傳了資料（例如另一類服務）就判定失敗並帶出內容。 */
+    private static void expectNotFound(String label, Supplier<Object> query, Function<Object, String> describe) {
+        Object result;
+        try {
+            result = query.get();
+        } catch (IllegalArgumentException expected) {
+            return;
+        }
+        fail(label + " 應丟出 IllegalArgumentException，卻回傳 publishUri="
+                + (result == null ? "null(DTO 為 null)" : describe.apply(result)));
     }
 
     @Test
